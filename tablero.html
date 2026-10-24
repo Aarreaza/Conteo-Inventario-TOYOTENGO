@@ -79,6 +79,14 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .sh-pop .sh-salir b{color:#b42318}
 .sh-pop .sh-link{display:flex;flex-direction:column;gap:1px;padding:.55rem .7rem;border-radius:8px;color:#1c1d21;text-decoration:none}.sh-pop .sh-link b{font-weight:600;font-size:.88rem}.sh-pop .sh-link small{font-size:.75rem;color:#6b7280}.sh-pop .sh-link:hover{background:#f4f6f8}.sh-sep{height:1px;background:#eceef1;margin:4px 6px}
 .sh-user{font-size:.8rem}
+.ml-head{display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;align-items:flex-start;justify-content:space-between}
+.ml-acc{display:flex;flex-wrap:wrap;gap:.5rem}.ml-acc a.sh-btn{text-decoration:none;display:inline-flex;align-items:center;background:#ffe600;border-color:#e6cf00;color:#2d3277}
+.ml-estado{margin:.75rem 0 .25rem;display:flex;flex-wrap:wrap;gap:.35rem 1rem;align-items:center}
+.ml-ayuda{margin-top:.5rem}.ml-ayuda summary{cursor:pointer}.ml-ayuda ol{margin:.6rem 0 0;padding-left:1.2rem;font-size:.9rem}.ml-ayuda li{margin:.3rem 0}
+.ml-ajustes{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;margin-top:.75rem;font-size:.85rem;color:var(--color-fg-muted)}.ml-ajustes label{display:flex;align-items:center;gap:.4rem}
+#ml-tiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr))}#ml-tiles .sh-lctile{border-top-color:var(--tt-ink,#2b2f36)}#ml-tiles .sh-lctile.alerta{border-top-color:var(--color-bad)}#ml-tiles .sh-lctile.ok{border-top-color:var(--color-ok)}#ml-tiles .sh-lctile .v{font-family:var(--font-anthropic-serif);font-size:1.6rem}#ml-tiles .sh-lctile .k{font-size:.8rem;color:var(--color-fg-muted)}#ml-tiles .sh-lctile .s{font-size:.78rem;color:var(--color-fg-muted)}
+.ml-graf{margin-top:1rem}.ml-tile.on{outline:2px solid var(--brand-red)}.ml-tile{cursor:pointer;text-align:left;font:inherit}
+.tt-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem}
 .u-perfiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;margin:0 0 1rem}
 .u-pf{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:10px;padding:.8rem .9rem}
 .u-pf p{margin:.45rem 0 0;font-size:.85rem;color:var(--color-fg-muted)}
@@ -267,6 +275,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
       <button id="n-tablero" aria-current="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4zm0 7h6v-5H4zm10 0h6v-9h-6zm0-16v5h6V4z"/></svg>Tablero</button>
       <button id="n-conteos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v2h4v16H5V5h4zm2 2v2h2V5zm-2.3 9.3 1.4-1.4 1.9 1.9 3.9-3.9 1.4 1.4-5.3 5.3z"/></svg>Conteos</button>
       <button id="n-compras" title="Artículos que se vendieron y están en cero"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM3 3h2l2.7 10.2a2 2 0 0 0 2 1.5h7.6a2 2 0 0 0 1.9-1.4L21 7H6.2L5.6 4.7A2 2 0 0 0 3.7 3z"/></svg>Lista de compra<span class="sh-badge" id="n-cero" hidden></span></button>
+      <button id="n-ml" title="Publicaciones y ventas en Mercado Libre"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4C6.5 4 2 7.6 2 12s4.5 8 10 8 10-3.6 10-8-4.5-8-10-8zm0 2c3.7 0 6.9 2 7.8 4.6-1.3-.4-2.9-1.2-4.6-2.4l-.7-.5-.6.5c-.6.5-1.5 1-2.4 1-.8 0-1.3-.4-1.3-.7 0-.2.2-.5.6-.8l1-.7c-.3 0-.6-.1-.8-.1-2.1 0-3.9 1-5.2 2.4C5.4 7.6 8.4 6 12 6zm0 12c-4.1 0-7.6-2.4-8-5.5l.6-.6c.8-.9 1.9-1.6 3.1-1.8-.1.3-.2.5-.2.8 0 1.6 1.6 2.7 3.3 2.7 1 0 2-.3 2.9-.9 1.9 1.3 3.8 2.1 5.5 2.4-1 1.7-3.9 2.9-7.2 2.9z"/></svg>Mercado Libre<span class="sh-badge" id="n-mlb" hidden></span></button>
       <button id="n-regularizar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 1 21h22zm1 15h-2v-2h2zm0-4h-2V9h2z"/></svg>Por regularizar<span class="sh-badge" id="n-reg" hidden></span></button>
       <button id="n-exportar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5zM12 3v10.2l-3.6-3.6L7 11l5 5 5-5-1.4-1.4-3.6 3.6V3z"/></svg>Descargar Excel</button>
     </div>
@@ -381,6 +390,62 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
       <div class="tt-status" id="ct-n" style="margin-top:.4rem"></div>
     </div>
     <div class="tt-card" id="ct-det" hidden style="margin-top:1rem"></div>
+  </section>
+
+  <!-- MERCADO LIBRE -->
+  <section class="sh-view" id="v-ml" hidden>
+    <div class="ml-head">
+      <div><h2 class="sh-h2">Mercado Libre</h2>
+      <p class="sh-sub">Qué del inventario está publicado, qué falta por publicar, si el precio de Mercado Libre cubre el costo y cómo van las ventas. Cuenta: <b>supplypartsjota@gmail.com</b>.</p></div>
+      <div class="ml-acc">
+        <a class="sh-btn" id="ml-abrir" href="https://www.mercadolibre.com.ve/publicaciones/listado" target="_blank" rel="noopener">Abrir mi cuenta de Mercado Libre ↗</a>
+        <button class="sh-btn lt ml-resp" id="ml-subir-b" type="button">Subir archivo de Mercado Libre</button>
+        <input type="file" id="ml-file" accept=".xlsx,.xls,.csv" multiple hidden>
+        <button class="sh-btn lt ml-resp" id="ml-conectar" type="button">Conexión automática</button>
+      </div>
+    </div>
+    <div class="sh-banner ml-estado" id="ml-estado"></div>
+    <div class="sh-msg" id="ml-msg" role="status"></div>
+    <details class="tt-card ml-ayuda" id="ml-ayuda"><summary><b>¿Cómo actualizar los datos de Mercado Libre?</b></summary>
+      <ol>
+        <li><b>Automático (recomendado):</b> el administrador activa "Conexión automática" una vez; desde ahí publicaciones, precios y ventas se actualizan solos cada hora.</li>
+        <li><b>Con archivo:</b> presione "Abrir mi cuenta de Mercado Libre" › Publicaciones › <i>Modificar desde Excel</i> o <i>Descargar</i> (todas las publicaciones). Para ventas: Ventas › <i>Descargar ventas</i>. Luego presione "Subir archivo de Mercado Libre" y escoja los archivos (puede subir varios a la vez). El tablero reconoce solo si son publicaciones o ventas.</li>
+        <li><b>Códigos:</b> el tablero une cada publicación con el inventario por el <b>SKU</b> de Mercado Libre. Si una publicación no tiene SKU, descargue "Publicaciones sin código", escriba el código del inventario en la columna indicada y súbalo con el mismo botón.</li>
+      </ol></details>
+    <div class="ml-ajustes">
+      <label>Comisión y costos de venta en ML <input class="tt-in" id="ml-com" type="number" min="0" max="60" step="0.5" style="width:5.5rem"> %</label>
+      <label>Margen mínimo deseado <input class="tt-in" id="ml-min" type="number" min="0" max="200" step="1" style="width:5.5rem"> %</label>
+      <label>Tasa Bs por US$ (si ML está en bolívares) <input class="tt-in" id="ml-tasa" type="number" min="0" step="0.01" style="width:7rem" placeholder="—"></label>
+    </div>
+    <div class="tt-tiles" id="ml-tiles" style="margin:1rem 0"></div>
+    <div class="tt-card">
+      <div class="tt-tools">
+        <select class="tt-in" id="ml-ver" aria-label="Qué ver">
+          <option value="np">⚠ Con stock y NO publicados</option>
+          <option value="bc">⚠ Precio ML por debajo del costo</option>
+          <option value="mb">Margen ML por debajo del mínimo</option>
+          <option value="ss">⚠ Publicados sin stock en el inventario</option>
+          <option value="sd">Stock de ML distinto al inventario</option>
+          <option value="pa">Publicaciones pausadas con stock</option>
+          <option value="sv">Publicaciones sin código (sin vincular)</option>
+          <option value="ok">Publicados y correctos</option>
+          <option value="todas">Todas las publicaciones</option>
+          <option value="vt">Ventas en Mercado Libre</option>
+        </select>
+        <input class="tt-in" type="search" id="ml-q" placeholder="Buscar código, título o publicación" aria-label="Buscar">
+        <select class="tt-in" id="ml-fam" aria-label="Familia"><option value="">Todas las familias</option></select>
+      </div>
+      <p class="tt-note" id="ml-expl" style="margin:.5rem 0"></p>
+      <div class="sh-row" style="justify-content:space-between;align-items:center;margin:.25rem 0 .5rem;flex-wrap:wrap;gap:.5rem">
+        <span class="tt-status" id="ml-n"></span>
+        <span class="sh-row" style="gap:.5rem;flex-wrap:wrap"><button class="sh-btn" id="ml-bajar-vista" type="button">Descargar Excel (lo que ve)</button><button class="sh-btn lt" id="ml-bajar-todo" type="button">Descargar conciliación completa</button></span>
+      </div>
+      <div class="tt-scroll" style="max-height:34rem"><table class="tt-t" id="ml-tabla"><thead><tr></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="tt-grid2 ml-graf">
+      <div class="tt-card"><h3>Ventas en Mercado Libre por mes</h3><div class="tt-scroll"><table class="tt-t" id="ml-meses"><thead><tr><th>Mes</th><th class="n">Ventas</th><th class="n">Unidades</th><th class="n">Monto US$</th><th class="n">Costo US$</th><th class="n">Margen</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="tt-card"><h3>Más vendidos en Mercado Libre</h3><div class="tt-scroll"><table class="tt-t" id="ml-top"><thead><tr><th>Código</th><th>Título</th><th class="n">Unid.</th><th class="n">Monto US$</th><th class="n">Stock</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
   </section>
 
   <!-- LISTA DE COMPRA -->
@@ -1965,8 +2030,8 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
   const bitacora = (accion, detalle) => sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MODULO, p_accion: accion, p_detalle: detalle || null }).then(() => {}, () => {});
 
   // ---------- vistas ----------
-  const VISTAS = ['v-login', 'v-tablero', 'v-conteos', 'v-compras', 'v-regularizar', 'v-exportar', 'v-cargar', 'v-usuarios', 'v-bitacora', 'v-clave'];
-  const NAV = { 'v-tablero': 'n-tablero', 'v-conteos': 'n-conteos', 'v-compras': 'n-compras', 'v-regularizar': 'n-regularizar', 'v-exportar': 'n-exportar', 'v-cargar': 'n-cargar', 'v-usuarios': 'n-usuarios', 'v-bitacora': 'n-bitacora', 'v-clave': 'n-clave' };
+  const VISTAS = ['v-login', 'v-tablero', 'v-conteos', 'v-compras', 'v-ml', 'v-regularizar', 'v-exportar', 'v-cargar', 'v-usuarios', 'v-bitacora', 'v-clave'];
+  const NAV = { 'v-tablero': 'n-tablero', 'v-conteos': 'n-conteos', 'v-compras': 'n-compras', 'v-ml': 'n-ml', 'v-regularizar': 'n-regularizar', 'v-exportar': 'n-exportar', 'v-cargar': 'n-cargar', 'v-usuarios': 'n-usuarios', 'v-bitacora': 'n-bitacora', 'v-clave': 'n-clave' };
   function ver(v) {
     VISTAS.forEach((x) => { $(x).hidden = x !== v; });
     Object.entries(NAV).forEach(([k, b]) => $(b).setAttribute('aria-current', k === v ? 'true' : 'false'));
@@ -1981,6 +2046,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
     if (v === 'v-exportar' && window.TT_EXP) window.TT_EXP.pintar();
     if (v === 'v-regularizar' && window.TT_SEG) window.TT_SEG.lista();
     if (v === 'v-compras' && window.TT_LC) window.TT_LC.pintar();
+    if (v === 'v-ml' && window.TT_ML) window.TT_ML.pintar();
     if (v === 'v-conteos' && window.TT_CT) window.TT_CT.abrir();
     window.scrollTo(0, 0);
   }
@@ -2096,7 +2162,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       todas(() => sb.from('ventas_lineas').select('mes, linea, fecha, factura, cliente, vendedor, vehiculo, codigo, descripcion, categoria, cantidad, precio, total, costo_unit').eq('empresa_id', EMPRESA).order('mes').order('linea')).catch(() => []),
     ]);
     const SEG = {}; (seg || []).forEach((x) => { SEG[x.clave] = x; });
-    return {
+    const out = {
       corte, lista, seg: SEG, segOk: seg !== null,
       articulos: lineas.map((l) => {
         const st = l.stock_valor != null ? num(l.stock_valor) : num(l.stock_stocks);
@@ -2114,6 +2180,8 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
         costo_unit: v.costo_unit == null ? null : num(v.costo_unit), costo_total: v.costo_unit == null ? null : r2(num(v.costo_unit) * num(v.cantidad)) })),
       historico: hist.map((h) => ({ corte: String(h.fecha_corte).slice(0, 10), valor_total: r2(h.valor_calculado != null ? h.valor_calculado : h.valor_sistema), articulos_con_stock: num(h.articulos_con_stock) })),
     };
+    out.ml = window.TT_ML ? await window.TT_ML.leerML() : null;
+    return out;
   }
   const soloDatos = (d) => {
     const t = document.getElementById('tab-ventas'); if (t) t.hidden = !(d.ventas && d.ventas.length);
@@ -3033,6 +3101,354 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
     $('lc-bajar-todo').addEventListener('click', () => SEGM.descargar('rep'));
     dash.onData(() => { contador(); if (!$('v-compras').hidden) pintar(); });
     return { pintar, contador };
+  })();
+
+  // ---------- Mercado Libre: publicaciones, precios y ventas vs inventario ----------
+  window.TT_ML = (() => {
+    const CONEXION = 'https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12iL6Luk1na_SZUJtQ1WbaBM88r55Gl_KAuayMM3Fvyh0rAql/exec?p=ml';
+    const st = { sort: null, dir: 1, limit: 800 };
+    let vista = [], R = null, famLlena = false;
+    const LS = { get(k, d) { try { const v = localStorage.getItem('tt-ml-' + k); return v == null || v === '' ? d : v; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem('tt-ml-' + k, v); } catch (e) {} } };
+    const norm = (s) => String(s == null ? '' : s).toUpperCase().replace(/[\s\-._\/]/g, '');
+    const pn = (v) => { if (v == null || v === '') return null; if (typeof v === 'number') return isFinite(v) ? v : null; let s = String(v).replace(/[^\d,.\-]/g, ''); if (!s) return null;
+      if (s.includes(',') && s.includes('.')) s = s.lastIndexOf(',') > s.lastIndexOf('.') ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
+      else if (s.includes(',')) s = /,\d{3}$/.test(s) && !/,\d{1,2}$/.test(s) ? s.replace(/,/g, '') : s.replace(',', '.');
+      else if (/^\-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+      const n = Number(s); return isFinite(n) ? n : null; };
+    const activa = (e) => !e || /^(active|activ|publicad)/i.test(String(e).trim());
+    const pausada = (e) => /^(paused|pausad|inactiv|under_review|revisi)/i.test(String(e || '').trim());
+    const puede = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'REGULARIZA');
+    const aj = () => ({ com: (pn(LS.get('com', '13')) || 0) / 100, min: (pn(LS.get('min', '25')) || 0) / 100, tasa: pn(LS.get('tasa', '')) || 0 });
+    const aUsd = (p, mon, tasa) => (p == null ? null : /VES|VEF|BS/i.test(mon || '') ? (tasa > 0 ? p / tasa : null) : p);
+    const EXPL = {
+      np: 'Artículos con existencia que no tienen ninguna publicación en Mercado Libre. Son ventas que se pueden estar perdiendo: publíquelos. Si ya están publicados con otro código, escriba el número de publicación en el Excel y súbalo.',
+      bc: 'Publicaciones activas cuyo precio en Mercado Libre es menor que el costo de la mercancía: se vende a pérdida. Suba el precio al mínimo sugerido.',
+      mb: 'Publicaciones activas que, después de la comisión de Mercado Libre, dejan menos margen que el mínimo deseado.',
+      ss: 'Publicaciones activas de artículos que en el inventario están en cero o negativo: si alguien compra, no hay mercancía. Páuselas o revise el inventario.',
+      sd: 'El stock disponible en Mercado Libre no coincide con el del inventario. Actualice la cantidad en la publicación.',
+      pa: 'Artículos con existencia cuya publicación está pausada o finalizada. Reactívelas.',
+      sv: 'Publicaciones que no se pudieron unir con un código del inventario (no tienen SKU o el SKU no existe). Descárguelas, escriba el código del inventario y súbalas.',
+      ok: 'Publicaciones activas con stock, margen suficiente y la misma cantidad que el inventario.',
+      todas: 'Todas las publicaciones de la cuenta con su comparación contra el inventario.',
+      vt: 'Ventas registradas en Mercado Libre (por archivo o conexión automática), con su costo y margen.',
+    };
+    const COLS = {
+      inv: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['familia', 'Familia', 'h'], ['stock', 'Stock', 'n'], ['costo', 'Costo unit.', 'n'], ['valor', 'Valor a costo', 'n'], ['precio_lista', 'Precio lista', 'n h'], ['precio_min', 'Precio mínimo en ML', 'n'], ['estado_ml', 'Publicación', 'h']],
+      pub: [['item_id', 'Publicación'], ['titulo', 'Título'], ['codigo', 'Código'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML', 'n'], ['costo', 'Costo unit.', 'n'], ['precio_usd', 'Precio ML', 'n'], ['margen_ml', 'Margen ML', 'n'], ['precio_min', 'Precio mínimo', 'n h'], ['estado_ml', 'Estado', 'h'], ['problema', 'Situación']],
+      vt: [['fecha', 'Fecha'], ['venta_id', 'Venta'], ['codigo', 'Código'], ['titulo', 'Título'], ['cantidad', 'Unid.', 'n'], ['total_usd', 'Monto', 'n'], ['costo_total', 'Costo', 'n h'], ['margen', 'Margen', 'n']],
+    };
+    function conciliar() {
+      const S = SERVER; if (!S) return null;
+      const ml = S.ml || { pubs: [], ventas: [], vinc: [], estado: null, ok: false };
+      const A = aj(), T = window.TT;
+      const md = dash.data('margen_art'), M = {}; (md.status === 'ok' ? md.data : []).forEach((m) => { M[m.fila] = m; });
+      const inv = {}; S.articulos.forEach((a) => { const k = norm(a.codigo); if (k && !inv[k]) inv[k] = a; });
+      const vinc = {}; (ml.vinc || []).forEach((v) => { vinc[v.item_id] = v.codigo; });
+      const codes = Object.keys(inv).filter((k) => k.length >= 6 && /\d/.test(k));
+      const pmin = (c) => (c ? Math.round(c / ((1 - A.min) * (1 - A.com)) * 100) / 100 : null);
+      const porArt = {};
+      const pubs = (ml.pubs || []).map((p) => {
+        let a = null, via = '';
+        if (vinc[p.item_id]) { a = inv[norm(vinc[p.item_id])] || null; if (a) via = 'Vinculado'; }
+        if (!a && p.sku) { a = inv[norm(p.sku)] || null; if (a) via = 'SKU'; }
+        let sugerido = '';
+        if (!a) { const t = norm(p.titulo); const c = codes.find((k) => t.includes(k)); if (c) sugerido = inv[c].codigo; }
+        const pu = aUsd(pn(p.precio), p.moneda, A.tasa), costo = a ? a.costo : null, neto = pu != null ? pu * (1 - A.com) : null;
+        const r = { tipo: 'pub', item_id: p.item_id, titulo: p.titulo || '', sku: p.sku || '', codigo: a ? a.codigo : '', descripcion: a ? a.descripcion : '', familia: a ? a.familia : '',
+          stock: a ? a.stock : null, costo, precio_lista: a && M[a.fila] ? M[a.fila].precio : null, precio_ml: pn(p.precio), moneda: p.moneda || '', precio_usd: pu,
+          neto_usd: neto, margen_ml: neto && costo ? (neto - costo) / neto : null, ganancia_unit: neto != null && costo ? Math.round((neto - costo) * 100) / 100 : null,
+          precio_min: pmin(costo), stock_ml: pn(p.stock), vendidos: pn(p.vendidos), estado_ml: p.estado || '', activa: activa(p.estado), permalink: p.permalink || '', via, sugerido, cat: [] };
+        if (!a) r.cat.push('sv');
+        else {
+          (porArt[a.fila] = porArt[a.fila] || []).push(r);
+          if (r.activa) {
+            if (pu != null && costo && pu < costo) r.cat.push('bc'); else if (r.margen_ml != null && r.margen_ml < A.min) r.cat.push('mb');
+            if (!(a.stock > 0)) r.cat.push('ss'); else if (r.stock_ml != null && r.stock_ml !== a.stock) r.cat.push('sd');
+            if (!r.cat.length) r.cat.push('ok');
+          }
+        }
+        const nom = { bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Sin stock en inventario', sd: 'Stock distinto', sv: 'Sin código' + (sugerido ? ' (¿' + sugerido + '?)' : ''), ok: 'Correcta' };
+        r.problema = r.cat.map((c) => nom[c]).join(' · ') || (r.activa ? '' : 'Pausada / finalizada');
+        return r;
+      });
+      const invRows = [];
+      S.articulos.forEach((a) => {
+        if (!(a.stock > 0)) return;
+        const L = porArt[a.fila] || [], act = L.filter((x) => x.activa);
+        if (act.length) return;
+        invRows.push({ tipo: 'inv', cat: [L.length ? 'pa' : 'np'], codigo: a.codigo, descripcion: a.descripcion, familia: a.familia, stock: a.stock, costo: a.costo, valor: a.valor,
+          precio_lista: M[a.fila] ? M[a.fila].precio : null, precio_min: pmin(a.costo), estado_ml: L.length ? 'Pausada: ' + L.map((x) => x.item_id).join(', ') : 'No publicado', item_id: L.length ? L[0].item_id : '' });
+      });
+      const hoy = Date.now(), d30 = hoy - 30 * 864e5;
+      const ventas = (ml.ventas || []).map((v) => {
+        let a = null; const p = (ml.pubs || []).find((x) => x.item_id && x.item_id === v.item_id);
+        const pr = pubs.find((x) => x.item_id === v.item_id); if (pr && pr.codigo) a = inv[norm(pr.codigo)];
+        if (!a && v.sku) a = inv[norm(v.sku)] || null;
+        const tot = aUsd(pn(v.total) != null ? pn(v.total) : (pn(v.precio) || 0) * (pn(v.cantidad) || 0), v.moneda || (p && p.moneda), A.tasa);
+        const ct = a && a.costo ? Math.round(a.costo * (pn(v.cantidad) || 0) * 100) / 100 : null;
+        return { tipo: 'vt', cat: ['vt'], fecha: v.fecha ? String(v.fecha).slice(0, 10) : '', ts: v.fecha ? Date.parse(v.fecha) : NaN, venta_id: v.venta_id, item_id: v.item_id || '', codigo: a ? a.codigo : '', titulo: v.titulo || (pr ? pr.titulo : ''),
+          cantidad: pn(v.cantidad) || 0, total_usd: tot, costo_total: ct, margen: tot && ct != null ? (tot * (1 - A.com) - ct) / (tot * (1 - A.com)) : null, stock: a ? a.stock : null, estado: v.estado || '' };
+      });
+      const act = pubs.filter((p) => p.activa), conStock = S.articulos.filter((a) => a.stock > 0);
+      const cubiertos = conStock.length - invRows.length;
+      const pesos = act.filter((p) => p.margen_ml != null && p.precio_usd);
+      const mProm = pesos.length ? pesos.reduce((s, p) => s + p.margen_ml * p.precio_usd, 0) / pesos.reduce((s, p) => s + p.precio_usd, 0) : null;
+      const v30 = ventas.filter((v) => v.ts >= d30);
+      const k = {
+        hay: (ml.pubs || []).length > 0, pubs: pubs.length, activas: act.length, pausadas: pubs.length - act.length,
+        np: invRows.filter((r) => r.cat[0] === 'np'), pa: invRows.filter((r) => r.cat[0] === 'pa'),
+        cobertura: conStock.length ? cubiertos / conStock.length : 0, conStock: conStock.length,
+        mProm, v30: v30.reduce((s, v) => s + (v.total_usd || 0), 0), v30u: v30.reduce((s, v) => s + v.cantidad, 0), v30n: new Set(v30.map((v) => v.venta_id)).size,
+      };
+      ['bc', 'mb', 'ss', 'sd', 'sv', 'ok'].forEach((c) => { k[c] = pubs.filter((p) => p.cat.includes(c)); });
+      R = { pubs, inv: invRows, ventas, k, ml, A };
+      return R;
+    }
+    function contador() {
+      const r = conciliar(); const b = $('n-mlb'); if (!b) return;
+      const n = r && r.k.hay ? r.k.np.length + r.k.bc.length + r.k.ss.length : 0;
+      b.hidden = !n; b.textContent = n > 999 ? '999+' : n;
+      $('n-ml').title = r && r.k.hay ? n + ' alertas de Mercado Libre (no publicados, bajo costo, sin stock)' : 'Mercado Libre: todavía no hay datos cargados';
+    }
+    const filas = (v) => (v === 'np' ? R.k.np : v === 'pa' ? R.k.pa : v === 'vt' ? R.ventas : v === 'todas' ? R.pubs : R.k[v] || []);
+    function estadoTxt() {
+      const e = R && R.ml.estado, el = $('ml-estado'); el.replaceChildren();
+      const add = (t, b) => { const s = document.createElement('span'); if (b) { const x = document.createElement('b'); x.textContent = b; s.appendChild(x); s.append(' '); } s.append(t); el.appendChild(s); };
+      if (!R || !R.ml.ok) { add('Falta crear las tablas de Mercado Libre en el servidor (archivo 11_mercadolibre.sql).', '⚠'); return; }
+      if (!R.k.hay) { add('Todavía no hay publicaciones cargadas. Use "Subir archivo de Mercado Libre" o active la conexión automática.', '⚠'); return; }
+      add(e && e.origen === 'API' ? 'Conexión automática' + (e.conectado ? ' activa' : ' con problema') + (e.cuenta ? ' · cuenta ' + e.cuenta : '') : 'Datos por archivo de Mercado Libre', 'Origen:');
+      if (e && e.ultima_sync) add(fmtF(e.ultima_sync), 'Actualizado:');
+      add(R.k.pubs.toLocaleString('es-VE') + ' publicaciones · ' + R.ventas.length.toLocaleString('es-VE') + ' líneas de venta', 'Datos:');
+      if (e && e.mensaje) add(e.mensaje, 'Nota:');
+    }
+    function tiles() {
+      const T = window.TT, k = R.k, el = $('ml-tiles'); el.replaceChildren();
+      if (!k.hay) return;
+      const v = $('ml-ver').value;
+      const L = [
+        ['np', 'Con stock y NO publicados', T.fmt.int(k.np.length), T.fmt.usd0(k.np.reduce((s, r) => s + (r.valor || 0), 0)) + ' a costo sin vitrina', k.np.length ? 'alerta' : 'ok'],
+        ['todas', 'Cobertura de publicación', T.fmt.pct(k.cobertura), 'de ' + T.fmt.int(k.conStock) + ' artículos con stock', k.cobertura >= 0.9 ? 'ok' : k.cobertura >= 0.6 ? '' : 'alerta'],
+        ['ok', 'Publicaciones activas', T.fmt.int(k.activas), T.fmt.int(k.ok.length) + ' correctas · ' + T.fmt.int(k.pausadas) + ' pausadas', ''],
+        ['bc', 'Precio ML bajo el costo', T.fmt.int(k.bc.length), 'se vende a pérdida', k.bc.length ? 'alerta' : 'ok'],
+        ['mb', 'Margen ML promedio', k.mProm == null ? '—' : T.fmt.pct(k.mProm), 'después de ' + Math.round(R.A.com * 1000) / 10 + '% de comisión · ' + T.fmt.int(k.mb.length) + ' bajo el mínimo', k.mProm != null && k.mProm < R.A.min ? 'alerta' : ''],
+        ['ss', 'Publicados sin stock', T.fmt.int(k.ss.length), 'riesgo de vender lo que no hay', k.ss.length ? 'alerta' : 'ok'],
+        ['vt', 'Ventas ML · 30 días', T.fmt.usd0(k.v30), T.fmt.int(k.v30u) + ' unidades en ' + T.fmt.int(k.v30n) + ' ventas', ''],
+        ['sv', 'Publicaciones sin código', T.fmt.int(k.sv.length), 'por vincular con el inventario', k.sv.length ? 'alerta' : 'ok'],
+      ];
+      L.forEach(([id, t, val, sub, cls]) => {
+        const d = document.createElement('button'); d.type = 'button'; d.className = 'sh-lctile ml-tile ' + cls + (v === id ? ' on' : '');
+        [['k', t], ['v', val], ['s', sub]].forEach(([c, x]) => { const s = document.createElement('span'); s.className = c; s.textContent = x; d.appendChild(s); });
+        d.addEventListener('click', () => { $('ml-ver').value = id; pintar(); }); el.appendChild(d);
+      });
+    }
+    function tabla() {
+      const T = window.TT, v = $('ml-ver').value, q = $('ml-q').value.trim().toLowerCase(), f = $('ml-fam').value;
+      const tipo = v === 'np' || v === 'pa' ? 'inv' : v === 'vt' ? 'vt' : 'pub';
+      vista = filas(v).filter((r) => (!f || r.familia === f) && (!q || [r.codigo, r.descripcion, r.titulo, r.item_id, r.sku].join(' ').toLowerCase().includes(q)));
+      $('ml-expl').textContent = EXPL[v] || '';
+      const tbl = $('ml-tabla'), tr = tbl.querySelector('thead tr'); tr.replaceChildren();
+      COLS[tipo].forEach(([fld, lab, cl]) => { const th = document.createElement('th'); th.dataset.field = fld; if (cl) cl.split(' ').forEach((c) => th.classList.add(c === 'h' ? 'tt-hide-n' : c)); const b = document.createElement('button'); b.textContent = lab; th.appendChild(b); tr.appendChild(th); });
+      if (!st.sort || !COLS[tipo].some((c) => c[0] === st.sort)) { st.sort = tipo === 'inv' ? 'valor' : tipo === 'vt' ? 'fecha' : 'precio_usd'; st.dir = -1; }
+      st.redraw = tabla;
+      const u2 = (x) => (x == null ? '—' : T.fmt.usd2(x)), pc = (x) => (x == null ? '—' : T.fmt.pct(x)), nn = (x) => (x == null ? '—' : T.fmt.num(x));
+      const n = T.table(tbl, vista, {
+        codigo: { cls: 'code', render: (td, r) => { td.textContent = r.codigo || '—'; if (!r.codigo && r.sugerido) { const s = document.createElement('small'); s.style.color = 'var(--color-fg-muted)'; s.textContent = ' ¿' + r.sugerido + '?'; td.appendChild(s); } } },
+        item_id: { render: (td, r) => { if (!r.item_id) { td.textContent = '—'; return; } const a = document.createElement('a'); a.href = r.permalink || ('https://articulo.mercadolibre.com.ve/' + String(r.item_id).replace(/^MLV-?/i, 'MLV-')); a.target = '_blank'; a.rel = 'noopener'; a.textContent = r.item_id; td.appendChild(a); } },
+        stock: { num: true, fmt: nn }, stock_ml: { num: true, fmt: nn }, costo: { num: true, fmt: u2 }, valor: { num: true, fmt: (x) => (x == null ? '—' : T.fmt.usd0(x)) },
+        precio_lista: { num: true, fmt: u2 }, precio_min: { num: true, fmt: u2 }, precio_usd: { num: true, fmt: (x, r) => (x == null ? (r.precio_ml != null ? r.precio_ml + ' ' + r.moneda + ' (falta tasa)' : '—') : T.fmt.usd2(x)) },
+        margen_ml: { num: true, render: (td, r) => { if (r.margen_ml == null) { td.textContent = '—'; return; } T.chip(td, T.fmt.pct(r.margen_ml), r.margen_ml < 0 ? 'bad' : r.margen_ml < R.A.min ? 'warn' : 'ok'); } },
+        problema: { render: (td, r) => (r.problema ? T.chip(td, r.problema, r.cat.some((c) => c === 'bc' || c === 'ss' || c === 'sv') ? 'bad' : r.cat.includes('ok') ? 'ok' : 'warn') : (td.textContent = '')) },
+        estado_ml: { fmt: (x) => x || '—' }, cantidad: { num: true, fmt: nn }, total_usd: { num: true, fmt: u2 }, costo_total: { num: true, fmt: u2 }, margen: { num: true, fmt: pc },
+      }, (r) => (r.item_id || '') + '|' + (r.codigo || '') + '|' + (r.venta_id || ''), st);
+      $('ml-n').textContent = T.fmt.int(n) + (tipo === 'vt' ? ' líneas de venta' : tipo === 'inv' ? ' artículos' : ' publicaciones') + (n > st.limit ? ' · se muestran ' + st.limit + ', use la búsqueda' : '');
+      $('ml-bajar-vista').disabled = !vista.length || !window.XLSX;
+    }
+    function resumenVentas() {
+      const T = window.TT, M = {};
+      R.ventas.forEach((v) => { const m = (v.fecha || '').slice(0, 7) || 'sin fecha'; const o = M[m] = M[m] || { mes: m, ventas: new Set(), u: 0, t: 0, c: 0, cc: 0 }; o.ventas.add(v.venta_id); o.u += v.cantidad; o.t += v.total_usd || 0; if (v.costo_total != null) { o.c += v.costo_total; o.cc += v.total_usd || 0; } });
+      const tb = $('ml-meses').querySelector('tbody'); tb.replaceChildren();
+      Object.values(M).sort((a, b) => b.mes.localeCompare(a.mes)).slice(0, 12).forEach((o) => {
+        const tr = document.createElement('tr'); const mg = o.cc ? (o.cc * (1 - R.A.com) - o.c) / (o.cc * (1 - R.A.com)) : null;
+        [o.mes, T.fmt.int(o.ventas.size), T.fmt.num(o.u), T.fmt.usd0(o.t), o.c ? T.fmt.usd0(o.c) : '—', mg == null ? '—' : T.fmt.pct(mg)].forEach((x, i) => { const td = document.createElement('td'); td.textContent = x; if (i) td.className = 'n'; tr.appendChild(td); }); tb.appendChild(tr);
+      });
+      if (!tb.children.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 6; td.textContent = 'Sin ventas cargadas todavía.'; tr.appendChild(td); tb.appendChild(tr); }
+      const P = {}; R.ventas.forEach((v) => { const kk = v.codigo || v.item_id || v.titulo; const o = P[kk] = P[kk] || { codigo: v.codigo || '—', titulo: v.titulo, u: 0, t: 0, stock: v.stock }; o.u += v.cantidad; o.t += v.total_usd || 0; });
+      const tt = $('ml-top').querySelector('tbody'); tt.replaceChildren();
+      Object.values(P).sort((a, b) => b.u - a.u).slice(0, 15).forEach((o) => { const tr = document.createElement('tr'); [o.codigo, o.titulo, T.fmt.num(o.u), T.fmt.usd0(o.t), o.stock == null ? '—' : T.fmt.num(o.stock)].forEach((x, i) => { const td = document.createElement('td'); td.textContent = x; if (i >= 2) td.className = 'n'; if (!i) td.classList.add('code'); tr.appendChild(td); }); tt.appendChild(tr); });
+      if (!tt.children.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 5; td.textContent = 'Sin ventas cargadas todavía.'; tr.appendChild(td); tt.appendChild(tr); }
+    }
+    function pintar() {
+      if (!window.TT || !SERVER) return;
+      conciliar(); contador();
+      document.querySelectorAll('#v-ml .ml-resp').forEach((b) => { b.hidden = !puede(); });
+      $('ml-conectar').hidden = !(YO && YO.rol === 'ADMIN');
+      const A = aj(); $('ml-com').value = Math.round(A.com * 1000) / 10; $('ml-min').value = Math.round(A.min * 1000) / 10; $('ml-tasa').value = A.tasa || '';
+      if (!famLlena && SERVER.articulos.length) { famLlena = true; [...new Set(SERVER.articulos.map((a) => a.familia))].sort((a, b) => a.localeCompare(b, 'es')).forEach((f) => $('ml-fam').appendChild(new Option(f, f))); }
+      estadoTxt(); tiles(); tabla(); resumenVentas();
+    }
+    // ---------- descargas ----------
+    const ETQ = { codigo: 'Código', descripcion: 'Descripción', familia: 'Familia', stock: 'Stock inventario', costo: 'Costo unit. US$', valor: 'Valor a costo US$', precio_lista: 'Precio de lista US$',
+      precio_min: 'Precio mínimo en ML US$', estado_ml: 'Estado en ML', item_id: 'Publicación ML', titulo: 'Título en ML', sku: 'SKU en ML', stock_ml: 'Stock en ML', precio_ml: 'Precio en ML', moneda: 'Moneda',
+      precio_usd: 'Precio ML US$', neto_usd: 'Neto después de comisión US$', margen_ml: 'Margen ML %', ganancia_unit: 'Ganancia por unidad US$', vendidos: 'Vendidos en ML', via: 'Unido por',
+      sugerido: 'Código sugerido', problema: 'Situación', permalink: 'Enlace', fecha: 'Fecha', venta_id: 'Venta ML', cantidad: 'Unidades', total_usd: 'Monto US$', costo_total: 'Costo US$', margen: 'Margen %', estado: 'Estado' };
+    const CAMPOS = { inv: ['codigo', 'descripcion', 'familia', 'stock', 'costo', 'valor', 'precio_lista', 'precio_min', 'estado_ml'],
+      pub: ['item_id', 'titulo', 'sku', 'codigo', 'sugerido', 'descripcion', 'via', 'stock', 'stock_ml', 'costo', 'precio_ml', 'moneda', 'precio_usd', 'neto_usd', 'margen_ml', 'ganancia_unit', 'precio_min', 'precio_lista', 'vendidos', 'estado_ml', 'problema', 'permalink'],
+      vt: ['fecha', 'venta_id', 'item_id', 'codigo', 'titulo', 'cantidad', 'total_usd', 'costo_total', 'margen', 'estado'] };
+    const NOMBRE = { np: 'No publicados con stock', bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Publicados sin stock', sd: 'Stock distinto', pa: 'Pausadas con stock', sv: 'Sin código (vincular)', ok: 'Correctas', todas: 'Todas las publicaciones', vt: 'Ventas ML' };
+    function hojaML(id, rows) {
+      const tipo = id === 'np' || id === 'pa' ? 'inv' : id === 'vt' ? 'vt' : 'pub';
+      const data = rows.map((r) => { const o = {}; CAMPOS[tipo].forEach((c) => { o[ETQ[c]] = r[c] == null ? '' : r[c]; });
+        if (id === 'np') { o['Publicación ML (escriba si ya está publicada)'] = ''; o['Responsable'] = ''; o['Acción tomada'] = ''; }
+        if (id === 'sv') o['Código de inventario (escriba aquí)'] = r.sugerido || '';
+        if (id === 'bc' || id === 'mb') { o['Precio nuevo en ML US$'] = ''; o['Responsable'] = ''; }
+        if (id === 'ss' || id === 'sd' || id === 'pa') { o['Acción tomada'] = ''; o['Responsable'] = ''; }
+        return o; });
+      const ws = XLSX.utils.json_to_sheet(data.length ? data : [{ [ETQ.codigo]: 'Sin datos' }]);
+      const cab = Object.keys(data[0] || { x: 1 });
+      ws['!cols'] = cab.map((c) => ({ wch: /Título|Descrip|Situación|Enlace/.test(c) ? 40 : /escriba|Acción/.test(c) ? 30 : Math.max(11, Math.min(26, c.length + 2)) }));
+      if (data.length) ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: data.length, c: cab.length - 1 } }) };
+      cab.forEach((c, j) => { const z = /%/.test(c) ? '0.0%' : /US\$/.test(c) ? '#,##0.00' : null; for (let r = 1; r <= data.length; r++) { const x = ws[XLSX.utils.encode_cell({ r, c: j })]; if (!x) continue; if (z && x.t === 'n') x.z = z; if (/^(Código|Publicación ML|SKU)/.test(c)) { x.t = 's'; x.v = String(x.v); } } });
+      return ws;
+    }
+    const fecha = () => new Date().toISOString().slice(0, 10);
+    function bajarVista() {
+      if (!window.XLSX || !R) return; const v = $('ml-ver').value;
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, hojaML(v, vista), NOMBRE[v].slice(0, 31));
+      const nom = 'TOYOTENGO_MercadoLibre_' + NOMBRE[v].replace(/[^\wáéíóúñ]+/gi, '_') + '_' + fecha() + '.xlsx'; XLSX.writeFile(wb, nom); bitacora('DESCARGA MERCADO LIBRE', nom);
+    }
+    function bajarTodo() {
+      if (!window.XLSX || !R) return; const k = R.k, T = window.TT;
+      const wb = XLSX.utils.book_new();
+      const res = [['Indicador', 'Valor'], ['Publicaciones en la cuenta', k.pubs], ['Publicaciones activas', k.activas], ['Pausadas o finalizadas', k.pausadas], ['Artículos con stock', k.conStock],
+        ['Con stock y NO publicados', k.np.length], ['Valor a costo no publicado US$', Math.round(k.np.reduce((s, r) => s + (r.valor || 0), 0) * 100) / 100], ['Cobertura de publicación %', k.cobertura],
+        ['Precio ML bajo el costo', k.bc.length], ['Margen ML bajo el mínimo', k.mb.length], ['Margen ML promedio %', k.mProm == null ? '' : k.mProm], ['Publicados sin stock', k.ss.length], ['Stock distinto', k.sd.length],
+        ['Pausadas con stock', k.pa.length], ['Publicaciones sin código', k.sv.length], ['Ventas ML 30 días US$', Math.round(k.v30 * 100) / 100], ['Unidades vendidas ML 30 días', k.v30u],
+        ['Comisión usada %', R.A.com], ['Margen mínimo %', R.A.min], ['Generado', new Date().toLocaleString('es-VE')]];
+      const ws = XLSX.utils.aoa_to_sheet(res); ws['!cols'] = [{ wch: 36 }, { wch: 18 }]; res.forEach((f, r) => { if (!r) return; const x = ws[XLSX.utils.encode_cell({ r, c: 1 })]; if (x && x.t === 'n') x.z = /%/.test(f[0]) ? '0.0%' : /US\$/.test(f[0]) ? '#,##0.00' : '#,##0'; });
+      XLSX.utils.book_append_sheet(wb, ws, 'Resumen');
+      ['np', 'bc', 'mb', 'ss', 'sd', 'pa', 'sv', 'todas', 'vt'].forEach((id) => XLSX.utils.book_append_sheet(wb, hojaML(id, filas(id)), NOMBRE[id].slice(0, 31)));
+      const nom = 'TOYOTENGO_MercadoLibre_conciliacion_' + fecha() + '.xlsx'; XLSX.writeFile(wb, nom); bitacora('DESCARGA MERCADO LIBRE', nom);
+    }
+    // ---------- subir archivos (de Mercado Libre o los Excel trabajados) ----------
+    const sinAcento = (s) => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    const esId = (v) => /^MLV-?\s*\d{6,}$/i.test(String(v == null ? '' : v).trim());
+    const idML = (v) => String(v).trim().toUpperCase().replace(/[\s-]/g, '');
+    const MESES = { enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6, julio: 7, agosto: 8, septiembre: 9, setiembre: 9, octubre: 10, noviembre: 11, diciembre: 12 };
+    function fechaML(v) {
+      if (v == null || v === '') return null;
+      if (v instanceof Date) return v.toISOString();
+      if (typeof v === 'number') { const d = new Date(Math.round((v - 25569) * 864e5)); return isNaN(d) ? null : d.toISOString(); }
+      const s = sinAcento(v); let m = s.match(/(\d{1,2}) de ([a-z]+) de (\d{4})(?:\D+(\d{1,2}):(\d{2}))?/);
+      if (m && MESES[m[2]]) return new Date(+m[3], MESES[m[2]] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)).toISOString();
+      m = s.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:\D+(\d{1,2}):(\d{2}))?/);
+      if (m) { const y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; return new Date(y, +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)).toISOString(); }
+      const d = new Date(v); return isNaN(d) ? null : d.toISOString();
+    }
+    function leerHoja(aoa) {
+      // ¿Excel trabajado del tablero (vinculación)?
+      for (let r = 0; r < Math.min(aoa.length, 5); r++) {
+        const H = (aoa[r] || []).map((x) => String(x == null ? '' : x).trim());
+        const iP = H.indexOf('Publicación ML'), iC = H.indexOf('Código de inventario (escriba aquí)');
+        const iC2 = H.indexOf('Código'), iP2 = H.indexOf('Publicación ML (escriba si ya está publicada)');
+        if (iP >= 0 && iC >= 0) return { tipo: 'vinc', filas: aoa.slice(r + 1).map((f) => ({ item: f[iP], codigo: f[iC] })) };
+        if (iC2 >= 0 && iP2 >= 0) return { tipo: 'vinc', filas: aoa.slice(r + 1).map((f) => ({ item: f[iP2], codigo: f[iC2] })) };
+      }
+      // archivo de Mercado Libre: buscar la columna con números de publicación MLV…
+      const ncol = Math.max(0, ...aoa.slice(0, 400).map((f) => (f || []).length));
+      let col = -1, best = 0;
+      for (let c = 0; c < ncol; c++) { let n = 0; for (let r = 0; r < Math.min(aoa.length, 400); r++) if (esId((aoa[r] || [])[c])) n++; if (n > best) { best = n; col = c; } }
+      let hdr = -1, hdrTxt = [];
+      const buscarCab = (desde) => { for (let r = desde; r >= 0; r--) { const f = (aoa[r] || []).map(sinAcento); if (f.filter((x) => x && !/^\d+([.,]\d+)?$/.test(x)).length >= 3) return r; } return -1; };
+      if (col >= 0) { let first = aoa.findIndex((f) => esId((f || [])[col])); hdr = buscarCab(first - 1); }
+      else { for (let r = 0; r < Math.min(aoa.length, 15); r++) { const f = (aoa[r] || []).map(sinAcento); if (f.some((x) => /venta/.test(x)) && f.some((x) => /unidades|cantidad/.test(x))) { hdr = r; break; } } }
+      if (hdr < 0 && col < 0) return null;
+      hdrTxt = hdr >= 0 ? (aoa[hdr] || []).map(sinAcento) : [];
+      const find = (re, no) => hdrTxt.findIndex((h) => h && re.test(h) && !(no && no.test(h)));
+      const esVentas = hdrTxt.some((h) => /^#? ?(de )?venta|n(umero|ro\.?|°)? de venta|id de (la )?venta|^venta$/.test(h)) && hdrTxt.some((h) => /unidades|cantidad/.test(h));
+      const datos = aoa.slice(hdr + 1).filter((f) => f && f.some((x) => x != null && String(x).trim() !== ''));
+      if (esVentas) {
+        const iV = find(/^#? ?(de )?venta|n(umero|ro\.?|°)? de venta|id de (la )?venta|^venta$/), iF = find(/fecha/), iU = find(/unidades|cantidad/), iT = find(/ingresos por productos|total|monto|ingresos/, /envio|cargo|impuesto/),
+          iP = col >= 0 ? col : find(/publicacion/), iS = find(/sku/), iTi = find(/titulo/), iPr = find(/precio unitario|precio de venta|precio/), iE = find(/estado/), iM = find(/moneda/);
+        const v = datos.map((f) => ({ venta_id: String(f[iV] == null ? '' : f[iV]).replace(/\.0$/, '').trim(), item_id: iP >= 0 && esId(f[iP]) ? idML(f[iP]) : '', sku: iS >= 0 ? String(f[iS] == null ? '' : f[iS]).trim() || null : null,
+          titulo: iTi >= 0 ? String(f[iTi] || '') : null, fecha: iF >= 0 ? fechaML(f[iF]) : null, cantidad: iU >= 0 ? pn(f[iU]) : null, total: iT >= 0 ? pn(f[iT]) : null, precio: iPr >= 0 ? pn(f[iPr]) : null,
+          moneda: iM >= 0 ? String(f[iM] || '') : null, estado: iE >= 0 ? String(f[iE] || '') : null })).filter((x) => x.venta_id && /\d/.test(x.venta_id));
+        return v.length ? { tipo: 'ventas', filas: v } : null;
+      }
+      if (col < 0) return null;
+      const iS = find(/sku/) >= 0 ? find(/sku/) : find(/codigo|referencia/, /publicacion|barra|universal|gtin|ean|upc/), iTi = find(/titulo|title/), iPr = find(/precio|price/, /costo|envio/),
+        iM = find(/moneda|currency/), iSt = find(/stock|disponible|cantidad/, /vendid/), iVe = find(/vendid/), iE = find(/estado|status/), iL = find(/link|url|enlace/), iTp = find(/tipo de publicacion|exposicion|listing/);
+      const vistos = new Set();
+      const p = datos.filter((f) => esId(f[col])).map((f) => ({ item_id: idML(f[col]), sku: iS >= 0 && f[iS] != null && String(f[iS]).trim() ? String(f[iS]).trim() : null, titulo: iTi >= 0 ? String(f[iTi] || '') : '',
+        precio: iPr >= 0 ? pn(f[iPr]) : null, moneda: iM >= 0 ? String(f[iM] || '') : null, stock: iSt >= 0 ? pn(f[iSt]) : null, vendidos: iVe >= 0 ? pn(f[iVe]) : null, estado: iE >= 0 ? String(f[iE] || '') : null,
+        tipo: iTp >= 0 ? String(f[iTp] || '') : null, permalink: iL >= 0 ? String(f[iL] || '') : null })).filter((x) => !vistos.has(x.item_id) && vistos.add(x.item_id));
+      return p.length ? { tipo: 'publicaciones', filas: p } : null;
+    }
+    async function guardarLotes(tabla, filas, conflicto) {
+      for (let i = 0; i < filas.length; i += 500) ok(await sb.from(tabla).upsert(filas.slice(i, i + 500), { onConflict: conflicto }));
+    }
+    async function subir(files) {
+      if (!puede()) return msg($('ml-msg'), 'Solo un Responsable o Administrador puede cargar datos de Mercado Libre.', 'err');
+      if (!window.XLSX) return msg($('ml-msg'), 'No cargó el componente de Excel. Revise su internet.', 'err');
+      msg($('ml-msg'), 'Leyendo ' + files.length + ' archivo(s)…');
+      const pubs = new Map(), ventas = new Map(), vinc = [], nombres = [], ignorados = [];
+      for (const f of files) {
+        const wb = XLSX.read(await f.arrayBuffer(), { type: 'array', cellDates: true });
+        let usado = false;
+        wb.SheetNames.forEach((n) => {
+          const r = leerHoja(XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null })); if (!r) return; usado = true;
+          if (r.tipo === 'publicaciones') r.filas.forEach((x) => pubs.set(x.item_id, x));
+          else if (r.tipo === 'ventas') r.filas.forEach((x) => ventas.set(x.venta_id + '|' + x.item_id, x));
+          else vinc.push(...r.filas);
+        });
+        (usado ? nombres : ignorados).push(f.name);
+      }
+      if (!pubs.size && !ventas.size && !vinc.length) return msg($('ml-msg'), 'No se reconoció ningún dato de Mercado Libre en ' + files.map((f) => f.name).join(', ') + '. Descargue desde Mercado Libre el listado de publicaciones (o de ventas) en Excel.', 'err');
+      const quien = YO.nombre + ' <' + YO.correo + '>', ahora = new Date().toISOString(), partes = [];
+      try {
+        if (pubs.size) {
+          if (!confirm('Se reemplazarán las publicaciones guardadas por las ' + pubs.size + ' del archivo. ¿Continuar?')) return msg($('ml-msg'), 'Carga cancelada.');
+          ok(await sb.from('ml_publicaciones').delete().eq('empresa_id', EMPRESA));
+          await guardarLotes('ml_publicaciones', [...pubs.values()].map((x) => ({ empresa_id: EMPRESA, ...x, origen: 'EXCEL', archivo: nombres.join(', ').slice(0, 300), cargado_en: ahora, cargado_por: quien })), 'empresa_id,item_id');
+          partes.push(pubs.size + ' publicaciones');
+        }
+        if (ventas.size) { await guardarLotes('ml_ventas', [...ventas.values()].map((x) => ({ empresa_id: EMPRESA, ...x, origen: 'EXCEL', cargado_en: ahora })), 'empresa_id,venta_id,item_id'); partes.push(ventas.size + ' líneas de venta'); }
+        if (vinc.length) {
+          const inv = {}; SERVER.articulos.forEach((a) => { inv[norm(a.codigo)] = a.codigo; });
+          const val = [], malos = [];
+          vinc.forEach((v) => { if (!v.item || !String(v.item).trim() || v.codigo == null || !String(v.codigo).trim()) return; String(v.item).split(/[,;\s]+/).filter(esId).forEach((it) => { const c = inv[norm(v.codigo)]; if (c) val.push({ empresa_id: EMPRESA, item_id: idML(it), codigo: c, vinculado_por: quien, vinculado_en: ahora }); else malos.push(String(v.codigo)); }); });
+          if (val.length) await guardarLotes('ml_vinculos', val, 'empresa_id,item_id');
+          partes.push(val.length + ' vínculos publicación ↔ código' + (malos.length ? ' (no existen en el inventario: ' + [...new Set(malos)].slice(0, 8).join(', ') + ')' : ''));
+        }
+        if (pubs.size || ventas.size) ok(await sb.from('ml_estado').upsert({ empresa_id: EMPRESA, origen: 'EXCEL', ultima_sync: ahora, ...(pubs.size ? { publicaciones: pubs.size } : {}), ...(ventas.size ? { ventas: ventas.size } : {}), mensaje: 'Archivo: ' + nombres.join(', ').slice(0, 200) + ' · por ' + YO.nombre }, { onConflict: 'empresa_id' }));
+        bitacora('CARGA MERCADO LIBRE', partes.join(' · ') + ' · ' + nombres.join(', '));
+        await recargar();
+        msg($('ml-msg'), 'Cargado: ' + partes.join(' · ') + '.' + (ignorados.length ? ' Sin datos reconocibles: ' + ignorados.join(', ') + '.' : ''), 'ok');
+      } catch (e) { msg($('ml-msg'), e.message, 'err'); }
+    }
+    async function leerML() {
+      try {
+        const [p, v, k, e] = await Promise.all([
+          todas(() => sb.from('ml_publicaciones').select('*').eq('empresa_id', EMPRESA).order('item_id')),
+          todas(() => sb.from('ml_ventas').select('*').eq('empresa_id', EMPRESA).order('fecha', { ascending: false })),
+          todas(() => sb.from('ml_vinculos').select('item_id, codigo').eq('empresa_id', EMPRESA).order('item_id')),
+          sb.from('ml_estado').select('*').eq('empresa_id', EMPRESA).maybeSingle().then(ok),
+        ]);
+        return { pubs: p, ventas: v, vinc: k, estado: e, ok: true };
+      } catch (err) { return { pubs: [], ventas: [], vinc: [], estado: null, ok: false, error: err.message }; }
+    }
+    async function recargar() { if (!SERVER) return; SERVER.ml = await leerML(); if (!$('v-ml').hidden) pintar(); else contador(); }
+    // eventos
+    $('ml-subir-b').addEventListener('click', () => $('ml-file').click());
+    $('ml-file').addEventListener('change', (e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) subir(f); });
+    $('ml-conectar').addEventListener('click', () => window.open(CONEXION, '_blank', 'noopener'));
+    $('ml-abrir').addEventListener('click', () => bitacora('ABRIR MERCADO LIBRE', ''));
+    ['ml-ver', 'ml-fam'].forEach((i) => $(i).addEventListener('change', () => { st.sort = null; pintar(); }));
+    $('ml-q').addEventListener('input', tabla);
+    [['ml-com', 'com'], ['ml-min', 'min'], ['ml-tasa', 'tasa']].forEach(([i, k]) => $(i).addEventListener('change', () => { LS.set(k, $(i).value); pintar(); }));
+    $('ml-bajar-vista').addEventListener('click', bajarVista);
+    $('ml-bajar-todo').addEventListener('click', bajarTodo);
+    dash.onData(() => { if (!SERVER) return; if (!$('v-ml').hidden) pintar(); else contador(); });
+    return { pintar, contador, recargar, leerML, _leerHoja: leerHoja, _conciliar: conciliar };
   })();
 
   // ---------- descargar en Excel lo que el usuario elija ----------
