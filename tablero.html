@@ -97,6 +97,48 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-rbar .f>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ml-rbar .t{height:.6rem;background:var(--color-border,#e3e5e8);border-radius:99px;overflow:hidden}.ml-rbar .t i{display:block;height:100%;background:var(--brand-red,#c8102e);border-radius:99px}
 .ml-rbar .f>span:last-child{font-variant-numeric:tabular-nums;color:var(--color-fg-muted);white-space:nowrap}
 @media (max-width:600px){.ml-rk{grid-template-columns:1fr 1fr;gap:.5rem}.ml-rk div{padding:.6rem .7rem}.ml-rk b{font-size:1.2rem}.ml-rbar .f{grid-template-columns:minmax(0,6.5rem) minmax(2.5rem,1fr) auto;font-size:.74rem}}
+.ml-hero{background:linear-gradient(100deg,#fff9c4 0%,#fffde7 55%,transparent 100%);border:1px solid #f1e38a;border-radius:14px;padding:1rem 1.1rem;margin-bottom:1rem}
+.ml-hero-t{display:flex;gap:.85rem;align-items:center}.ml-hero-t .sh-sub{margin:.15rem 0 0}.ml-logo{flex:none;display:inline-flex}
+.ml-svg{width:1.1em;height:1.1em;flex:none}
+.ml-ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:1rem;margin:0 0 1rem}
+.ml-cc{position:relative;background:var(--color-bg,#fff);border:1px solid var(--color-border,#e3e5e8);border-radius:14px;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.3rem;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.ml-cc-h{display:flex;align-items:center;gap:.55rem;font-size:.82rem;font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:.03em}
+.ml-cc-i{display:inline-flex;align-items:center;justify-content:center;width:2.1rem;height:2.1rem;border-radius:50%;background:#eef0f6;color:#2d3277}.ml-cc-i .ml-svg{width:1.15rem;height:1.15rem}
+.ml-cc-v{font-family:var(--font-anthropic-serif);font-size:1.75rem;line-height:1.2;margin:.2rem 0}
+.ml-cc-l{font-size:.85rem;line-height:1.35}.ml-cc-l.bad{color:var(--color-bad)}.ml-cc-l.ok{color:var(--color-ok)}.ml-cc-l.warn{color:#a86b00}.ml-cc-l.muted{color:var(--color-fg-muted)}
+.ml-cc-a{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}.ml-cc-btn{text-decoration:none;font-size:.82rem;padding:.35rem .7rem}
+.ml-cc-p{margin-top:auto;padding-top:.5rem;font-size:.72rem;color:var(--color-fg-muted)}
+.ml-cc.bien{border-top:5px solid var(--color-ok)}.ml-cc.bien .ml-cc-i{background:#e3f4ea;color:var(--color-ok)}.ml-cc.bien .ml-cc-v{color:var(--color-ok)}
+.ml-cc.mal{border-top:5px solid var(--color-bad);background:linear-gradient(180deg,#fff1f2 0,var(--color-bg,#fff) 60%)}.ml-cc.mal .ml-cc-i{background:#fde2e4;color:var(--color-bad)}.ml-cc.mal .ml-cc-v{color:var(--color-bad);font-weight:600}
+.ml-cc.aviso{border-top:5px solid #e8a400}.ml-cc.aviso .ml-cc-i{background:#fff4d6;color:#a86b00}
+.ml-cc.neutro{border-top:5px solid #c9ced8}
+.ml-cc.pulso .ml-cc-i{animation:mlpulso 1.6s ease-in-out infinite}@keyframes mlpulso{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,.45)}50%{box-shadow:0 0 0 8px rgba(200,16,46,0)}}
+@media (prefers-reduced-motion:reduce){.ml-cc.pulso .ml-cc-i{animation:none}}
+.ml-alertas{background:var(--color-bg,#fff);border:1px solid var(--color-border,#e3e5e8);border-radius:14px;padding:.9rem 1rem;margin:0 0 1rem}
+.ml-al-h{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .75rem;margin-bottom:.6rem}.ml-al-h .ml-svg{color:#e8a400;width:1.3rem;height:1.3rem}.ml-al-h b{font-size:1rem}
+.ml-al-c{font-size:.75rem;padding:.12rem .55rem;border-radius:99px;font-weight:600}.ml-al-c.mal{background:#fde2e4;color:var(--color-bad)}.ml-al-c.aviso{background:#fff4d6;color:#8a5a00}
+.ml-al-l{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+.ml-al{display:flex;align-items:flex-start;gap:.6rem;padding:.55rem .7rem;border-radius:10px;font-size:.88rem;line-height:1.4;border-left:4px solid transparent}
+.ml-al-i{display:inline-flex;margin-top:.1rem}.ml-al-t{flex:1}.ml-al-a{white-space:nowrap;font-weight:600;font-size:.82rem;text-decoration:none}
+.ml-al.mal{background:#fff1f2;border-left-color:var(--color-bad)}.ml-al.mal .ml-al-i{color:var(--color-bad)}.ml-al.mal .ml-al-a{color:var(--color-bad)}
+.ml-al.aviso{background:#fffaeb;border-left-color:#e8a400}.ml-al.aviso .ml-al-i{color:#a86b00}.ml-al.aviso .ml-al-a{color:#8a5a00}
+.ml-al.info{background:#f2f4fa;border-left-color:#2d3277}.ml-al.info .ml-al-i{color:#2d3277}
+.ml-al.bien{background:#eef8f2;border-left-color:var(--color-ok)}.ml-al.bien .ml-al-i{color:var(--color-ok)}
+.ml-deuda-f{margin:0 0 1rem;border:2px solid #e8a400}.ml-deuda-f h3{margin:0 0 .25rem}
+.ml-df{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:.6rem 1rem;margin-top:.6rem}.ml-df label{display:flex;flex-direction:column;gap:.25rem;font-size:.8rem;color:var(--color-fg-muted)}.ml-df-w{grid-column:1/-1}
+.ml-vend{margin:0 0 1rem;border-top:5px solid #2d3277}
+.ml-vhead{display:flex;flex-wrap:wrap;gap:.75rem 1rem;align-items:center;justify-content:space-between;margin-bottom:.75rem}.ml-vhead h3{margin:0;display:flex;align-items:center;gap:.5rem}
+.ml-ic-b::before{content:"";display:inline-block;width:.9rem;height:.9rem;border-radius:3px;background:linear-gradient(135deg,#2d3277,#c8102e)}
+.ml-seg{display:inline-flex;border:1px solid var(--color-border,#d5dbe1);border-radius:99px;overflow:hidden}.ml-seg button{font:inherit;font-size:.82rem;border:0;background:transparent;padding:.35rem .85rem;cursor:pointer;color:var(--color-fg-muted)}.ml-seg button.on{background:#2d3277;color:#fff}
+.ml-vk{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:.75rem;margin-bottom:1rem}
+.ml-vk-c{border:1px solid var(--color-border,#e3e5e8);border-radius:10px;padding:.7rem .85rem;background:var(--color-bg-subtle,#f7f8fa)}.ml-vk-c b{display:block;font-family:var(--font-anthropic-serif);font-size:1.45rem;font-weight:400;margin:.25rem 0 .15rem}
+.ml-vk-h{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--color-fg-muted)}.ml-vk-s{font-size:.75rem;color:var(--color-fg-muted)}
+.ml-vk-c.bien{background:#eef8f2;border-color:#cfe9d9}.ml-vk-c.bien b,.ml-vk-c.bien .ml-vk-h{color:var(--color-ok)}.ml-vk-c.mal{background:#fff1f2;border-color:#f6cdd2}.ml-vk-c.mal b,.ml-vk-c.mal .ml-vk-h{color:var(--color-bad)}
+.ml-vchart{margin:.25rem 0 1rem}.ml-vsvg{width:100%;height:220px;display:block}.ml-vx{font-size:11px;fill:var(--color-fg-muted)}.ml-vv{font-size:12px;fill:var(--color-fg,#1f2328);font-weight:600}
+.ml-vley{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.76rem;color:var(--color-fg-muted);margin-top:.35rem}.ml-vley span{display:inline-flex;align-items:center;gap:.35rem}.ml-vley i{display:inline-block;width:.75rem;height:.75rem;border-radius:3px}
+.ml-ti{display:inline-flex;vertical-align:-.15em;margin-right:.4rem;color:var(--tt-ink,#2b2f36)}#ml-tiles .alerta .ml-ti{color:var(--color-bad)}#ml-tiles .ok .ml-ti{color:var(--color-ok)}
+#n-mlb.urg{background:var(--color-bad);animation:mlpulso 1.6s ease-in-out infinite}
+@media (max-width:600px){.ml-hero-t .ml-logo svg{width:32px;height:32px}.ml-cc-v{font-size:1.45rem}.ml-vsvg{height:170px}.ml-vx{font-size:16px}.ml-al{font-size:.82rem}.ml-vk{grid-template-columns:1fr 1fr;gap:.5rem}.ml-vk-c b{font-size:1.15rem}#ml-vtabla td:first-child{white-space:nowrap}}
 .ml-graf{margin-top:1rem}.ml-tile.on{outline:2px solid var(--brand-red)}.ml-tile{cursor:pointer;text-align:left;font:inherit}
 .tt-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem}
 .u-perfiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;margin:0 0 1rem}
@@ -406,15 +448,45 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 
   <!-- MERCADO LIBRE -->
   <section class="sh-view" id="v-ml" hidden>
-    <div class="ml-head">
+    <div class="ml-head ml-hero">
+      <div class="ml-hero-t"><span class="ml-logo" aria-hidden="true"><svg viewBox="0 0 48 48" width="40" height="40"><ellipse cx="24" cy="24" rx="22" ry="15" fill="#2d3277"/><ellipse cx="24" cy="24" rx="19" ry="12.5" fill="#ffe600"/><path d="M11 24c3-3 6-4 9-3l4 2 4-2c3-1 6 0 9 3-2 3-5 5-9 4l-4-2-4 2c-4 1-7-1-9-4z" fill="#2d3277"/></svg></span>
       <div><h2 class="sh-h2">Mercado Libre</h2>
-      <p class="sh-sub">Qué del inventario está publicado, qué falta por publicar, si el precio de Mercado Libre cubre el costo y cómo van las ventas. Cuenta: <b>supplypartsjota@gmail.com</b>.</p></div>
+      <p class="sh-sub">Control de la cuenta, pagos, preguntas, ventas y qué del inventario falta por publicar. Cuenta: <b>supplypartsjota@gmail.com</b> (LIMPIEZAINC).</p></div></div>
       <div class="ml-acc">
-        <a class="sh-btn" id="ml-abrir" href="https://www.mercadolibre.com.ve/publicaciones/listado" target="_blank" rel="noopener">Abrir mi cuenta de Mercado Libre ↗</a>
+        <a class="sh-btn" id="ml-abrir" href="https://vendedores.mercadolibre.com.ve/publicaciones" target="_blank" rel="noopener">Abrir mi cuenta de Mercado Libre ↗</a>
         <button class="sh-btn lt ml-resp" id="ml-subir-b" type="button">Subir archivo de Mercado Libre</button>
         <input type="file" id="ml-file" accept=".xlsx,.xls,.csv" multiple hidden>
         <button class="sh-btn lt ml-resp" id="ml-conectar" type="button">Conexión automática</button>
       </div>
+    </div>
+    <div class="ml-ctrl" id="ml-ctrl" aria-live="polite"></div>
+    <form class="tt-card ml-deuda-f" id="ml-deuda-f" hidden>
+      <h3>Actualizar estado de cuenta y deuda con Mercado Libre</h3>
+      <p class="tt-note">Copie los montos de Mercado Libre › Facturación. Queda registrado en la Bitácora con su nombre.</p>
+      <div class="ml-df">
+        <label>Estado de la cuenta<select class="tt-in" id="mld-est"><option value="ACTIVA">Activa</option><option value="SUSPENDIDA">Suspendida por falta de pago</option><option value="RESTRINGIDA">Con restricciones</option></select></label>
+        <label>Deuda vencida (Bs.)<input class="tt-in" id="mld-v" type="number" min="0" step="0.01"></label>
+        <label>Venció el<input class="tt-in" id="mld-vf" type="date"></label>
+        <label>Factura en curso (Bs.)<input class="tt-in" id="mld-c" type="number" min="0" step="0.01"></label>
+        <label>Vence el<input class="tt-in" id="mld-cf" type="date"></label>
+        <label class="ml-df-w">Nota<input class="tt-in" id="mld-m" maxlength="300" placeholder="Ej.: pagado por transferencia, referencia 1234"></label>
+      </div>
+      <div class="sh-row" style="gap:.5rem;flex-wrap:wrap;margin-top:.75rem"><button class="sh-btn" type="submit">Guardar</button><button class="sh-btn lt" type="button" id="mld-pagado">✔ Marcar todo como pagado</button><button class="sh-btn lt" type="button" id="mld-cancel">Cancelar</button></div>
+    </form>
+    <div class="ml-alertas" id="ml-alertas"></div>
+    <div class="tt-card ml-vend" id="ml-vend">
+      <div class="ml-vhead">
+        <h3><span class="ml-ic ml-ic-b" aria-hidden="true"></span> Seguimiento de ventas en Mercado Libre</h3>
+        <div class="sh-row" style="gap:.5rem;flex-wrap:wrap;align-items:center">
+          <div class="ml-seg" id="ml-v-per" role="group" aria-label="Periodo"><button type="button" data-v="mes" class="on">Mensual</button><button type="button" data-v="anio">Anual</button></div>
+          <div class="ml-seg" id="ml-v-mon" role="group" aria-label="Moneda"><button type="button" data-v="usd" class="on">US$</button><button type="button" data-v="bs">Bs.</button></div>
+          <button class="sh-btn lt" type="button" id="ml-v-bajar">Descargar Excel</button>
+        </div>
+      </div>
+      <div class="ml-vk" id="ml-vk"></div>
+      <div class="ml-vchart" id="ml-vchart"></div>
+      <div class="tt-scroll" style="max-height:30rem"><table class="tt-t" id="ml-vtabla"><thead><tr></tr></thead><tbody></tbody></table></div>
+      <p class="tt-note" id="ml-vnota"></p>
     </div>
     <div class="sh-banner ml-estado" id="ml-estado"></div>
     <div class="sh-msg" id="ml-msg" role="status"></div>
@@ -455,8 +527,8 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
       </div>
       <div class="tt-scroll" style="max-height:34rem"><table class="tt-t" id="ml-tabla"><thead><tr></tr></thead><tbody></tbody></table></div>
     </div>
-    <div class="tt-grid2 ml-graf">
-      <div class="tt-card"><h3>Ventas en Mercado Libre por mes</h3><div class="tt-scroll"><table class="tt-t" id="ml-meses"><thead><tr><th>Mes</th><th class="n">Ventas</th><th class="n">Unidades</th><th class="n">Monto US$</th><th class="n">Costo US$</th><th class="n">Margen</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="tt-grid2 ml-graf" id="ml-graf">
+      <div class="tt-card"><h3>Ventas por mes (detalle de órdenes)</h3><div class="tt-scroll"><table class="tt-t" id="ml-meses"><thead><tr><th>Mes</th><th class="n">Ventas</th><th class="n">Unidades</th><th class="n">Monto US$</th><th class="n">Costo US$</th><th class="n">Margen</th></tr></thead><tbody></tbody></table></div></div>
       <div class="tt-card"><h3>Más vendidos en Mercado Libre</h3><div class="tt-scroll"><table class="tt-t" id="ml-top"><thead><tr><th>Código</th><th>Título</th><th class="n">Unid.</th><th class="n">Monto US$</th><th class="n">Stock</th></tr></thead><tbody></tbody></table></div></div>
     </div>
   </section>
@@ -3219,9 +3291,10 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
     }
     function contador() {
       const r = conciliar(); const b = $('n-mlb'); if (!b) return;
-      const n = r && r.k.hay ? r.k.np.length + r.k.bc.length + r.k.ss.length : 0;
+      const es = (r && r.ml.estado) || {}; const n = (r && r.k.hay ? r.k.np.length + r.k.bc.length + r.k.ss.length : 0) + (es.cuenta_estado && es.cuenta_estado !== 'ACTIVA' ? 1 : 0) + (Number(es.deuda_vencida) > 0 ? 1 : 0) + (es.preguntas_pendientes > 0 ? es.preguntas_pendientes : 0);
+      b.classList.toggle('urg', !!(es.cuenta_estado && es.cuenta_estado !== 'ACTIVA') || es.preguntas_pendientes > 0);
       b.hidden = !n; b.textContent = n > 999 ? '999+' : n;
-      $('n-ml').title = r && r.k.hay ? n + ' alertas de Mercado Libre (no publicados, bajo costo, sin stock)' : 'Mercado Libre: todavía no hay datos cargados';
+      $('n-ml').title = n ? n + ' alertas de Mercado Libre' + (es.cuenta_estado && es.cuenta_estado !== 'ACTIVA' ? ' · CUENTA ' + es.cuenta_estado : '') : 'Mercado Libre';
     }
     const filas = (v) => (v === 'np' ? R.k.np : v === 'pa' ? R.k.pa : v === 'vt' ? R.ventas : v === 'todas' ? R.pubs : R.k[v] || []);
     function estadoTxt() {
@@ -3250,7 +3323,8 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       ];
       L.forEach(([id, t, val, sub, cls]) => {
         const d = document.createElement('button'); d.type = 'button'; d.className = 'sh-lctile ml-tile ' + cls + (v === id ? ' on' : '');
-        [['k', t], ['v', val], ['s', sub]].forEach(([c, x]) => { const s = document.createElement('span'); s.className = c; s.textContent = x; d.appendChild(s); });
+        const TI = { np: 'tienda', todas: 'grafico', ok: 'ok', bc: 'alerta', mb: 'dinero', ss: 'alerta', vt: 'grafico', sv: 'info' };
+        [['k', t], ['v', val], ['s', sub]].forEach(([c, x]) => { const s = document.createElement('span'); s.className = c; if (c === 'k') { const ic = document.createElement('span'); ic.className = 'ml-ti'; ic.appendChild(ico(TI[id] || 'info')); s.appendChild(ic); s.append(x); } else s.textContent = x; d.appendChild(s); });
         d.addEventListener('click', () => { $('ml-ver').value = id; pintar(); }); el.appendChild(d);
       });
     }
@@ -3349,6 +3423,188 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       Object.values(P).sort((a, b) => b.u - a.u).slice(0, 15).forEach((o) => { const tr = document.createElement('tr'); [o.codigo, o.titulo, T.fmt.num(o.u), T.fmt.usd0(o.t), o.stock == null ? '—' : T.fmt.num(o.stock)].forEach((x, i) => { const td = document.createElement('td'); td.textContent = x; if (i >= 2) td.className = 'n'; if (!i) td.classList.add('code'); tr.appendChild(td); }); tt.appendChild(tr); });
       if (!tt.children.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 5; td.textContent = 'Sin ventas cargadas todavía.'; tr.appendChild(td); tt.appendChild(tr); }
     }
+    // ---------- control de cuenta, deuda, preguntas, alertas y seguimiento de ventas ----------
+    const ICO = {
+      ok: '<path d="M20 6 9 17l-5-5"/>', stop: '<circle cx="12" cy="12" r="9"/><path d="m5.7 5.7 12.6 12.6"/>', alerta: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+      dinero: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>', campana: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+      chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', grafico: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/>', reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      tienda: '<path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/>', info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>', sube: '<path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/>', baja: '<path d="m3 7 6 6 4-4 8 8"/><path d="M14 17h7v-7"/>',
+    };
+    const ico = (n, cls) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.setAttribute('aria-hidden', 'true'); s.classList.add('ml-svg'); if (cls) s.classList.add(cls); s.innerHTML = ICO[n] || ''; return s; };
+    const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+    const bsf = (x) => 'Bs. ' + Number(x || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const bs0 = (x) => 'Bs. ' + Math.round(Number(x || 0)).toLocaleString('es-VE');
+    const hoy0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+    const dias = (f) => (f ? Math.round((new Date(String(f).slice(0, 10) + 'T00:00:00') - hoy0()) / 864e5) : null);
+    const ffecha = (f) => (f ? new Date(String(f).slice(0, 10) + 'T12:00:00').toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
+    const hace = (ts) => { if (!ts) return ''; const m = Math.max(0, Math.round((Date.now() - Date.parse(ts)) / 6e4)); return m < 60 ? m + ' min' : m < 1440 ? Math.round(m / 60) + ' h' : Math.round(m / 1440) + ' días'; };
+    const MESES_C = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const nomMes = (m) => MESES_C[Number(m.slice(5, 7)) - 1] + ' ' + m.slice(2, 4);
+    const mesHoy = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+    const vst = { per: 'mes', mon: 'usd' };
+    function tasaHoy() { const A = aj(); if (A.tasa) return A.tasa; const vm = (R && R.ml.vmes) || []; const u = vm.filter((m) => m.tasa).slice(-1)[0]; return u ? Number(u.tasa) : 0; }
+    function mesesVenta() { return ((R && R.ml.vmes) || []).slice().sort((a, b) => a.mes.localeCompare(b.mes)).map((m) => ({ ...m, usd: m.monto_usd != null ? Number(m.monto_usd) : (m.tasa ? m.monto_bs / m.tasa : null), bs: Number(m.monto_bs || 0) })); }
+
+    function ctrl() {
+      const el = $('ml-ctrl'); el.replaceChildren(); const e = (R && R.ml.estado) || {}, T = window.TT;
+      const card = (cls, icon, titulo, val, lineas, pie, acciones) => {
+        const c = mk('div', 'ml-cc ' + cls); const h = mk('div', 'ml-cc-h'); const ic = mk('span', 'ml-cc-i'); ic.appendChild(ico(icon)); h.append(ic, mk('span', 'ml-cc-t', titulo)); c.appendChild(h);
+        c.appendChild(mk('div', 'ml-cc-v', val)); (lineas || []).forEach(([t, k]) => { const p = mk('div', 'ml-cc-l' + (k ? ' ' + k : '')); p.textContent = t; c.appendChild(p); });
+        if (acciones && acciones.length) { const a = mk('div', 'ml-cc-a'); acciones.forEach((x) => a.appendChild(x)); c.appendChild(a); }
+        if (pie) c.appendChild(mk('div', 'ml-cc-p', pie)); el.appendChild(c); return c; };
+      const link = (txt, href) => { const a = mk('a', 'sh-btn ml-cc-btn', txt); a.href = href; a.target = '_blank'; a.rel = 'noopener'; return a; };
+      // 1. estado de la cuenta
+      const est = e.cuenta_estado || '';
+      if (!est) card('neutro', 'info', 'Estado de la cuenta', 'Sin revisar', [['Todavía no se ha registrado el estado de la cuenta.']], '', puede() ? [btnDeuda()] : []);
+      else if (est === 'ACTIVA') card('bien', 'ok', 'Estado de la cuenta', 'ACTIVA', [['Las publicaciones se pueden mostrar y vender.', 'ok']], 'Revisado ' + (e.deuda_actualizada ? fmtF(e.deuda_actualizada) : '—'));
+      else card('mal pulso', 'stop', 'Estado de la cuenta', est === 'SUSPENDIDA' ? 'SUSPENDIDA' : 'CON RESTRICCIONES', [[e.cuenta_motivo || 'Mercado Libre restringió la cuenta.', 'bad'], ['Mientras no se pague, no se vende nada por Mercado Libre.', 'bad']], 'Revisado ' + (e.deuda_actualizada ? fmtF(e.deuda_actualizada) : '—'));
+      // 2. deuda
+      const dv = Number(e.deuda_vencida || 0), dc = Number(e.deuda_curso || 0), tot = dv + dc, tz = tasaHoy();
+      if (e.deuda_actualizada) {
+        const L = [];
+        if (dv > 0) { const d = dias(e.deuda_vencida_vence); L.push(['⛔ Vencida: ' + bsf(dv) + (e.deuda_vencida_vence ? ' · venció el ' + ffecha(e.deuda_vencida_vence) + (d != null && d < 0 ? ' (hace ' + -d + ' días)' : '') : ''), 'bad']); }
+        if (dc > 0) { const d = dias(e.deuda_curso_vence); L.push(['🗓 En curso: ' + bsf(dc) + (e.deuda_curso_vence ? ' · vence el ' + ffecha(e.deuda_curso_vence) + (d != null ? (d >= 0 ? ' (en ' + d + (d === 1 ? ' día)' : ' días)') : ' (VENCIDA)') : '') : ''), d != null && d <= 5 ? 'warn' : '']); }
+        if (tz && tot) L.push(['≈ ' + T.fmt.usd2(tot / tz) + ' a tasa ' + tz.toLocaleString('es-VE') + ' Bs/US$', 'muted']);
+        if (!tot) L.push(['No hay facturas pendientes con Mercado Libre.', 'ok']);
+        const acc = [link('Ir a pagar ↗', 'https://vendedores.mercadolibre.com.ve/billing/resume')]; if (puede()) acc.push(btnDeuda());
+        card(dv > 0 ? 'mal' : tot ? 'aviso' : 'bien', 'dinero', 'Deuda con Mercado Libre', tot ? bsf(tot) : 'Al día', L, 'Actualizado ' + fmtF(e.deuda_actualizada) + (e.deuda_por ? ' · ' + e.deuda_por : ''), acc);
+      } else card('neutro', 'dinero', 'Deuda con Mercado Libre', '—', [['Sin datos de facturación.']], '', puede() ? [btnDeuda()] : []);
+      // 3. preguntas
+      const pp = e.preguntas_pendientes;
+      if (pp == null) card('neutro', 'chat', 'Preguntas de compradores', '—', [['Sin revisar todavía.']], '');
+      else if (pp === 0) card('bien', 'chat', 'Preguntas de compradores', 'Todas contestadas', [['✔ No hay preguntas esperando respuesta.', 'ok'], [e.preguntas_periodo ? e.preguntas_periodo + ' preguntas en los últimos 15 días' : 'Ninguna pregunta nueva en los últimos 15 días.', 'muted']], 'Revisado ' + (e.preguntas_actualizado ? fmtF(e.preguntas_actualizado) : '—'), [link('Ver preguntas ↗', 'https://vendedores.mercadolibre.com.ve/preguntas/vendedor')]);
+      else { const h = e.pregunta_mas_antigua ? (Date.now() - Date.parse(e.pregunta_mas_antigua)) / 36e5 : null;
+        card(h == null || h > 24 ? 'mal pulso' : 'aviso', 'campana', 'Preguntas de compradores', pp + (pp === 1 ? ' sin contestar' : ' sin contestar'), [[e.pregunta_mas_antigua ? 'La más antigua espera desde hace ' + hace(e.pregunta_mas_antigua) + '.' : 'Contéstelas cuanto antes.', 'bad'], ['Responder en menos de 1 hora aumenta mucho la venta.', 'muted']],
+          'Revisado ' + (e.preguntas_actualizado ? fmtF(e.preguntas_actualizado) : '—'), [link('Contestar ahora ↗', 'https://vendedores.mercadolibre.com.ve/preguntas/vendedor')]); }
+      // 4. ventas del mes
+      const M = mesesVenta(); if (M.length) {
+        const mh = mesHoy(), cur = M.find((m) => m.mes === mh), prevY = M.find((m) => m.mes === (Number(mh.slice(0, 4)) - 1) + mh.slice(4)), ult = M.filter((m) => m.mes < mh).slice(-1)[0];
+        const L = []; if (cur) L.push([cur.ventas + ' ventas · ' + cur.unidades + ' unidades · ' + T.fmt.int(cur.visitas || 0) + ' visitas', '']);
+        if (prevY && cur && prevY.usd) { const v = cur.usd / prevY.usd - 1; L.push(['Mismo mes del año pasado: ' + T.fmt.usd0(prevY.usd) + ' (' + (v >= 0 ? '+' : '') + T.fmt.pct(v) + ')', v >= 0 ? 'ok' : 'warn']); }
+        if (ult) L.push(['Mes anterior (' + nomMes(ult.mes) + '): ' + T.fmt.usd0(ult.usd) + ' en ' + ult.ventas + ' ventas', 'muted']);
+        card(cur && cur.usd ? '' : 'aviso', 'grafico', 'Ventas de este mes', cur ? T.fmt.usd0(cur.usd) : 'US$ 0', L, 'Fuente: métricas de Mercado Libre · mes en curso');
+      }
+    }
+    function btnDeuda() { const b = mk('button', 'sh-btn lt ml-cc-btn', 'Actualizar'); b.type = 'button'; b.addEventListener('click', abrirDeuda); return b; }
+    function abrirDeuda() {
+      const e = (R && R.ml.estado) || {}, f = $('ml-deuda-f'); f.hidden = false;
+      $('mld-est').value = e.cuenta_estado || 'ACTIVA'; $('mld-v').value = e.deuda_vencida ?? ''; $('mld-vf').value = e.deuda_vencida_vence || ''; $('mld-c').value = e.deuda_curso ?? ''; $('mld-cf').value = e.deuda_curso_vence || ''; $('mld-m').value = '';
+      f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    async function guardarDeuda(ev, pagado) {
+      if (ev) ev.preventDefault(); if (!puede()) return;
+      const v = (i) => { const x = $(i).value; return x === '' ? null : x; };
+      const d = pagado ? { cuenta_estado: 'ACTIVA', cuenta_motivo: null, deuda_vencida: 0, deuda_vencida_vence: null, deuda_curso: 0, deuda_curso_vence: null }
+        : { cuenta_estado: $('mld-est').value, cuenta_motivo: $('mld-est').value === 'ACTIVA' ? null : ((R.ml.estado || {}).cuenta_motivo || 'Facturas vencidas con Mercado Libre.'), deuda_vencida: v('mld-v') == null ? null : Number(v('mld-v')), deuda_vencida_vence: v('mld-vf'), deuda_curso: v('mld-c') == null ? null : Number(v('mld-c')), deuda_curso_vence: v('mld-cf') };
+      const nota = $('mld-m').value.trim();
+      try {
+        ok(await sb.from('ml_estado').upsert({ empresa_id: EMPRESA, ...d, deuda_moneda: 'VES', deuda_actualizada: new Date().toISOString(), deuda_por: YO.nombre + (nota ? ' · ' + nota : '') }, { onConflict: 'empresa_id' }));
+        bitacora(pagado ? 'ML: DEUDA PAGADA' : 'ML: ACTUALIZÓ DEUDA', 'Estado ' + d.cuenta_estado + ' · vencida ' + bsf(d.deuda_vencida) + ' · en curso ' + bsf(d.deuda_curso) + (nota ? ' · ' + nota : ''));
+        $('ml-deuda-f').hidden = true; await recargar(); msg($('ml-msg'), pagado ? 'Registrado: deuda pagada y cuenta activa.' : 'Estado de cuenta actualizado.', 'ok');
+      } catch (err) { msg($('ml-msg'), err.message, 'err'); }
+    }
+
+    function listaAlertas() {
+      const A = [], e = (R && R.ml.estado) || {}, T = window.TT, k = R ? R.k : null, add = (nivel, icon, txt, accion) => A.push({ nivel, icon, txt, accion });
+      if (e.cuenta_estado && e.cuenta_estado !== 'ACTIVA') add('mal', 'stop', 'Cuenta ' + e.cuenta_estado.toLowerCase() + ' por falta de pago: ninguna publicación se está mostrando. Pagar ' + bsf(Number(e.deuda_vencida || 0) + Number(e.deuda_curso || 0)) + ' para reactivarla.', ['Ir a pagar', 'https://vendedores.mercadolibre.com.ve/billing/resume']);
+      if (Number(e.deuda_vencida) > 0) { const d = dias(e.deuda_vencida_vence); add('mal', 'dinero', 'Deuda vencida de ' + bsf(e.deuda_vencida) + (d != null && d < 0 ? ', lleva ' + -d + ' días vencida.' : '.')); }
+      if (Number(e.deuda_curso) > 0 && e.deuda_curso_vence) { const d = dias(e.deuda_curso_vence); if (d != null && d <= 7) add(d <= 2 ? 'mal' : 'aviso', 'reloj', 'La factura en curso de ' + bsf(e.deuda_curso) + (d >= 0 ? ' vence en ' + d + (d === 1 ? ' día' : ' días') + ' (' + ffecha(e.deuda_curso_vence) + '). Páguela a tiempo.' : ' ya venció.')); else add('info', 'reloj', 'Próxima factura: ' + bsf(e.deuda_curso) + ', vence el ' + ffecha(e.deuda_curso_vence) + '.'); }
+      if (e.deuda_actualizada && (Date.now() - Date.parse(e.deuda_actualizada)) / 864e5 > 7) add('aviso', 'info', 'El estado de cuenta tiene más de 7 días sin actualizarse. Revise la facturación en Mercado Libre.');
+      if (e.preguntas_pendientes > 0) add('mal', 'campana', e.preguntas_pendientes + ' preguntas sin contestar' + (e.pregunta_mas_antigua ? ' · la más antigua espera hace ' + hace(e.pregunta_mas_antigua) : '') + '.', ['Contestar', 'https://vendedores.mercadolibre.com.ve/preguntas/vendedor']);
+      else if (e.preguntas_pendientes === 0) add('bien', 'chat', 'Todas las preguntas están contestadas.');
+      const M = mesesVenta(), mh = mesHoy(), full = M.filter((m) => m.mes < mh && m.usd != null);
+      if (full.length >= 4) {
+        const ult = full[full.length - 1], prom3 = full.slice(-4, -1).reduce((s, m) => s + m.usd, 0) / 3, prevY = M.find((m) => m.mes === (Number(ult.mes.slice(0, 4)) - 1) + ult.mes.slice(4));
+        if (prevY && prevY.usd) { const v = ult.usd / prevY.usd - 1; add(v < -0.1 ? 'aviso' : 'bien', v < 0 ? 'baja' : 'sube', 'Ventas de ' + nomMes(ult.mes) + ': ' + T.fmt.usd0(ult.usd) + ', ' + (v >= 0 ? '+' : '') + T.fmt.pct(v) + ' contra ' + nomMes(prevY.mes) + ' (' + T.fmt.usd0(prevY.usd) + ').'); }
+        const cur = M.find((m) => m.mes === mh); if (cur && cur.usd != null) { const d = new Date(), dm = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(), proy = cur.usd / Math.max(d.getDate(), 1) * dm; if (proy < prom3 * 0.8) add('aviso', 'baja', 'Este mes va a ritmo de ' + T.fmt.usd0(proy) + ', ' + T.fmt.pct(1 - proy / prom3) + ' por debajo del promedio de los últimos 3 meses (' + T.fmt.usd0(prom3) + ').'); }
+        const v6 = full.slice(-7, -1).filter((m) => m.visitas), pv = v6.length ? v6.reduce((s, m) => s + m.visitas, 0) / v6.length : 0; if (pv && ult.visitas && ult.visitas < pv * 0.8) add('aviso', 'baja', 'Las visitas bajaron: ' + T.fmt.int(ult.visitas) + ' en ' + nomMes(ult.mes) + ' contra ' + T.fmt.int(Math.round(pv)) + ' de promedio. Revise precios, fotos y títulos.');
+        if (ult.conversion != null && ult.conversion < 1) add('aviso', 'info', 'Conversión de ' + String(ult.conversion).replace('.', ',') + '% en ' + nomMes(ult.mes) + ' (de cada 100 visitas, menos de 1 compra). Mejore precio, fotos y respuesta a preguntas.');
+        const y = Number(mh.slice(0, 4)), mm = mh.slice(5), ytd = M.filter((m) => m.mes.startsWith(y + '-') && m.mes.slice(5) <= mm).reduce((s, m) => s + (m.usd || 0), 0), ytdP = M.filter((m) => m.mes.startsWith((y - 1) + '-') && m.mes.slice(5) <= mm).reduce((s, m) => s + (m.usd || 0), 0);
+        if (ytdP) { const v = ytd / ytdP - 1; add(v < 0 ? 'aviso' : 'bien', v < 0 ? 'baja' : 'sube', 'En lo que va de ' + y + ' se ha vendido ' + T.fmt.usd0(ytd) + ', ' + (v >= 0 ? '+' : '') + T.fmt.pct(v) + ' contra el mismo periodo de ' + (y - 1) + ' (' + T.fmt.usd0(ytdP) + ').'); }
+      }
+      if (k && k.hay) {
+        if (k.np.length) add('aviso', 'tienda', T.fmt.int(k.np.length) + ' artículos con stock no están publicados (' + T.fmt.usd0(k.np.reduce((s, r) => s + (r.valor || 0), 0)) + ' a costo). Publíquelos.', ['Ver lista', '#np']);
+        if (k.bc.length) add('mal', 'alerta', T.fmt.int(k.bc.length) + ' publicaciones se venden por debajo del costo.', ['Ver lista', '#bc']);
+        if (k.ss.length) add('mal', 'alerta', T.fmt.int(k.ss.length) + ' publicaciones activas no tienen stock en el inventario.', ['Ver lista', '#ss']);
+        if (k.sv.length) add('aviso', 'info', T.fmt.int(k.sv.length) + ' publicaciones sin código del inventario: vincúlelas.', ['Ver lista', '#sv']);
+      }
+      const orden = { mal: 0, aviso: 1, info: 2, bien: 3 }; return A.sort((a, b) => orden[a.nivel] - orden[b.nivel]);
+    }
+    function alertas() {
+      const el = $('ml-alertas'); el.replaceChildren(); const L = listaAlertas(); if (!L.length) { el.hidden = true; return; } el.hidden = false;
+      const n = L.filter((a) => a.nivel === 'mal').length, w = L.filter((a) => a.nivel === 'aviso').length;
+      const h = mk('div', 'ml-al-h'); h.appendChild(ico('campana')); h.append(mk('b', null, 'Alertas tempranas'), mk('span', 'ml-al-c mal', n + ' urgentes'), mk('span', 'ml-al-c aviso', w + ' para revisar')); el.appendChild(h);
+      const ul = mk('ul', 'ml-al-l');
+      L.forEach((a) => { const li = mk('li', 'ml-al ' + a.nivel); const i = mk('span', 'ml-al-i'); i.appendChild(ico(a.icon)); li.append(i, mk('span', 'ml-al-t', a.txt));
+        if (a.accion) { const b = mk('a', 'ml-al-a', a.accion[0] + (a.accion[1].startsWith('#') ? ' ↓' : ' ↗')); b.href = a.accion[1];
+          if (a.accion[1].startsWith('#')) b.addEventListener('click', (ev) => { ev.preventDefault(); $('ml-ver').value = a.accion[1].slice(1); st.sort = null; pintar(); $('ml-ver').scrollIntoView({ behavior: 'smooth', block: 'center' }); }); else { b.target = '_blank'; b.rel = 'noopener'; } li.appendChild(b); }
+        ul.appendChild(li); });
+      el.appendChild(ul);
+    }
+
+    function vendedor() {
+      const T = window.TT, M = mesesVenta(), card = $('ml-vend'); card.hidden = !M.length; if (!M.length) return;
+      document.querySelectorAll('#ml-v-per button').forEach((b) => b.classList.toggle('on', b.dataset.v === vst.per));
+      document.querySelectorAll('#ml-v-mon button').forEach((b) => b.classList.toggle('on', b.dataset.v === vst.mon));
+      const usd = vst.mon === 'usd', val = (m) => (usd ? m.usd : m.bs), fm = (x) => (x == null ? '—' : usd ? T.fmt.usd0(x) : bs0(x)), mh = mesHoy();
+      const desde = (() => { const d = new Date(); return (d.getFullYear() - 2) + '-' + String(d.getMonth() + 1).padStart(2, '0'); })();
+      const ult24 = M.filter((m) => m.mes > desde);
+      // KPIs
+      const kel = $('ml-vk'); kel.replaceChildren(); const y = Number(mh.slice(0, 4)), mm = mh.slice(5);
+      const suma = (L, f) => L.reduce((s, m) => s + (Number(f(m)) || 0), 0);
+      const ytd = M.filter((m) => m.mes.startsWith(y + '-') && m.mes.slice(5) <= mm), ytdP = M.filter((m) => m.mes.startsWith((y - 1) + '-') && m.mes.slice(5) <= mm);
+      const ult12 = M.filter((m) => m.mes < mh).slice(-12), prom12 = ult12.length ? suma(ult12, val) / ult12.length : 0;
+      const mejor = M.filter((m) => m.usd != null).reduce((a, b) => (val(b) > val(a) ? b : a), M[0]);
+      const conv = ult12.filter((m) => m.visitas), cv = conv.length ? suma(conv, (m) => m.ventas) / suma(conv, (m) => m.visitas) : null;
+      const kp = (icon, t, v, s, cls) => { const d = mk('div', 'ml-vk-c ' + (cls || '')); const h = mk('div', 'ml-vk-h'); h.appendChild(ico(icon)); h.append(mk('span', null, t)); d.append(h, mk('b', null, v)); if (s) d.appendChild(mk('span', 'ml-vk-s', s)); kel.appendChild(d); };
+      const vy = suma(ytdP, val) ? suma(ytd, val) / suma(ytdP, val) - 1 : null;
+      kp('grafico', 'Vendido en ' + y + ' (hasta hoy)', fm(suma(ytd, val)), suma(ytd, (m) => m.ventas) + ' ventas · ' + suma(ytd, (m) => m.unidades) + ' unidades', '');
+      kp(vy == null ? 'info' : vy >= 0 ? 'sube' : 'baja', 'Contra ' + (y - 1) + ' (mismos meses)', vy == null ? '—' : (vy >= 0 ? '+' : '') + T.fmt.pct(vy), (y - 1) + ': ' + fm(suma(ytdP, val)), vy == null ? '' : vy >= 0 ? 'bien' : 'mal');
+      kp('reloj', 'Promedio mensual (12 meses)', fm(prom12), (ult12.length ? (suma(ult12, (m) => m.ventas) / ult12.length).toFixed(1).replace('.', ',') : '0') + ' ventas por mes', '');
+      kp('sube', 'Mejor mes', mejor ? fm(val(mejor)) : '—', mejor ? nomMes(mejor.mes) + ' · ' + mejor.ventas + ' ventas' : '', 'bien');
+      kp('tienda', 'Conversión (12 meses)', cv == null ? '—' : T.fmt.pct(cv), cv == null ? '' : 'de cada 100 visitas, ' + (cv * 100).toFixed(1).replace('.', ',') + ' compran', cv != null && cv < 0.01 ? 'mal' : '');
+      // gráfico
+      const ch = $('ml-vchart'); ch.replaceChildren();
+      const serie = vst.per === 'mes' ? ult24.map((m) => ({ k: m.mes, lab: nomMes(m.mes), v: val(m) || 0, sub: m.ventas + ' ventas', y: m.mes.slice(0, 4), cur: m.mes === mh }))
+        : [...new Set(M.map((m) => m.mes.slice(0, 4)))].map((yy) => { const L = M.filter((m) => m.mes.startsWith(yy)); return { k: yy, lab: yy + (Number(yy) === y ? ' (en curso)' : ''), v: suma(L, val), sub: suma(L, (m) => m.ventas) + ' ventas · ' + L.length + ' meses', y: yy, cur: Number(yy) === y }; });
+      const W = 960, H = 240, pad = { l: 8, r: 8, t: 22, b: 34 }, max = Math.max(...serie.map((s) => s.v), 1), bw = (W - pad.l - pad.r) / serie.length;
+      const anios = [...new Set(serie.map((s) => s.y))], col = (yy) => ['#c8102e', '#2d3277', '#9aa3b5', '#e8a400'][(anios.length - 1 - anios.indexOf(yy)) % 4];
+      let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Ventas en Mercado Libre" preserveAspectRatio="none" class="ml-vsvg">';
+      serie.forEach((s, i) => { const h = (H - pad.t - pad.b) * s.v / max, x = pad.l + i * bw + bw * 0.15, w = bw * 0.7, yy = H - pad.b - h;
+        svg += '<g><title>' + s.lab + ': ' + fm(s.v) + ' · ' + s.sub + '</title><rect x="' + x.toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + Math.max(h, 1).toFixed(1) + '" rx="3" fill="' + col(s.y) + '"' + (s.cur ? ' opacity=".55"' : '') + '/>';
+        if (serie.length <= 6 || i % (serie.length > 18 ? 2 : 1) === 0) svg += '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (H - pad.b + 14) + '" text-anchor="middle" class="ml-vx">' + s.lab + '</text>';
+        if (serie.length <= 6) svg += '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (yy - 6).toFixed(1) + '" text-anchor="middle" class="ml-vv">' + fm(s.v) + '</text>';
+        svg += '</g>'; });
+      svg += '</svg>'; ch.innerHTML = svg;
+      const ley = mk('div', 'ml-vley'); anios.forEach((yy) => { const s = mk('span'); const c = mk('i'); c.style.background = col(yy); s.append(c, document.createTextNode(yy)); ley.appendChild(s); }); if (serie.some((s) => s.cur)) ley.appendChild(mk('span', 'muted', 'barra clara = periodo en curso')); ch.appendChild(ley);
+      // tabla
+      const tbl = $('ml-vtabla'), tr = tbl.querySelector('thead tr'), tb = tbl.querySelector('tbody'); tr.replaceChildren(); tb.replaceChildren();
+      const cols = vst.per === 'mes' ? ['Mes', 'Ventas', 'Unidades', 'Monto ' + (usd ? 'US$' : 'Bs.'), usd ? 'Tasa BCV' : 'Monto US$', 'Visitas', 'Conversión', 'vs mes anterior', 'vs año anterior'] : ['Año', 'Meses', 'Ventas', 'Unidades', 'Monto ' + (usd ? 'US$' : 'Bs.'), 'Promedio mensual', 'Visitas', 'vs año anterior (mismos meses)'];
+      cols.forEach((c, i) => { const th = mk('th', i ? 'n' : '', c); tr.appendChild(th); });
+      const pct = (a, b) => (a == null || !b ? null : a / b - 1), chip = (td, v) => { if (v == null) { td.textContent = '—'; return; } T.chip(td, (v >= 0 ? '▲ +' : '▼ ') + T.fmt.pct(v), v >= 0 ? 'ok' : v > -0.15 ? 'warn' : 'bad'); };
+      const fila = (cells) => { const r = mk('tr'); cells.forEach((c, i) => { const td = mk('td', i ? 'n' : ''); if (typeof c === 'function') c(td); else td.textContent = c; r.appendChild(td); }); tb.appendChild(r); };
+      if (vst.per === 'mes') {
+        M.slice().reverse().forEach((m) => { const idx = M.indexOf(m), prev = M[idx - 1], py = M.find((x) => x.mes === (Number(m.mes.slice(0, 4)) - 1) + m.mes.slice(4));
+          fila([nomMes(m.mes) + (m.mes === mh ? ' (en curso)' : ''), T.fmt.int(m.ventas || 0), T.fmt.int(m.unidades || 0), fm(val(m)), usd ? (m.tasa ? Number(m.tasa).toLocaleString('es-VE') : '—') : (m.usd == null ? '—' : T.fmt.usd0(m.usd)), T.fmt.int(m.visitas || 0), m.conversion != null ? String(m.conversion).replace('.', ',') + '%' : '—',
+            (td) => chip(td, m.mes === mh ? null : pct(val(m), prev && val(prev))), (td) => chip(td, m.mes === mh ? null : pct(val(m), py && val(py)))]); });
+      } else {
+        const ys = [...new Set(M.map((m) => m.mes.slice(0, 4)))].sort().reverse();
+        ys.forEach((yy) => { const L = M.filter((m) => m.mes.startsWith(yy)), P0 = M.filter((m) => m.mes.startsWith((Number(yy) - 1) + '-')), mp = P0.map((m) => m.mes.slice(5)), C = L.filter((m) => mp.includes(m.mes.slice(5))), P = P0.filter((m) => C.some((c) => c.mes.slice(5) === m.mes.slice(5)));
+          const rango = C.length && C.length < L.length ? ' (' + MESES_C[Number(C[0].mes.slice(5)) - 1] + '–' + MESES_C[Number(C[C.length - 1].mes.slice(5)) - 1] + ')' : '';
+          fila([yy + (Number(yy) === y ? ' (en curso)' : ''), String(L.length), T.fmt.int(suma(L, (m) => m.ventas)), T.fmt.int(suma(L, (m) => m.unidades)), fm(suma(L, val)), fm(suma(L, val) / Math.max(L.length, 1)), T.fmt.int(suma(L, (m) => m.visitas)),
+            (td) => { chip(td, P.length ? pct(suma(C, val), suma(P, val)) : null); if (rango) td.appendChild(mk('small', 'muted', ' ' + rango)); }]); });
+      }
+      const up = M.filter((m) => m.actualizado).map((m) => m.actualizado).sort().slice(-1)[0];
+      $('ml-vnota').textContent = 'Fuente: métricas de Mercado Libre (ventas brutas en bolívares). Montos en US$ calculados con la tasa oficial BCV de mitad de cada mes. La cuenta empezó a vender en ' + nomMes(M[0].mes) + '.' + (up ? ' Actualizado: ' + fmtF(up) : '');
+    }
+    function bajarVentas() {
+      if (!window.XLSX) return; const M = mesesVenta(); const wb = XLSX.utils.book_new();
+      const a = M.map((m) => ({ Mes: m.mes, Ventas: m.ventas, Unidades: m.unidades, 'Monto Bs.': m.bs, 'Tasa BCV Bs/US$': m.tasa, 'Monto US$': m.usd == null ? '' : Math.round(m.usd * 100) / 100, Visitas: m.visitas, 'Conversión %': m.conversion, Canceladas: m.canceladas, Devueltas: m.devueltas }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(a), 'Ventas por mes');
+      const ys = [...new Set(M.map((m) => m.mes.slice(0, 4)))].sort(); const b = ys.map((yy) => { const L = M.filter((m) => m.mes.startsWith(yy)); const s = (f) => L.reduce((x, m) => x + (Number(f(m)) || 0), 0); return { Año: yy, Meses: L.length, Ventas: s((m) => m.ventas), Unidades: s((m) => m.unidades), 'Monto Bs.': s((m) => m.bs), 'Monto US$': Math.round(s((m) => m.usd) * 100) / 100, 'Promedio mensual US$': Math.round(s((m) => m.usd) / L.length * 100) / 100, Visitas: s((m) => m.visitas) }; });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(b), 'Ventas por año');
+      XLSX.writeFile(wb, 'Mercado_Libre_ventas_' + new Date().toISOString().slice(0, 10) + '.xlsx'); bitacora('DESCARGA', 'Mercado Libre · ventas por mes y año');
+    }
     function pintar() {
       if (!window.TT || !SERVER) return;
       conciliar(); contador();
@@ -3356,7 +3612,8 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       $('ml-conectar').hidden = !(YO && YO.rol === 'ADMIN');
       const A = aj(); $('ml-com').value = Math.round(A.com * 1000) / 10; $('ml-min').value = Math.round(A.min * 1000) / 10; $('ml-tasa').value = A.tasa || '';
       if (!famLlena && SERVER.articulos.length) { famLlena = true; [...new Set(SERVER.articulos.map((a) => a.familia))].sort((a, b) => a.localeCompare(b, 'es')).forEach((f) => $('ml-fam').appendChild(new Option(f, f))); }
-      estadoTxt(); tiles(); tabla(); resumenVentas();
+      estadoTxt(); ctrl(); alertas(); tiles(); tabla(); vendedor(); resumenVentas();
+      $('ml-graf').hidden = !R.ventas.length;
     }
     // ---------- descargas ----------
     const ETQ = { codigo: 'Código', descripcion: 'Descripción', familia: 'Familia', stock: 'Stock inventario', costo: 'Costo unit. US$', valor: 'Valor a costo US$', precio_lista: 'Precio de lista US$',
@@ -3505,8 +3762,11 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
           todas(() => sb.from('ml_vinculos').select('item_id, codigo').eq('empresa_id', EMPRESA).order('item_id')),
           sb.from('ml_estado').select('*').eq('empresa_id', EMPRESA).maybeSingle().then(ok),
         ]);
-        return { pubs: p, ventas: v, vinc: k, estado: e, ok: true };
-      } catch (err) { return { pubs: [], ventas: [], vinc: [], estado: null, ok: false, error: err.message }; }
+        let vm = [], pq = [];
+        try { vm = await todas(() => sb.from('ml_ventas_mes').select('*').eq('empresa_id', EMPRESA).order('mes')); } catch (x) { vm = []; }
+        try { pq = await todas(() => sb.from('ml_preguntas').select('*').eq('empresa_id', EMPRESA).eq('estado', 'UNANSWERED').order('fecha')); } catch (x) { pq = []; }
+        return { pubs: p, ventas: v, vinc: k, estado: e, vmes: vm, preguntas: pq, ok: true };
+      } catch (err) { return { pubs: [], ventas: [], vinc: [], estado: null, vmes: [], preguntas: [], ok: false, error: err.message }; }
     }
     async function recargar() { if (!SERVER) return; SERVER.ml = await leerML(); if (!$('v-ml').hidden) pintar(); else contador(); }
     // eventos
@@ -3518,6 +3778,12 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
     $('ml-q').addEventListener('input', tabla);
     [['ml-com', 'com'], ['ml-min', 'min'], ['ml-tasa', 'tasa']].forEach(([i, k]) => $(i).addEventListener('change', () => { LS.set(k, $(i).value); pintar(); }));
     $('ml-bajar-vista').addEventListener('click', bajarVista);
+    $('ml-deuda-f').addEventListener('submit', (ev) => guardarDeuda(ev, false));
+    $('mld-pagado').addEventListener('click', () => { if (confirm('¿Registrar que toda la deuda con Mercado Libre está pagada y la cuenta activa?')) guardarDeuda(null, true); });
+    $('mld-cancel').addEventListener('click', () => { $('ml-deuda-f').hidden = true; });
+    document.querySelectorAll('#ml-v-per button').forEach((b) => b.addEventListener('click', () => { vst.per = b.dataset.v; vendedor(); }));
+    document.querySelectorAll('#ml-v-mon button').forEach((b) => b.addEventListener('click', () => { vst.mon = b.dataset.v; vendedor(); }));
+    $('ml-v-bajar').addEventListener('click', bajarVentas);
     $('ml-bajar-todo').addEventListener('click', bajarTodo);
     dash.onData(() => { if (!SERVER) return; if (!$('v-ml').hidden) pintar(); else contador(); });
     return { pintar, contador, recargar, leerML, _leerHoja: leerHoja, _conciliar: conciliar };
