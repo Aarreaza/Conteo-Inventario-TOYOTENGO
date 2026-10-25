@@ -134,7 +134,8 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-vk-c{border:1px solid var(--color-border,#e3e5e8);border-radius:10px;padding:.7rem .85rem;background:var(--color-bg-subtle,#f7f8fa)}.ml-vk-c b{display:block;font-family:var(--font-anthropic-serif);font-size:1.45rem;font-weight:400;margin:.25rem 0 .15rem}
 .ml-vk-h{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--color-fg-muted)}.ml-vk-s{font-size:.75rem;color:var(--color-fg-muted)}
 .ml-vk-c.bien{background:#eef8f2;border-color:#cfe9d9}.ml-vk-c.bien b,.ml-vk-c.bien .ml-vk-h{color:var(--color-ok)}.ml-vk-c.mal{background:#fff1f2;border-color:#f6cdd2}.ml-vk-c.mal b,.ml-vk-c.mal .ml-vk-h{color:var(--color-bad)}
-.ml-vchart{margin:.25rem 0 1rem}.ml-vsvg{width:100%;height:220px;display:block}.ml-vx{font-size:11px;fill:var(--color-fg-muted)}.ml-vv{font-size:12px;fill:var(--color-fg,#1f2328);font-weight:600}
+.ml-vchart{margin:.25rem 0 1rem;position:relative}.ml-vb{cursor:pointer}.ml-vb .ml-vbar{transition:opacity .15s}.ml-vchart svg:hover .ml-vb .ml-vbar{opacity:.55}.ml-vchart svg:hover .ml-vb.on .ml-vbar{opacity:1}
+.ml-vtip{position:absolute;z-index:5;pointer-events:none;min-width:13rem;background:#1f2328;color:#fff;border-radius:10px;padding:.6rem .75rem;font-size:.8rem;box-shadow:0 6px 18px rgba(0,0,0,.25)}.ml-vtip-t{font-weight:600;margin-bottom:.15rem}.ml-vtip-v{font-family:var(--font-anthropic-serif);font-size:1.15rem;margin-bottom:.35rem;color:#ffe600}.ml-vtip-r{display:flex;justify-content:space-between;gap:1rem;color:#cfd3da}.ml-vtip-r b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums}.ml-vsvg{width:100%;height:220px;display:block}.ml-vx{font-size:11px;fill:var(--color-fg-muted)}.ml-vv{font-size:12px;fill:var(--color-fg,#1f2328);font-weight:600}
 .ml-vley{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.76rem;color:var(--color-fg-muted);margin-top:.35rem}.ml-vley span{display:inline-flex;align-items:center;gap:.35rem}.ml-vley i{display:inline-block;width:.75rem;height:.75rem;border-radius:3px}
 .ml-ti{display:inline-flex;vertical-align:-.15em;margin-right:.4rem;color:var(--tt-ink,#2b2f36)}#ml-tiles .alerta .ml-ti{color:var(--color-bad)}#ml-tiles .ok .ml-ti{color:var(--color-ok)}
 #n-mlb.urg{background:var(--color-bad);animation:mlpulso 1.6s ease-in-out infinite}
@@ -479,7 +480,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
         <h3><span class="ml-ic ml-ic-b" aria-hidden="true"></span> Seguimiento de ventas en Mercado Libre</h3>
         <div class="sh-row" style="gap:.5rem;flex-wrap:wrap;align-items:center">
           <div class="ml-seg" id="ml-v-per" role="group" aria-label="Periodo"><button type="button" data-v="mes" class="on">Mensual</button><button type="button" data-v="anio">Anual</button></div>
-          <div class="ml-seg" id="ml-v-mon" role="group" aria-label="Moneda"><button type="button" data-v="usd" class="on">US$</button><button type="button" data-v="bs">Bs.</button></div>
+          <div class="ml-seg" id="ml-v-mon" role="group" aria-label="Moneda"><button type="button" data-v="usd" class="on">US$ BCV</button><button type="button" data-v="usdb">US$ Binance</button><button type="button" data-v="bs">Bs.</button></div>
           <button class="sh-btn lt" type="button" id="ml-v-bajar">Descargar Excel</button>
         </div>
       </div>
@@ -3438,12 +3439,13 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
     const dias = (f) => (f ? Math.round((new Date(String(f).slice(0, 10) + 'T00:00:00') - hoy0()) / 864e5) : null);
     const ffecha = (f) => (f ? new Date(String(f).slice(0, 10) + 'T12:00:00').toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
     const hace = (ts) => { if (!ts) return ''; const m = Math.max(0, Math.round((Date.now() - Date.parse(ts)) / 6e4)); return m < 60 ? m + ' min' : m < 1440 ? Math.round(m / 60) + ' h' : Math.round(m / 1440) + ' días'; };
+    const MESES_L = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const MESES_C = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     const nomMes = (m) => MESES_C[Number(m.slice(5, 7)) - 1] + ' ' + m.slice(2, 4);
     const mesHoy = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
     const vst = { per: 'mes', mon: 'usd' };
-    function tasaHoy() { const A = aj(); if (A.tasa) return A.tasa; const vm = (R && R.ml.vmes) || []; const u = vm.filter((m) => m.tasa).slice(-1)[0]; return u ? Number(u.tasa) : 0; }
-    function mesesVenta() { return ((R && R.ml.vmes) || []).slice().sort((a, b) => a.mes.localeCompare(b.mes)).map((m) => ({ ...m, usd: m.monto_usd != null ? Number(m.monto_usd) : (m.tasa ? m.monto_bs / m.tasa : null), bs: Number(m.monto_bs || 0) })); }
+    function tasaHoy(b) { const e = (R && R.ml.estado) || {}; if (b) { if (e.tasa_binance_hoy) return Number(e.tasa_binance_hoy); } else { if (e.tasa_bcv_hoy) return Number(e.tasa_bcv_hoy); const A = aj(); if (A.tasa) return A.tasa; } const vm = (R && R.ml.vmes) || []; const u = vm.filter((m) => (b ? m.tasa_binance : m.tasa)).slice(-1)[0]; return u ? Number(b ? u.tasa_binance : u.tasa) : 0; }
+    function mesesVenta() { return ((R && R.ml.vmes) || []).slice().sort((a, b) => a.mes.localeCompare(b.mes)).map((m) => ({ ...m, usd: m.monto_usd != null ? Number(m.monto_usd) : (m.tasa ? m.monto_bs / m.tasa : null), usdb: m.monto_usd_binance != null ? Number(m.monto_usd_binance) : (m.tasa_binance ? m.monto_bs / m.tasa_binance : null), bs: Number(m.monto_bs || 0) })); }
 
     function ctrl() {
       const el = $('ml-ctrl'); el.replaceChildren(); const e = (R && R.ml.estado) || {}, T = window.TT;
@@ -3464,7 +3466,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
         const L = [];
         if (dv > 0) { const d = dias(e.deuda_vencida_vence); L.push(['⛔ Vencida: ' + bsf(dv) + (e.deuda_vencida_vence ? ' · venció el ' + ffecha(e.deuda_vencida_vence) + (d != null && d < 0 ? ' (hace ' + -d + ' días)' : '') : ''), 'bad']); }
         if (dc > 0) { const d = dias(e.deuda_curso_vence); L.push(['🗓 En curso: ' + bsf(dc) + (e.deuda_curso_vence ? ' · vence el ' + ffecha(e.deuda_curso_vence) + (d != null ? (d >= 0 ? ' (en ' + d + (d === 1 ? ' día)' : ' días)') : ' (VENCIDA)') : '') : ''), d != null && d <= 5 ? 'warn' : '']); }
-        if (tz && tot) L.push(['≈ ' + T.fmt.usd2(tot / tz) + ' a tasa ' + tz.toLocaleString('es-VE') + ' Bs/US$', 'muted']);
+        const tzb = tasaHoy(true); if (tz && tot) L.push(['≈ ' + T.fmt.usd2(tot / tz) + ' a tasa BCV (' + tz.toLocaleString('es-VE') + ')' + (tzb ? ' · ≈ ' + T.fmt.usd2(tot / tzb) + ' a tasa Binance (' + tzb.toLocaleString('es-VE') + ')' : ''), 'muted']);
         if (!tot) L.push(['No hay facturas pendientes con Mercado Libre.', 'ok']);
         const acc = [link('Ir a pagar ↗', 'https://vendedores.mercadolibre.com.ve/billing/resume')]; if (puede()) acc.push(btnDeuda());
         card(dv > 0 ? 'mal' : tot ? 'aviso' : 'bien', 'dinero', 'Deuda con Mercado Libre', tot ? bsf(tot) : 'Al día', L, 'Actualizado ' + fmtF(e.deuda_actualizada) + (e.deuda_por ? ' · ' + e.deuda_por : ''), acc);
@@ -3482,7 +3484,8 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
         const L = []; if (cur) L.push([cur.ventas + ' ventas · ' + cur.unidades + ' unidades · ' + T.fmt.int(cur.visitas || 0) + ' visitas', '']);
         if (prevY && cur && prevY.usd) { const v = cur.usd / prevY.usd - 1; L.push(['Mismo mes del año pasado: ' + T.fmt.usd0(prevY.usd) + ' (' + (v >= 0 ? '+' : '') + T.fmt.pct(v) + ')', v >= 0 ? 'ok' : 'warn']); }
         if (ult) L.push(['Mes anterior (' + nomMes(ult.mes) + '): ' + T.fmt.usd0(ult.usd) + ' en ' + ult.ventas + ' ventas', 'muted']);
-        card(cur && cur.usd ? '' : 'aviso', 'grafico', 'Ventas de este mes', cur ? T.fmt.usd0(cur.usd) : 'US$ 0', L, 'Fuente: métricas de Mercado Libre · mes en curso');
+        if (cur && cur.usdb != null) L.splice(1, 0, ['A tasa Binance: ' + T.fmt.usd0(cur.usdb) + ' · en bolívares: ' + bs0(cur.bs), 'muted']);
+        card(cur && cur.usd ? '' : 'aviso', 'grafico', 'Ventas de este mes (tasa BCV)', cur ? T.fmt.usd0(cur.usd) : 'US$ 0', L, 'Fuente: métricas de Mercado Libre · mes en curso');
       }
     }
     function btnDeuda() { const b = mk('button', 'sh-btn lt ml-cc-btn', 'Actualizar'); b.type = 'button'; b.addEventListener('click', abrirDeuda); return b; }
@@ -3546,7 +3549,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       const T = window.TT, M = mesesVenta(), card = $('ml-vend'); card.hidden = !M.length; if (!M.length) return;
       document.querySelectorAll('#ml-v-per button').forEach((b) => b.classList.toggle('on', b.dataset.v === vst.per));
       document.querySelectorAll('#ml-v-mon button').forEach((b) => b.classList.toggle('on', b.dataset.v === vst.mon));
-      const usd = vst.mon === 'usd', val = (m) => (usd ? m.usd : m.bs), fm = (x) => (x == null ? '—' : usd ? T.fmt.usd0(x) : bs0(x)), mh = mesHoy();
+      const usd = vst.mon !== 'bs', val = (m) => (vst.mon === 'usd' ? m.usd : vst.mon === 'usdb' ? m.usdb : m.bs), fm = (x) => (x == null ? '—' : usd ? T.fmt.usd0(x) : bs0(x)), mh = mesHoy(), monTxt = vst.mon === 'usd' ? 'US$ a tasa BCV' : vst.mon === 'usdb' ? 'US$ a tasa Binance' : 'bolívares';
       const desde = (() => { const d = new Date(); return (d.getFullYear() - 2) + '-' + String(d.getMonth() + 1).padStart(2, '0'); })();
       const ult24 = M.filter((m) => m.mes > desde);
       // KPIs
@@ -3554,7 +3557,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       const suma = (L, f) => L.reduce((s, m) => s + (Number(f(m)) || 0), 0);
       const ytd = M.filter((m) => m.mes.startsWith(y + '-') && m.mes.slice(5) <= mm), ytdP = M.filter((m) => m.mes.startsWith((y - 1) + '-') && m.mes.slice(5) <= mm);
       const ult12 = M.filter((m) => m.mes < mh).slice(-12), prom12 = ult12.length ? suma(ult12, val) / ult12.length : 0;
-      const mejor = M.filter((m) => m.usd != null).reduce((a, b) => (val(b) > val(a) ? b : a), M[0]);
+      const mejor = M.filter((m) => val(m) != null).reduce((a, b) => (val(b) > (val(a) || 0) ? b : a), M[0]);
       const conv = ult12.filter((m) => m.visitas), cv = conv.length ? suma(conv, (m) => m.ventas) / suma(conv, (m) => m.visitas) : null;
       const kp = (icon, t, v, s, cls) => { const d = mk('div', 'ml-vk-c ' + (cls || '')); const h = mk('div', 'ml-vk-h'); h.appendChild(ico(icon)); h.append(mk('span', null, t)); d.append(h, mk('b', null, v)); if (s) d.appendChild(mk('span', 'ml-vk-s', s)); kel.appendChild(d); };
       const vy = suma(ytdP, val) ? suma(ytd, val) / suma(ytdP, val) - 1 : null;
@@ -3562,46 +3565,60 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       kp(vy == null ? 'info' : vy >= 0 ? 'sube' : 'baja', 'Contra ' + (y - 1) + ' (mismos meses)', vy == null ? '—' : (vy >= 0 ? '+' : '') + T.fmt.pct(vy), (y - 1) + ': ' + fm(suma(ytdP, val)), vy == null ? '' : vy >= 0 ? 'bien' : 'mal');
       kp('reloj', 'Promedio mensual (12 meses)', fm(prom12), (ult12.length ? (suma(ult12, (m) => m.ventas) / ult12.length).toFixed(1).replace('.', ',') : '0') + ' ventas por mes', '');
       kp('sube', 'Mejor mes', mejor ? fm(val(mejor)) : '—', mejor ? nomMes(mejor.mes) + ' · ' + mejor.ventas + ' ventas' : '', 'bien');
+      const ub = M.filter((m) => m.tasa && m.tasa_binance).slice(-1)[0]; if (ub) { const br = ub.tasa_binance / ub.tasa - 1; kp('dinero', 'Brecha Binance vs BCV', '+' + T.fmt.pct(br), nomMes(ub.mes) + ': BCV ' + Number(ub.tasa).toLocaleString('es-VE') + ' · Binance ' + Number(ub.tasa_binance).toLocaleString('es-VE'), br > 0.3 ? 'mal' : ''); }
       kp('tienda', 'Conversión (12 meses)', cv == null ? '—' : T.fmt.pct(cv), cv == null ? '' : 'de cada 100 visitas, ' + (cv * 100).toFixed(1).replace('.', ',') + ' compran', cv != null && cv < 0.01 ? 'mal' : '');
       // gráfico
       const ch = $('ml-vchart'); ch.replaceChildren();
-      const serie = vst.per === 'mes' ? ult24.map((m) => ({ k: m.mes, lab: nomMes(m.mes), v: val(m) || 0, sub: m.ventas + ' ventas', y: m.mes.slice(0, 4), cur: m.mes === mh }))
-        : [...new Set(M.map((m) => m.mes.slice(0, 4)))].map((yy) => { const L = M.filter((m) => m.mes.startsWith(yy)); return { k: yy, lab: yy + (Number(yy) === y ? ' (en curso)' : ''), v: suma(L, val), sub: suma(L, (m) => m.ventas) + ' ventas · ' + L.length + ' meses', y: yy, cur: Number(yy) === y }; });
+      const serie = vst.per === 'mes' ? ult24.map((m) => ({ k: m.mes, lab: nomMes(m.mes), v: val(m) || 0, sub: m.ventas + ' ventas', y: m.mes.slice(0, 4), cur: m.mes === mh, L: [m] }))
+        : [...new Set(M.map((m) => m.mes.slice(0, 4)))].map((yy) => { const L = M.filter((m) => m.mes.startsWith(yy)); return { k: yy, lab: yy + (Number(yy) === y ? ' (en curso)' : ''), v: suma(L, val), sub: suma(L, (m) => m.ventas) + ' ventas · ' + L.length + ' meses', y: yy, cur: Number(yy) === y, L }; });
       const W = 960, H = 240, pad = { l: 8, r: 8, t: 22, b: 34 }, max = Math.max(...serie.map((s) => s.v), 1), bw = (W - pad.l - pad.r) / serie.length;
       const anios = [...new Set(serie.map((s) => s.y))], col = (yy) => ['#c8102e', '#2d3277', '#9aa3b5', '#e8a400'][(anios.length - 1 - anios.indexOf(yy)) % 4];
       let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Ventas en Mercado Libre" preserveAspectRatio="none" class="ml-vsvg">';
       serie.forEach((s, i) => { const h = (H - pad.t - pad.b) * s.v / max, x = pad.l + i * bw + bw * 0.15, w = bw * 0.7, yy = H - pad.b - h;
-        svg += '<g><title>' + s.lab + ': ' + fm(s.v) + ' · ' + s.sub + '</title><rect x="' + x.toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + Math.max(h, 1).toFixed(1) + '" rx="3" fill="' + col(s.y) + '"' + (s.cur ? ' opacity=".55"' : '') + '/>';
+        svg += '<g class="ml-vb" data-i="' + i + '"><rect class="ml-vhit" x="' + (pad.l + i * bw).toFixed(1) + '" y="0" width="' + bw.toFixed(1) + '" height="' + (H - pad.b) + '" fill="transparent"/><rect class="ml-vbar" x="' + x.toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + Math.max(h, 1).toFixed(1) + '" rx="3" fill="' + col(s.y) + '"' + (s.cur ? ' opacity=".55"' : '') + '/>';
         if (serie.length <= 6 || i % (serie.length > 18 ? 2 : 1) === 0) svg += '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (H - pad.b + 14) + '" text-anchor="middle" class="ml-vx">' + s.lab + '</text>';
         if (serie.length <= 6) svg += '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (yy - 6).toFixed(1) + '" text-anchor="middle" class="ml-vv">' + fm(s.v) + '</text>';
         svg += '</g>'; });
       svg += '</svg>'; ch.innerHTML = svg;
+      const tip = mk('div', 'ml-vtip'); tip.hidden = true; ch.appendChild(tip);
+      const tipo = (s) => { const L = s.L, sm = (f) => L.reduce((a, m) => a + (Number(f(m)) || 0), 0), hb = L.some((m) => m.usdb != null);
+        tip.replaceChildren(); tip.appendChild(mk('div', 'ml-vtip-t', vst.per === 'mes' ? MESES_L[Number(s.k.slice(5)) - 1] + ' ' + s.k.slice(0, 4) + (s.cur ? ' (en curso)' : '') : s.lab));
+        tip.appendChild(mk('div', 'ml-vtip-v', 'Total vendido: ' + fm(s.v)));
+        [['US$ a tasa BCV', T.fmt.usd2(sm((m) => m.usd))], hb ? ['US$ a tasa Binance', T.fmt.usd2(sm((m) => m.usdb))] : null, ['En bolívares', bsf(sm((m) => m.bs))], ['Ventas · unidades', T.fmt.int(sm((m) => m.ventas)) + ' · ' + T.fmt.int(sm((m) => m.unidades))], ['Visitas', T.fmt.int(sm((m) => m.visitas))],
+          vst.per === 'mes' && L[0].tasa ? ['Tasa BCV' + (L[0].tasa_binance ? ' · Binance' : ''), Number(L[0].tasa).toLocaleString('es-VE') + (L[0].tasa_binance ? ' · ' + Number(L[0].tasa_binance).toLocaleString('es-VE') : '')] : null]
+          .filter(Boolean).forEach(([a, b]) => { const r = mk('div', 'ml-vtip-r'); r.append(mk('span', null, a), mk('b', null, b)); tip.appendChild(r); }); };
+      const mostrar = (g, ev) => { const s = serie[Number(g.dataset.i)]; ch.querySelectorAll('.ml-vb.on').forEach((x) => x.classList.remove('on')); g.classList.add('on'); tipo(s); tip.hidden = false;
+        const r = ch.getBoundingClientRect(), b = g.querySelector('.ml-vbar').getBoundingClientRect(); let x = b.left - r.left + b.width / 2 - tip.offsetWidth / 2; x = Math.max(0, Math.min(x, r.width - tip.offsetWidth));
+        let yy = b.top - r.top - tip.offsetHeight - 8; if (yy < 0) { yy = 4; x = b.right - r.left + 10; if (x + tip.offsetWidth > r.width) x = b.left - r.left - tip.offsetWidth - 10; x = Math.max(0, x); } tip.style.left = x + 'px'; tip.style.top = yy + 'px'; };
+      ch.querySelectorAll('.ml-vb').forEach((g) => { g.addEventListener('mouseenter', (ev) => mostrar(g, ev)); g.addEventListener('click', (ev) => mostrar(g, ev)); });
+      ch.querySelector('svg').addEventListener('mouseleave', () => { tip.hidden = true; ch.querySelectorAll('.ml-vb.on').forEach((x) => x.classList.remove('on')); });
       const ley = mk('div', 'ml-vley'); anios.forEach((yy) => { const s = mk('span'); const c = mk('i'); c.style.background = col(yy); s.append(c, document.createTextNode(yy)); ley.appendChild(s); }); if (serie.some((s) => s.cur)) ley.appendChild(mk('span', 'muted', 'barra clara = periodo en curso')); ch.appendChild(ley);
       // tabla
       const tbl = $('ml-vtabla'), tr = tbl.querySelector('thead tr'), tb = tbl.querySelector('tbody'); tr.replaceChildren(); tb.replaceChildren();
-      const cols = vst.per === 'mes' ? ['Mes', 'Ventas', 'Unidades', 'Monto ' + (usd ? 'US$' : 'Bs.'), usd ? 'Tasa BCV' : 'Monto US$', 'Visitas', 'Conversión', 'vs mes anterior', 'vs año anterior'] : ['Año', 'Meses', 'Ventas', 'Unidades', 'Monto ' + (usd ? 'US$' : 'Bs.'), 'Promedio mensual', 'Visitas', 'vs año anterior (mismos meses)'];
+      const cols = vst.per === 'mes' ? ['Mes', 'Ventas', 'Unidades', 'Monto Bs.', 'Tasa BCV', 'US$ BCV', 'Tasa Binance', 'US$ Binance', 'Brecha', 'Visitas', 'Conversión', 'vs mes anterior', 'vs año anterior'] : ['Año', 'Meses', 'Ventas', 'Unidades', 'Monto Bs.', 'US$ BCV', 'US$ Binance', 'Promedio mensual', 'Visitas', 'vs año anterior (mismos meses)'];
       cols.forEach((c, i) => { const th = mk('th', i ? 'n' : '', c); tr.appendChild(th); });
       const pct = (a, b) => (a == null || !b ? null : a / b - 1), chip = (td, v) => { if (v == null) { td.textContent = '—'; return; } T.chip(td, (v >= 0 ? '▲ +' : '▼ ') + T.fmt.pct(v), v >= 0 ? 'ok' : v > -0.15 ? 'warn' : 'bad'); };
       const fila = (cells) => { const r = mk('tr'); cells.forEach((c, i) => { const td = mk('td', i ? 'n' : ''); if (typeof c === 'function') c(td); else td.textContent = c; r.appendChild(td); }); tb.appendChild(r); };
       if (vst.per === 'mes') {
         M.slice().reverse().forEach((m) => { const idx = M.indexOf(m), prev = M[idx - 1], py = M.find((x) => x.mes === (Number(m.mes.slice(0, 4)) - 1) + m.mes.slice(4));
-          fila([nomMes(m.mes) + (m.mes === mh ? ' (en curso)' : ''), T.fmt.int(m.ventas || 0), T.fmt.int(m.unidades || 0), fm(val(m)), usd ? (m.tasa ? Number(m.tasa).toLocaleString('es-VE') : '—') : (m.usd == null ? '—' : T.fmt.usd0(m.usd)), T.fmt.int(m.visitas || 0), m.conversion != null ? String(m.conversion).replace('.', ',') + '%' : '—',
+          const tx = (x) => (x ? Number(x).toLocaleString('es-VE') : '—'), u0 = (x) => (x == null ? '—' : T.fmt.usd0(x));
+          fila([nomMes(m.mes) + (m.mes === mh ? ' (en curso)' : ''), T.fmt.int(m.ventas || 0), T.fmt.int(m.unidades || 0), bs0(m.bs), tx(m.tasa), u0(m.usd), tx(m.tasa_binance), u0(m.usdb), m.tasa && m.tasa_binance ? '+' + T.fmt.pct(m.tasa_binance / m.tasa - 1) : '—', T.fmt.int(m.visitas || 0), m.conversion != null ? String(m.conversion).replace('.', ',') + '%' : '—',
             (td) => chip(td, m.mes === mh ? null : pct(val(m), prev && val(prev))), (td) => chip(td, m.mes === mh ? null : pct(val(m), py && val(py)))]); });
       } else {
         const ys = [...new Set(M.map((m) => m.mes.slice(0, 4)))].sort().reverse();
         ys.forEach((yy) => { const L = M.filter((m) => m.mes.startsWith(yy)), P0 = M.filter((m) => m.mes.startsWith((Number(yy) - 1) + '-')), mp = P0.map((m) => m.mes.slice(5)), C = L.filter((m) => mp.includes(m.mes.slice(5))), P = P0.filter((m) => C.some((c) => c.mes.slice(5) === m.mes.slice(5)));
           const rango = C.length && C.length < L.length ? ' (' + MESES_C[Number(C[0].mes.slice(5)) - 1] + '–' + MESES_C[Number(C[C.length - 1].mes.slice(5)) - 1] + ')' : '';
-          fila([yy + (Number(yy) === y ? ' (en curso)' : ''), String(L.length), T.fmt.int(suma(L, (m) => m.ventas)), T.fmt.int(suma(L, (m) => m.unidades)), fm(suma(L, val)), fm(suma(L, val) / Math.max(L.length, 1)), T.fmt.int(suma(L, (m) => m.visitas)),
+          fila([yy + (Number(yy) === y ? ' (en curso)' : ''), String(L.length), T.fmt.int(suma(L, (m) => m.ventas)), T.fmt.int(suma(L, (m) => m.unidades)), bs0(suma(L, (m) => m.bs)), T.fmt.usd0(suma(L, (m) => m.usd)), L.some((m) => m.usdb != null) ? T.fmt.usd0(suma(L, (m) => m.usdb)) : '—', fm(suma(L, val) / Math.max(L.length, 1)), T.fmt.int(suma(L, (m) => m.visitas)),
             (td) => { chip(td, P.length ? pct(suma(C, val), suma(P, val)) : null); if (rango) td.appendChild(mk('small', 'muted', ' ' + rango)); }]); });
       }
       const up = M.filter((m) => m.actualizado).map((m) => m.actualizado).sort().slice(-1)[0];
-      $('ml-vnota').textContent = 'Fuente: métricas de Mercado Libre (ventas brutas en bolívares). Montos en US$ calculados con la tasa oficial BCV de mitad de cada mes. La cuenta empezó a vender en ' + nomMes(M[0].mes) + '.' + (up ? ' Actualizado: ' + fmtF(up) : '');
+      $('ml-vnota').textContent = 'Gráfico, resumen y comparaciones en ' + monTxt + '. Fuente: métricas de Mercado Libre (ventas brutas en bolívares). US$ BCV = monto ÷ tasa oficial BCV de mitad de mes; US$ Binance = monto ÷ precio del USDT en Binance P2P de mitad de mes; brecha = cuánto más cara está la tasa Binance que la BCV. La cuenta empezó a vender en ' + nomMes(M[0].mes) + '.' + (up ? ' Actualizado: ' + fmtF(up) : '');
     }
     function bajarVentas() {
       if (!window.XLSX) return; const M = mesesVenta(); const wb = XLSX.utils.book_new();
-      const a = M.map((m) => ({ Mes: m.mes, Ventas: m.ventas, Unidades: m.unidades, 'Monto Bs.': m.bs, 'Tasa BCV Bs/US$': m.tasa, 'Monto US$': m.usd == null ? '' : Math.round(m.usd * 100) / 100, Visitas: m.visitas, 'Conversión %': m.conversion, Canceladas: m.canceladas, Devueltas: m.devueltas }));
+      const a = M.map((m) => ({ Mes: m.mes, Ventas: m.ventas, Unidades: m.unidades, 'Monto Bs.': m.bs, 'Tasa BCV Bs/US$': m.tasa, 'Monto US$ (BCV)': m.usd == null ? '' : Math.round(m.usd * 100) / 100, 'Tasa Binance Bs/USDT': m.tasa_binance || '', 'Monto US$ (Binance)': m.usdb == null ? '' : Math.round(m.usdb * 100) / 100, 'Brecha %': m.tasa && m.tasa_binance ? Math.round((m.tasa_binance / m.tasa - 1) * 1000) / 10 : '', Visitas: m.visitas, 'Conversión %': m.conversion, Canceladas: m.canceladas, Devueltas: m.devueltas }));
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(a), 'Ventas por mes');
-      const ys = [...new Set(M.map((m) => m.mes.slice(0, 4)))].sort(); const b = ys.map((yy) => { const L = M.filter((m) => m.mes.startsWith(yy)); const s = (f) => L.reduce((x, m) => x + (Number(f(m)) || 0), 0); return { Año: yy, Meses: L.length, Ventas: s((m) => m.ventas), Unidades: s((m) => m.unidades), 'Monto Bs.': s((m) => m.bs), 'Monto US$': Math.round(s((m) => m.usd) * 100) / 100, 'Promedio mensual US$': Math.round(s((m) => m.usd) / L.length * 100) / 100, Visitas: s((m) => m.visitas) }; });
+      const ys = [...new Set(M.map((m) => m.mes.slice(0, 4)))].sort(); const b = ys.map((yy) => { const L = M.filter((m) => m.mes.startsWith(yy)); const s = (f) => L.reduce((x, m) => x + (Number(f(m)) || 0), 0); return { Año: yy, Meses: L.length, Ventas: s((m) => m.ventas), Unidades: s((m) => m.unidades), 'Monto Bs.': s((m) => m.bs), 'Monto US$ (BCV)': Math.round(s((m) => m.usd) * 100) / 100, 'Monto US$ (Binance)': Math.round(s((m) => m.usdb) * 100) / 100, 'Promedio mensual US$ (BCV)': Math.round(s((m) => m.usd) / L.length * 100) / 100, Visitas: s((m) => m.visitas) }; });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(b), 'Ventas por año');
       XLSX.writeFile(wb, 'Mercado_Libre_ventas_' + new Date().toISOString().slice(0, 10) + '.xlsx'); bitacora('DESCARGA', 'Mercado Libre · ventas por mes y año');
     }
