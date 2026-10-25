@@ -85,6 +85,18 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-ayuda{margin-top:.5rem}.ml-ayuda summary{cursor:pointer}.ml-ayuda ol{margin:.6rem 0 0;padding-left:1.2rem;font-size:.9rem}.ml-ayuda li{margin:.3rem 0}
 .ml-ajustes{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;margin-top:.75rem;font-size:.85rem;color:var(--color-fg-muted)}.ml-ajustes label{display:flex;align-items:center;gap:.4rem}
 #ml-tiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr))}#ml-tiles .sh-lctile{border-top-color:var(--tt-ink,#2b2f36)}#ml-tiles .sh-lctile.alerta{border-top-color:var(--color-bad)}#ml-tiles .sh-lctile.ok{border-top-color:var(--color-ok)}#ml-tiles .sh-lctile .v{font-family:var(--font-anthropic-serif);font-size:1.6rem}#ml-tiles .sh-lctile .k{font-size:.8rem;color:var(--color-fg-muted)}#ml-tiles .sh-lctile .s{font-size:.78rem;color:var(--color-fg-muted)}
+.ml-res{margin:.75rem 0 1rem;padding:1rem;border:1px solid var(--color-border,#e3e5e8);border-radius:12px;background:var(--color-bg-subtle,#f7f8fa)}
+.ml-res h4{margin:0 0 .75rem;font-size:.95rem;display:flex;flex-wrap:wrap;gap:.25rem .75rem;align-items:baseline}.ml-res h4 small{font-weight:400;color:var(--color-fg-muted)}
+.ml-rk{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:1rem}
+.ml-rk div{background:var(--color-bg,#fff);border:1px solid var(--color-border,#e3e5e8);border-top:4px solid var(--tt-ink,#2b2f36);border-radius:10px;padding:.9rem 1rem}
+.ml-rk div.bad{border-top-color:var(--color-bad)}.ml-rk div.ok{border-top-color:var(--color-ok)}.ml-rk div.warn{border-top-color:#d79b00}
+.ml-rk b{display:block;font-family:var(--font-anthropic-serif);font-size:1.6rem;font-weight:400;line-height:1.25;margin:.35rem 0 .3rem}.ml-rk span{font-size:.8rem;color:var(--color-fg-muted)}
+.ml-rbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:.4rem 2rem;margin-top:.9rem}
+.ml-rbar h5{grid-column:1/-1;margin:.2rem 0 0;font-size:.8rem;color:var(--color-fg-muted);font-weight:600}
+.ml-rbar .f{display:grid;grid-template-columns:minmax(0,9rem) minmax(3rem,1fr) auto;gap:.5rem;align-items:center;font-size:.8rem}
+.ml-rbar .f>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ml-rbar .t{height:.6rem;background:var(--color-border,#e3e5e8);border-radius:99px;overflow:hidden}.ml-rbar .t i{display:block;height:100%;background:var(--brand-red,#c8102e);border-radius:99px}
+.ml-rbar .f>span:last-child{font-variant-numeric:tabular-nums;color:var(--color-fg-muted);white-space:nowrap}
+@media (max-width:600px){.ml-rk{grid-template-columns:1fr 1fr;gap:.5rem}.ml-rk div{padding:.6rem .7rem}.ml-rk b{font-size:1.2rem}.ml-rbar .f{grid-template-columns:minmax(0,6.5rem) minmax(2.5rem,1fr) auto;font-size:.74rem}}
 .ml-graf{margin-top:1rem}.ml-tile.on{outline:2px solid var(--brand-red)}.ml-tile{cursor:pointer;text-align:left;font:inherit}
 .tt-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem}
 .u-perfiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;margin:0 0 1rem}
@@ -426,7 +438,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
           <option value="mb">Margen ML por debajo del mínimo</option>
           <option value="ss">⚠ Publicados sin stock en el inventario</option>
           <option value="sd">Stock de ML distinto al inventario</option>
-          <option value="pa">Publicaciones pausadas con stock</option>
+          <option value="pa">Publicaciones pausadas o inactivas con stock</option>
           <option value="sv">Publicaciones sin código (sin vincular)</option>
           <option value="ok">Publicados y correctos</option>
           <option value="todas">Todas las publicaciones</option>
@@ -436,6 +448,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
         <select class="tt-in" id="ml-fam" aria-label="Familia"><option value="">Todas las familias</option></select>
       </div>
       <p class="tt-note" id="ml-expl" style="margin:.5rem 0"></p>
+      <div class="ml-res" id="ml-res" aria-live="polite"></div>
       <div class="sh-row" style="justify-content:space-between;align-items:center;margin:.25rem 0 .5rem;flex-wrap:wrap;gap:.5rem">
         <span class="tt-status" id="ml-n"></span>
         <span class="sh-row" style="gap:.5rem;flex-wrap:wrap"><button class="sh-btn" id="ml-bajar-vista" type="button">Descargar Excel (lo que ve)</button><button class="sh-btn lt" id="ml-bajar-todo" type="button">Descargar conciliación completa</button></span>
@@ -3262,6 +3275,65 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       }, (r) => (r.item_id || '') + '|' + (r.codigo || '') + '|' + (r.venta_id || ''), st);
       $('ml-n').textContent = T.fmt.int(n) + (tipo === 'vt' ? ' líneas de venta' : tipo === 'inv' ? ' artículos' : ' publicaciones') + (n > st.limit ? ' · se muestran ' + st.limit + ', use la búsqueda' : '');
       $('ml-bajar-vista').disabled = !vista.length || !window.XLSX;
+      resumen(v, tipo);
+    }
+    function resumen(v, tipo) {
+      const T = window.TT, el = $('ml-res'); el.replaceChildren();
+      if (!R || !R.k.hay && tipo !== 'vt') { el.hidden = true; return; }
+      el.hidden = false;
+      const rows = vista, n = rows.length, sum = (f) => rows.reduce((s, r) => s + (Number(f(r)) || 0), 0);
+      const nom = { np: 'Con stock y NO publicados', bc: 'Precio ML bajo el costo', mb: 'Margen bajo el mínimo', ss: 'Publicados sin stock en inventario', sd: 'Stock de ML distinto', pa: 'Publicaciones pausadas o inactivas con stock',
+        sv: 'Publicaciones sin código', ok: 'Publicados y correctos', todas: 'Todas las publicaciones', vt: 'Ventas en Mercado Libre' };
+      const h = document.createElement('h4'); h.textContent = 'Resumen · ' + (nom[v] || '');
+      const filt = [$('ml-fam').value ? 'familia ' + $('ml-fam').value : '', $('ml-q').value.trim() ? 'búsqueda "' + $('ml-q').value.trim() + '"' : ''].filter(Boolean).join(' · ');
+      const sm = document.createElement('small'); sm.textContent = filt ? 'filtrado por ' + filt : 'cambia al escoger otra opción, familia o búsqueda'; h.appendChild(sm); el.appendChild(h);
+      const K = [], kp = (t, val, sub, cls) => K.push([t, val, sub, cls || '']);
+      const u0 = T.fmt.usd0, u2 = T.fmt.usd2, it = T.fmt.int, pc = T.fmt.pct;
+      const conStock = R.k.conStock || 1, totPubs = R.k.pubs || 1;
+      if (tipo === 'inv') {
+        const val = sum((r) => r.valor), uds = sum((r) => r.stock), pot = sum((r) => (r.precio_min || 0) * (r.stock || 0)), lista = sum((r) => (r.precio_lista || 0) * (r.stock || 0));
+        kp('Artículos', it(n), pc(n / conStock) + ' de los ' + it(R.k.conStock) + ' con stock', n ? (v === 'np' ? 'bad' : 'warn') : 'ok');
+        kp('Unidades en stock', it(uds), 'sin vender por Mercado Libre');
+        kp('Valor a costo', u0(val), 'capital detenido sin vitrina', val ? 'bad' : 'ok');
+        kp('Venta posible a precio mínimo ML', u0(pot), 'con margen de ' + Math.round(R.A.min * 100) + '% después de comisión', 'ok');
+        if (lista) { const cl = rows.filter((r) => r.precio_lista).length; kp('Venta a precio de lista', u0(lista), cl < n ? 'solo ' + it(cl) + ' de ' + it(n) + ' artículos tienen precio de lista' : 'según la lista de precios vigente', cl < n ? 'warn' : ''); }
+        kp('Costo promedio por artículo', n ? u2(val / Math.max(uds, 1)) : '—', 'costo unitario promedio');
+        const sinCosto = rows.filter((r) => !r.costo).length; if (sinCosto) kp('Sin costo en el sistema', it(sinCosto), 'no se puede calcular el precio mínimo', 'warn');
+      } else if (tipo === 'pub') {
+        const act = rows.filter((r) => r.activa).length, conCod = rows.filter((r) => r.codigo).length;
+        const mg = rows.filter((r) => r.margen_ml != null && r.precio_usd), mProm = mg.length ? mg.reduce((s, r) => s + r.margen_ml * r.precio_usd, 0) / mg.reduce((s, r) => s + r.precio_usd, 0) : null;
+        kp('Publicaciones', it(n), pc(n / totPubs) + ' de las ' + it(R.k.pubs) + ' de la cuenta', v === 'ok' ? 'ok' : n && v !== 'todas' ? 'bad' : '');
+        kp('Activas / inactivas', it(act) + ' / ' + it(n - act), act ? '' : 'ninguna se está mostrando a compradores', act < n ? 'warn' : 'ok');
+        kp('Precio promedio en ML', mg.length || n ? u2(sum((r) => r.precio_usd) / Math.max(rows.filter((r) => r.precio_usd != null).length, 1)) : '—', 'US$ por unidad');
+        kp('Margen ML promedio', mProm == null ? '—' : pc(mProm), 'ponderado por precio, después de ' + Math.round(R.A.com * 1000) / 10 + '% de comisión', mProm == null ? '' : mProm < 0 ? 'bad' : mProm < R.A.min ? 'warn' : 'ok');
+        if (v === 'bc' || v === 'mb') { const fal = sum((r) => (r.precio_min && r.precio_usd != null && r.precio_min > r.precio_usd ? r.precio_min - r.precio_usd : 0)); const per = sum((r) => (r.ganancia_unit != null && r.ganancia_unit < 0 ? -r.ganancia_unit * Math.max(r.stock || 0, 0) : 0));
+          kp('Aumento total para llegar al mínimo', u2(fal), 'suma de lo que falta por unidad', fal ? 'bad' : 'ok'); kp('Pérdida si se vende todo el stock', u0(per), 'al precio actual', per ? 'bad' : 'ok'); }
+        if (v === 'ss') kp('Unidades ofrecidas en ML', it(sum((r) => Math.max(r.stock_ml || 0, 0))), 'que no existen en el inventario', 'bad');
+        if (v === 'sd') { const d = sum((r) => Math.abs((r.stock_ml || 0) - (r.stock || 0))); kp('Diferencia total de unidades', it(d), 'entre Mercado Libre y el inventario', d ? 'warn' : 'ok'); }
+        if (v === 'sv') { const sug = rows.filter((r) => r.sugerido).length; kp('Con código sugerido', it(sug), 'el tablero encontró un código probable en el título', 'ok'); kp('Sin pista', it(n - sug), 'hay que buscar el código a mano', n - sug ? 'warn' : 'ok'); }
+        else kp('Unidas al inventario', it(conCod), pc(n ? conCod / n : 0) + ' tienen código');
+        kp('Valor a costo del stock', u0(sum((r) => (r.costo || 0) * Math.max(r.stock || 0, 0))), 'de los artículos de estas publicaciones');
+      } else {
+        const tot = sum((r) => r.total_usd), uds = sum((r) => r.cantidad), nv = new Set(rows.map((r) => r.venta_id)).size, ct = rows.filter((r) => r.costo_total != null);
+        const base = ct.reduce((s, r) => s + (r.total_usd || 0), 0) * (1 - R.A.com), mg = base ? (base - ct.reduce((s, r) => s + r.costo_total, 0)) / base : null;
+        kp('Ventas', it(nv), it(n) + ' líneas'); kp('Unidades vendidas', it(uds), ''); kp('Monto vendido', u0(tot), 'US$', tot ? 'ok' : 'warn');
+        kp('Ticket promedio', nv ? u2(tot / nv) : '—', 'por venta'); kp('Margen después de comisión', mg == null ? '—' : pc(mg), 'de las ventas con costo conocido', mg == null ? '' : mg < 0 ? 'bad' : mg < R.A.min ? 'warn' : 'ok');
+      }
+      const box = document.createElement('div'); box.className = 'ml-rk';
+      K.forEach(([t, val, sub, cls]) => { const d = document.createElement('div'); if (cls) d.className = cls; const b = document.createElement('b'); b.textContent = val; const s1 = document.createElement('span'); s1.textContent = t; d.append(s1, b); if (sub) { const s2 = document.createElement('span'); s2.style.display = 'block'; s2.textContent = sub; d.appendChild(s2); } box.appendChild(d); });
+      el.appendChild(box);
+      if (!n) return;
+      const barras = (titulo, mapa, fmt) => { const L = Object.entries(mapa).sort((a, b) => b[1] - a[1]); if (L.length < 2) return; const top = L.slice(0, 6), max = top[0][1] || 1, tot = L.reduce((s, x) => s + x[1], 0) || 1;
+        const g = document.createElement('div'); g.className = 'ml-rbar'; const t = document.createElement('h5'); t.textContent = titulo; g.appendChild(t);
+        top.forEach(([k, x]) => { const f = document.createElement('div'); f.className = 'f'; const a = document.createElement('span'); a.textContent = k; a.title = k; const tr = document.createElement('span'); tr.className = 't'; const i = document.createElement('i'); i.style.width = Math.max(2, x / max * 100) + '%'; tr.appendChild(i);
+          const c = document.createElement('span'); c.textContent = fmt(x) + ' · ' + pc(x / tot); f.append(a, tr, c); g.appendChild(f); });
+        if (L.length > 6) { const f = document.createElement('div'); f.className = 'f'; f.style.color = 'var(--color-fg-muted)'; f.textContent = '+ ' + (L.length - 6) + ' más'; g.appendChild(f); }
+        el.appendChild(g); };
+      if (tipo === 'inv') { const m = {}; rows.forEach((r) => { const k = r.familia || 'Sin familia'; m[k] = (m[k] || 0) + (r.valor || 0); }); barras('Dónde está el dinero sin publicar (valor a costo por familia)', m, u0); }
+      else if (tipo === 'pub') {
+        if (v === 'todas') { const m = {}; rows.forEach((r) => { const k = r.problema || (r.activa ? 'Correcta' : 'Inactiva'); m[k] = (m[k] || 0) + 1; }); barras('Situación de las publicaciones', m, it); }
+        else { const m = {}; rows.forEach((r) => { const k = r.familia || (r.codigo ? 'Sin familia' : 'Sin código'); m[k] = (m[k] || 0) + 1; }); barras('Publicaciones por familia', m, it); }
+      } else { const m = {}; rows.forEach((r) => { const k = (r.fecha || '').slice(0, 7) || 'sin fecha'; m[k] = (m[k] || 0) + (r.total_usd || 0); }); barras('Monto vendido por mes', m, u0); }
     }
     function resumenVentas() {
       const T = window.TT, M = {};
