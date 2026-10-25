@@ -3612,7 +3612,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
             (td) => { chip(td, P.length ? pct(suma(C, val), suma(P, val)) : null); if (rango) td.appendChild(mk('small', 'muted', ' ' + rango)); }]); });
       }
       const up = M.filter((m) => m.actualizado).map((m) => m.actualizado).sort().slice(-1)[0];
-      $('ml-vnota').textContent = 'Gráfico, resumen y comparaciones en ' + monTxt + '. Fuente: métricas de Mercado Libre (ventas brutas en bolívares). US$ BCV = monto ÷ tasa oficial BCV de mitad de mes; US$ Binance = monto ÷ precio del USDT en Binance P2P de mitad de mes; brecha = cuánto más cara está la tasa Binance que la BCV. La cuenta empezó a vender en ' + nomMes(M[0].mes) + '.' + (up ? ' Actualizado: ' + fmtF(up) : '');
+      $('ml-vnota').textContent = 'Gráfico, resumen y comparaciones en ' + monTxt + '. Fuente: métricas de Mercado Libre (ventas brutas en bolívares). US$ BCV = monto ÷ tasa oficial BCV de mitad de mes; US$ Binance = monto ÷ precio del USDT en Binance P2P de mitad de mes; brecha = cuánto más cara está la tasa Binance que la BCV. Tasa Binance: oct 2024–ene 2025 y mar 2025 usan el dólar paralelo (Monitor Dólar, muy parecido a Binance en esas fechas); jun–sep 2025 son estimadas entre datos reales; desde oct 2025 es el precio del USDT en Binance P2P. La cuenta empezó a vender en ' + nomMes(M[0].mes) + '.' + (up ? ' Actualizado: ' + fmtF(up) : '');
     }
     function bajarVentas() {
       if (!window.XLSX) return; const M = mesesVenta(); const wb = XLSX.utils.book_new();
