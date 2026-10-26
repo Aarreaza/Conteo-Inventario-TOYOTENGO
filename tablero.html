@@ -543,7 +543,8 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
           <option value="mb">Margen ML por debajo del mínimo</option>
           <option value="ss">⚠ Publicados sin stock en el inventario</option>
           <option value="sd">Stock de ML distinto al inventario</option>
-          <option value="pa">Publicaciones pausadas o inactivas con stock</option>
+          <option value="pz">⏸ Publicaciones pausadas o inactivas (todas)</option>
+          <option value="pa">Artículos con stock cuya publicación está pausada</option>
           <option value="sv">Publicaciones sin código (sin vincular)</option>
           <option value="ok">Publicados y correctos</option>
           <option value="todas">Todas las publicaciones</option>
@@ -3246,6 +3247,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       ss: 'Publicaciones activas de artículos que en el inventario están en cero o negativo: si alguien compra, no hay mercancía. Páuselas o revise el inventario.',
       sd: 'El stock disponible en Mercado Libre no coincide con el del inventario. Actualice la cantidad en la publicación.',
       pa: 'Artículos con existencia cuya publicación está pausada o finalizada. Reactívelas.',
+      pz: 'Todas las publicaciones que hoy no se muestran a compradores (pausadas, finalizadas, en revisión o inactivas por la suspensión de la cuenta), con su stock en el inventario. Las que tienen stock son las primeras a reactivar.',
       sv: 'Publicaciones que no se pudieron unir con un código del inventario (no tienen SKU o el SKU no existe). Descárguelas, escriba el código del inventario y súbalas.',
       ok: 'Publicaciones activas con stock, margen suficiente y la misma cantidad que el inventario.',
       todas: 'Todas las publicaciones de la cuenta con su comparación contra el inventario.',
@@ -3287,7 +3289,10 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
           }
         }
         const nom = { bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Sin stock en inventario', sd: 'Stock distinto', sv: 'Sin código' + (sugerido ? ' (¿' + sugerido + '?)' : ''), ok: 'Correcta' };
-        r.problema = r.cat.map((c) => nom[c]).join(' · ') || (r.activa ? '' : 'Pausada / finalizada');
+        const est = String(p.estado || '').toLowerCase(), susp = ((ml.estado || {}).cuenta_estado || '') === 'SUSPENDIDA';
+        r.motivo = r.activa ? '' : /paus/.test(est) ? 'Pausada' : /clos|finaliz/.test(est) ? 'Finalizada' : /review|revisi/.test(est) ? 'En revisión' + (susp ? ' (cuenta suspendida)' : '') : /restric|inactiv/.test(est) ? (susp ? 'Inactiva por suspensión de la cuenta' : 'Inactiva') : 'Pausada / inactiva';
+        r.problema = r.cat.map((c) => nom[c]).join(' · ') || r.motivo;
+        if (!r.activa && r.cat.length) r.problema = r.motivo + ' · ' + r.problema;
         return r;
       });
       const invRows = [];
@@ -3330,7 +3335,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       b.hidden = !n; b.textContent = n > 999 ? '999+' : n;
       $('n-ml').title = n ? n + ' alertas de Mercado Libre' + (es.cuenta_estado && es.cuenta_estado !== 'ACTIVA' ? ' · CUENTA ' + es.cuenta_estado : '') : 'Mercado Libre';
     }
-    const filas = (v) => (v === 'np' ? R.k.np : v === 'pa' ? R.k.pa : v === 'vt' ? R.ventas : v === 'todas' ? R.pubs : R.k[v] || []);
+    const filas = (v) => (v === 'np' ? R.k.np : v === 'pa' ? R.k.pa : v === 'pz' ? R.pubs.filter((p) => !p.activa) : v === 'vt' ? R.ventas : v === 'todas' ? R.pubs : R.k[v] || []);
     function estadoTxt() {
       const e = R && R.ml.estado, el = $('ml-estado'); el.replaceChildren();
       const add = (t, b) => { const s = document.createElement('span'); if (b) { const x = document.createElement('b'); x.textContent = b; s.appendChild(x); s.append(' '); } s.append(t); el.appendChild(s); };
@@ -3354,10 +3359,11 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
         ['ss', 'Publicados sin stock', T.fmt.int(k.ss.length), 'riesgo de vender lo que no hay', k.ss.length ? 'alerta' : 'ok'],
         ['vt', 'Ventas ML · 30 días', T.fmt.usd0(k.v30), T.fmt.int(k.v30u) + ' unidades en ' + T.fmt.int(k.v30n) + ' ventas', ''],
         ['sv', 'Publicaciones sin código', T.fmt.int(k.sv.length), 'por vincular con el inventario', k.sv.length ? 'alerta' : 'ok'],
+        ['pz', 'Publicaciones pausadas o inactivas', T.fmt.int(k.pausadas), (() => { const L = R.pubs.filter((p) => !p.activa), cs = L.filter((p) => p.stock > 0); return T.fmt.int(cs.length) + ' con stock en inventario (' + T.fmt.usd0(cs.reduce((x, p) => x + (p.costo || 0) * p.stock, 0)) + ' a costo)'; })(), k.pausadas ? 'alerta' : 'ok'],
       ];
       L.forEach(([id, t, val, sub, cls]) => {
         const d = document.createElement('button'); d.type = 'button'; d.className = 'sh-lctile ml-tile ' + cls + (v === id ? ' on' : '');
-        const TI = { np: 'tienda', todas: 'grafico', ok: 'ok', bc: 'alerta', mb: 'dinero', ss: 'alerta', vt: 'grafico', sv: 'info' };
+        const TI = { pz: 'stop', np: 'tienda', todas: 'grafico', ok: 'ok', bc: 'alerta', mb: 'dinero', ss: 'alerta', vt: 'grafico', sv: 'info' };
         [['k', t], ['v', val], ['s', sub]].forEach(([c, x]) => { const s = document.createElement('span'); s.className = c; if (c === 'k') { const ic = document.createElement('span'); ic.className = 'ml-ti'; ic.appendChild(ico(TI[id] || 'info')); s.appendChild(ic); s.append(x); } else s.textContent = x; d.appendChild(s); });
         d.addEventListener('click', () => { $('ml-ver').value = id; pintar(); }); el.appendChild(d);
       });
@@ -3369,7 +3375,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       $('ml-expl').textContent = EXPL[v] || '';
       const tbl = $('ml-tabla'), tr = tbl.querySelector('thead tr'); tr.replaceChildren();
       COLS[tipo].forEach(([fld, lab, cl]) => { const th = document.createElement('th'); th.dataset.field = fld; if (cl) cl.split(' ').forEach((c) => th.classList.add(c === 'h' ? 'tt-hide-n' : c)); const b = document.createElement('button'); b.textContent = lab; th.appendChild(b); tr.appendChild(th); });
-      if (!st.sort || !COLS[tipo].some((c) => c[0] === st.sort)) { st.sort = tipo === 'inv' ? 'valor' : tipo === 'vt' ? 'fecha' : 'precio_usd'; st.dir = -1; }
+      if (!st.sort || !COLS[tipo].some((c) => c[0] === st.sort)) { st.sort = tipo === 'inv' ? 'valor' : tipo === 'vt' ? 'fecha' : v === 'pz' ? 'stock' : 'precio_usd'; st.dir = -1; }
       st.redraw = tabla;
       const u2 = (x) => (x == null ? '—' : T.fmt.usd2(x)), pc = (x) => (x == null ? '—' : T.fmt.pct(x)), nn = (x) => (x == null ? '—' : T.fmt.num(x));
       const n = T.table(tbl, vista, {
@@ -3379,7 +3385,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
         precio_lista: { num: true, fmt: u2 }, precio_min: { num: true, fmt: u2 }, precio_usd: { num: true, fmt: (x, r) => (x == null ? (r.precio_ml != null ? r.precio_ml + ' ' + r.moneda + ' (falta tasa)' : '—') : T.fmt.usd2(x)) },
         margen_ml: { num: true, render: (td, r) => { if (r.margen_ml == null) { td.textContent = '—'; return; } T.chip(td, T.fmt.pct(r.margen_ml), r.margen_ml < 0 ? 'bad' : r.margen_ml < R.A.min ? 'warn' : 'ok'); } },
         problema: { render: (td, r) => (r.problema ? T.chip(td, r.problema, r.cat.some((c) => c === 'bc' || c === 'ss' || c === 'sv') ? 'bad' : r.cat.includes('ok') ? 'ok' : 'warn') : (td.textContent = '')) },
-        estado_ml: { fmt: (x) => x || '—' }, cantidad: { num: true, fmt: nn }, total_usd: { num: true, fmt: u2 }, costo_total: { num: true, fmt: u2 }, margen: { num: true, fmt: pc },
+        estado_ml: { fmt: (x) => ({ active: 'Activa', paused: 'Pausada', closed: 'Finalizada', restricted: 'Inactiva', under_review: 'En revisión', inactive: 'Inactiva' }[String(x || '').toLowerCase()] || x || '—') }, cantidad: { num: true, fmt: nn }, total_usd: { num: true, fmt: u2 }, costo_total: { num: true, fmt: u2 }, margen: { num: true, fmt: pc },
       }, (r) => (r.item_id || '') + '|' + (r.codigo || '') + '|' + (r.venta_id || ''), st);
       $('ml-n').textContent = T.fmt.int(n) + (tipo === 'vt' ? ' líneas de venta' : tipo === 'inv' ? ' artículos' : ' publicaciones') + (n > st.limit ? ' · se muestran ' + st.limit + ', use la búsqueda' : '');
       $('ml-bajar-vista').disabled = !vista.length || !window.XLSX;
@@ -3391,7 +3397,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       el.hidden = false;
       const rows = vista, n = rows.length, sum = (f) => rows.reduce((s, r) => s + (Number(f(r)) || 0), 0);
       const nom = { np: 'Con stock y NO publicados', bc: 'Precio ML bajo el costo', mb: 'Margen bajo el mínimo', ss: 'Publicados sin stock en inventario', sd: 'Stock de ML distinto', pa: 'Publicaciones pausadas o inactivas con stock',
-        sv: 'Publicaciones sin código', ok: 'Publicados y correctos', todas: 'Todas las publicaciones', vt: 'Ventas en Mercado Libre' };
+        sv: 'Publicaciones sin código', ok: 'Publicados y correctos', todas: 'Todas las publicaciones', vt: 'Ventas en Mercado Libre', pz: 'Publicaciones pausadas o inactivas' };
       const h = document.createElement('h4'); h.textContent = 'Resumen · ' + (nom[v] || '');
       const filt = [$('ml-fam').value ? 'familia ' + $('ml-fam').value : '', $('ml-q').value.trim() ? 'búsqueda "' + $('ml-q').value.trim() + '"' : ''].filter(Boolean).join(' · ');
       const sm = document.createElement('small'); sm.textContent = filt ? 'filtrado por ' + filt : 'cambia al escoger otra opción, familia o búsqueda'; h.appendChild(sm); el.appendChild(h);
@@ -3416,6 +3422,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
         kp('Margen ML promedio', mProm == null ? '—' : pc(mProm), 'ponderado por precio, después de ' + Math.round(R.A.com * 1000) / 10 + '% de comisión', mProm == null ? '' : mProm < 0 ? 'bad' : mProm < R.A.min ? 'warn' : 'ok');
         if (v === 'bc' || v === 'mb') { const fal = sum((r) => (r.precio_min && r.precio_usd != null && r.precio_min > r.precio_usd ? r.precio_min - r.precio_usd : 0)); const per = sum((r) => (r.ganancia_unit != null && r.ganancia_unit < 0 ? -r.ganancia_unit * Math.max(r.stock || 0, 0) : 0));
           kp('Aumento total para llegar al mínimo', u2(fal), 'suma de lo que falta por unidad', fal ? 'bad' : 'ok'); kp('Pérdida si se vende todo el stock', u0(per), 'al precio actual', per ? 'bad' : 'ok'); }
+        if (v === 'pz') { const cs = rows.filter((r) => r.stock > 0); kp('Con stock en inventario', it(cs.length), it(cs.reduce((x, r) => x + r.stock, 0)) + ' unidades listas para volver a vender', cs.length ? 'warn' : 'ok'); kp('Sin stock en inventario', it(rows.length - cs.length), 'no hace falta reactivarlas'); }
         if (v === 'ss') kp('Unidades ofrecidas en ML', it(sum((r) => Math.max(r.stock_ml || 0, 0))), 'que no existen en el inventario', 'bad');
         if (v === 'sd') { const d = sum((r) => Math.abs((r.stock_ml || 0) - (r.stock || 0))); kp('Diferencia total de unidades', it(d), 'entre Mercado Libre y el inventario', d ? 'warn' : 'ok'); }
         if (v === 'sv') { const sug = rows.filter((r) => r.sugerido).length; kp('Con código sugerido', it(sug), 'el tablero encontró un código probable en el título', 'ok'); kp('Sin pista', it(n - sug), 'hay que buscar el código a mano', n - sug ? 'warn' : 'ok'); }
@@ -3439,7 +3446,8 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
         el.appendChild(g); };
       if (tipo === 'inv') { const m = {}; rows.forEach((r) => { const k = r.familia || 'Sin familia'; m[k] = (m[k] || 0) + (r.valor || 0); }); barras('Dónde está el dinero sin publicar (valor a costo por familia)', m, u0); }
       else if (tipo === 'pub') {
-        if (v === 'todas') { const m = {}; rows.forEach((r) => { const k = r.problema || (r.activa ? 'Correcta' : 'Inactiva'); m[k] = (m[k] || 0) + 1; }); barras('Situación de las publicaciones', m, it); }
+        if (v === 'pz') { const m = {}; rows.forEach((r) => { const k = r.motivo || 'Inactiva'; m[k] = (m[k] || 0) + 1; }); barras('Por qué no se muestran', m, it); const f = {}; rows.filter((r) => r.stock > 0).forEach((r) => { const k = r.familia || 'Sin código'; f[k] = (f[k] || 0) + 1; }); barras('Con stock, por familia', f, it); }
+        else if (v === 'todas') { const m = {}; rows.forEach((r) => { const k = r.problema || (r.activa ? 'Correcta' : 'Inactiva'); m[k] = (m[k] || 0) + 1; }); barras('Situación de las publicaciones', m, it); }
         else { const m = {}; rows.forEach((r) => { const k = r.familia || (r.codigo ? 'Sin familia' : 'Sin código'); m[k] = (m[k] || 0) + 1; }); barras('Publicaciones por familia', m, it); }
       } else { const m = {}; rows.forEach((r) => { const k = (r.fecha || '').slice(0, 7) || 'sin fecha'; m[k] = (m[k] || 0) + (r.total_usd || 0); }); barras('Monto vendido por mes', m, u0); }
     }
@@ -3673,7 +3681,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
     const CAMPOS = { inv: ['codigo', 'descripcion', 'familia', 'stock', 'costo', 'valor', 'precio_lista', 'precio_min', 'estado_ml'],
       pub: ['item_id', 'titulo', 'sku', 'codigo', 'sugerido', 'descripcion', 'via', 'stock', 'stock_ml', 'costo', 'precio_ml', 'moneda', 'precio_usd', 'neto_usd', 'margen_ml', 'ganancia_unit', 'precio_min', 'precio_lista', 'vendidos', 'estado_ml', 'problema', 'permalink'],
       vt: ['fecha', 'venta_id', 'item_id', 'codigo', 'titulo', 'cantidad', 'total_usd', 'costo_total', 'margen', 'estado'] };
-    const NOMBRE = { np: 'No publicados con stock', bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Publicados sin stock', sd: 'Stock distinto', pa: 'Pausadas con stock', sv: 'Sin código (vincular)', ok: 'Correctas', todas: 'Todas las publicaciones', vt: 'Ventas ML' };
+    const NOMBRE = { pz: 'Pausadas o inactivas', np: 'No publicados con stock', bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Publicados sin stock', sd: 'Stock distinto', pa: 'Pausadas con stock', sv: 'Sin código (vincular)', ok: 'Correctas', todas: 'Todas las publicaciones', vt: 'Ventas ML' };
     function hojaML(id, rows) {
       const tipo = id === 'np' || id === 'pa' ? 'inv' : id === 'vt' ? 'vt' : 'pub';
       const data = rows.map((r) => { const o = {}; CAMPOS[tipo].forEach((c) => { o[ETQ[c]] = r[c] == null ? '' : r[c]; });
@@ -3705,7 +3713,7 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
         ['Comisión usada %', R.A.com], ['Margen mínimo %', R.A.min], ['Generado', new Date().toLocaleString('es-VE')]];
       const ws = XLSX.utils.aoa_to_sheet(res); ws['!cols'] = [{ wch: 36 }, { wch: 18 }]; res.forEach((f, r) => { if (!r) return; const x = ws[XLSX.utils.encode_cell({ r, c: 1 })]; if (x && x.t === 'n') x.z = /%/.test(f[0]) ? '0.0%' : /US\$/.test(f[0]) ? '#,##0.00' : '#,##0'; });
       XLSX.utils.book_append_sheet(wb, ws, 'Resumen');
-      ['np', 'bc', 'mb', 'ss', 'sd', 'pa', 'sv', 'todas', 'vt'].forEach((id) => XLSX.utils.book_append_sheet(wb, hojaML(id, filas(id)), NOMBRE[id].slice(0, 31)));
+      ['np', 'bc', 'mb', 'ss', 'sd', 'pa', 'pz', 'sv', 'todas', 'vt'].forEach((id) => XLSX.utils.book_append_sheet(wb, hojaML(id, filas(id)), NOMBRE[id].slice(0, 31)));
       const nom = 'TOYOTENGO_MercadoLibre_conciliacion_' + fecha() + '.xlsx'; XLSX.writeFile(wb, nom); bitacora('DESCARGA MERCADO LIBRE', nom);
     }
     // ---------- subir archivos (de Mercado Libre o los Excel trabajados) ----------
