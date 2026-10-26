@@ -219,6 +219,10 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 @media (max-width:1440px){.sh-nav{display:contents}.sh-tools{margin-left:auto}.sh-tabs{order:3;flex:1 1 100%;justify-content:flex-start;overflow-x:auto;scrollbar-width:thin;padding-bottom:.15rem;margin-top:-.15rem}.sh-tabs button{flex:none}}
 @media (max-width:720px){.sh-brand small{display:none}.sh-brand img{height:36px}.sh-bar{position:static;min-height:0}:root{--tt-sticky:0px}.sh-who{display:none}.sh-mbtn{padding:.45rem .55rem}#n-admin{font-size:0;gap:0}#n-admin svg{width:20px;height:20px}#n-admin .sh-badge{font-size:.72rem}.tt-tabs{flex-wrap:nowrap!important;overflow-x:auto}.tt-tab{flex:none}}
 
+.tt-tile.tt-clic{cursor:pointer;transition:box-shadow .15s,transform .15s}.tt-tile.tt-clic:hover{box-shadow:0 4px 14px rgba(45,50,119,.15);transform:translateY(-1px)}.tt-tile.tt-clic.sel{outline:2px solid var(--brand-red,#c8102e);background:#fff7f8}
+.tt-ver{display:block;margin-top:.4rem;font-size:.78rem;font-weight:600;color:#2d3277}.tt-tile.sel .tt-ver{color:var(--brand-red,#c8102e)}
+#card-hz-lista{scroll-margin-top:130px}
+.hz-ban{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem;background:#fff1f2;border:1px solid #f6cdd2;border-left:4px solid var(--brand-red,#c8102e);border-radius:8px;padding:.5rem .75rem;margin:.5rem 0;font-size:.88rem}.hz-ban button{font:inherit;font-size:.8rem;border:1px solid #d5dbe1;background:#fff;border-radius:99px;padding:.25rem .7rem;cursor:pointer}
 /* ---- buscador y filtros en tablas ---- */
 .tf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .5rem;margin:.35rem 0 .5rem;padding:.4rem .5rem;border:1px dashed var(--color-border,#d5dbe1);border-radius:10px;background:var(--color-bg-subtle,#f7f8fa)}
 .tf-bar.act{border-style:solid;border-color:#2d3277;background:#f1f3fb}
@@ -1542,13 +1546,13 @@ window.TT = (() => {
     if (hl.status === 'ok') {
       hzState.redraw = draw;
       const q = hzQ.value.trim().toLowerCase(), p = hzP.value;
-      const rows = hl.data.filter((r) => (!p || r.prioridad === p) && (!q || [r.codigo, r.descripcion, r.detalle, r.tipo].join(' ').toLowerCase().includes(q)));
+      const rows = (window.TT_HZROWS ? window.TT_HZROWS(hl.data) : hl.data).filter((r) => (!p || r.prioridad === p) && (!q || [r.codigo, r.descripcion, r.detalle, r.tipo].join(' ').toLowerCase().includes(q)));
       table(document.getElementById('t-hz'), rows, {
         id: { num: true }, codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num }, valor: { num: true, fmt: fmt.usd2 },
-        prioridad: { render: (td, r) => chip(td, r.prioridad === '1-ALTA' ? 'Alta' : 'Media', r.prioridad === '1-ALTA' ? 'bad' : 'warn') },
+        prioridad: { render: (td, r) => chip(td, r.prioridad === '1-ALTA' ? 'Alta' : r.prioridad === '2-MEDIA' ? 'Media' : 'Revisar', r.prioridad === '1-ALTA' ? 'bad' : 'warn') },
         responsable: { fmt: (v) => v || '—' },
       }, (r) => r.id, hzState);
-      document.getElementById('hz-n').textContent = fmt.int(rows.length) + ' de ' + fmt.int(hl.data.length) + ' hallazgos';
+      { const base = window.TT_HZROWS ? window.TT_HZROWS(hl.data) : hl.data; document.getElementById('hz-n').textContent = fmt.int(rows.length) + ' de ' + fmt.int(base.length) + (window.TT_HZCUR && window.TT_HZCUR() === 'sc' ? ' códigos' : ' hallazgos'); }
     }
   };
   hzQ.addEventListener('input', draw); hzP.addEventListener('change', draw);
@@ -4128,6 +4132,43 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
   })();
   window.TT_FICHA = FICHA;
   $('n-buscar').addEventListener('click', () => FICHA.buscar(''));
+
+
+  // ---------- Calidad de datos: tocar una tarjeta muestra esos datos en la lista de abajo ----------
+  (() => {
+    const HZG = {
+      alta: { lab: 'Prioridad alta', f: (r) => r.prioridad === '1-ALTA' },
+      media: { lab: 'Prioridad media', f: (r) => r.prioridad === '2-MEDIA' },
+      neg: { lab: 'Códigos con stock negativo', f: (r) => /negativo/i.test(r.tipo || '') },
+      res: { lab: 'Hallazgos resueltos', f: (r) => !!r.resuelto },
+      sc: { lab: 'Solo en el reporte de Stocks (sin costo en el reporte de Valor)', rows: () => ((SERVER && SERVER.articulos) || []).filter((a) => a.en_rep_valor === 'NO').map((a, i) => ({ id: i + 1, prioridad: '3-REVISAR', tipo: 'Solo en el reporte de Stocks', codigo: a.codigo, descripcion: a.descripcion, stock: a.stock, valor: a.valor, detalle: 'Aparece en el reporte de Stocks pero no en el de Valor (sin costo)', accion: 'Cargar el costo en Profit o revisar si el código es válido', responsable: '' })) },
+    };
+    let cur = null;
+    window.TT_HZCUR = () => cur;
+    window.TT_HZROWS = (data) => (!cur ? data : HZG[cur].rows ? HZG[cur].rows() : data.filter(HZG[cur].f));
+    const card = document.getElementById('card-hz-lista'), sec = document.getElementById('calidad'); if (!card || !sec) return;
+    const ban = document.createElement('div'); ban.className = 'hz-ban'; ban.hidden = true; card.insertBefore(ban, card.querySelector('.tt-tools'));
+    const pintarBan = () => {
+      sec.querySelectorAll('.tt-tile').forEach((t) => t.classList.toggle('sel', t.dataset.grupoTile === cur));
+      if (!cur) { ban.hidden = true; return; }
+      ban.hidden = false; ban.replaceChildren(); const b = document.createElement('b'); b.textContent = 'Mostrando: ' + HZG[cur].lab; const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕ Ver todos los hallazgos'; x.addEventListener('click', () => elegir(null)); ban.append(b, x);
+      const h3 = card.querySelector('h3'); if (h3) h3.textContent = cur === 'sc' ? 'Códigos solo en el reporte de Stocks' : 'Lista de hallazgos';
+    };
+    function elegir(g) {
+      cur = cur === g ? null : g;
+      const q = document.getElementById('hz-q'), p = document.getElementById('hz-p'); if (q) q.value = ''; if (p) p.value = '';
+      if (!cur) { const h3 = card.querySelector('h3'); if (h3) h3.textContent = 'Lista de hallazgos'; }
+      pintarBan(); if (window.TT.drawMain) window.TT.drawMain();
+      if (cur) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    sec.querySelectorAll('.tt-tile').forEach((t) => {
+      const g = (t.querySelector('[data-grupo]') || {}).dataset ? t.querySelector('[data-grupo]').dataset.grupo : null; if (!g || !HZG[g]) return;
+      t.dataset.grupoTile = g; t.classList.add('tt-clic'); t.tabIndex = 0; t.setAttribute('role', 'button'); t.title = 'Ver esta lista abajo';
+      const h = document.createElement('span'); h.className = 'tt-ver'; h.textContent = 'Ver lista ↓'; t.appendChild(h);
+      t.addEventListener('click', (e) => { if (e.target.closest('button,a')) return; elegir(g); });
+      t.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(g); } });
+    });
+  })();
 
   // ---------- arranque ----------
   if (location.hash.includes('access_token') || location.hash.includes('type=signup')) {
