@@ -223,6 +223,19 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .tt-ver{display:block;margin-top:.4rem;font-size:.78rem;font-weight:600;color:#2d3277}.tt-tile.sel .tt-ver{color:var(--brand-red,#c8102e)}
 #card-hz-lista{scroll-margin-top:130px}
 .hz-ban{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem;background:#fff1f2;border:1px solid #f6cdd2;border-left:4px solid var(--brand-red,#c8102e);border-radius:8px;padding:.5rem .75rem;margin:.5rem 0;font-size:.88rem}.hz-ban button{font:inherit;font-size:.8rem;border:1px solid #d5dbe1;background:#fff;border-radius:99px;padding:.25rem .7rem;cursor:pointer}
+/* ---- conteos: avance, falta por contar y fotos ---- */
+.ct-av{display:flex;flex-direction:column;gap:.3rem;margin:.3rem 0 .6rem;font-size:.85rem;color:var(--color-fg-muted)}.ct-bar{height:10px;background:#e6ebf0;border-radius:99px;overflow:hidden}.ct-bar i{display:block;height:100%;background:linear-gradient(90deg,#1f8a4c,#3fb26d)}
+.ct-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:.6rem}
+.ct-k>div{border:1px solid var(--color-border,#e3e5e8);border-top:4px solid #2d3277;border-radius:10px;padding:.55rem .7rem;display:flex;flex-direction:column;gap:.1rem;background:var(--color-bg,#fff)}
+.ct-k span{font-size:.75rem;color:var(--color-fg-muted)}.ct-k b{font-family:var(--font-anthropic-serif);font-size:1.35rem;font-weight:400}.ct-k small{font-size:.72rem;color:var(--color-fg-muted)}
+.ct-k .r{border-top-color:var(--color-bad);background:#fff7f8}.ct-k .r b{color:var(--color-bad)}.ct-k .z{border-top-color:#1d4f91;background:#f4f8ff}.ct-k .z b{color:#1d4f91}.ct-k .v{border-top-color:var(--color-ok);background:#f3fbf6}.ct-k .v b{color:var(--color-ok)}
+.ct-tab td.ct-fc{width:52px;padding:.25rem .4rem}.ct-mini{width:44px;height:44px;object-fit:cover;border-radius:7px;border:1px solid var(--color-border,#e3e5e8);cursor:zoom-in;display:block;background:#f3f5f8;transition:transform .15s}.ct-mini:hover{transform:scale(1.08)}
+.ct-sinf{display:inline-flex;width:44px;height:44px;align-items:center;justify-content:center;border:1px dashed #c3ccd6;border-radius:7px;color:#9aa6b2}
+.ct-neg{color:var(--color-bad);font-weight:600}.ct-pos{color:#1d4f91;font-weight:600}.ct-ok{color:var(--color-ok)}.ct-tab tr.ct-falt td{background:#fff8f8}.ct-tab tr.ct-mas td{background:#f6f9ff}
+.fv-dlg{border:0;padding:0;background:transparent;max-width:96vw;max-height:96vh;overflow:visible}.fv-dlg::backdrop{background:rgba(10,14,24,.82)}
+.fv-dlg img{display:block;max-width:min(92vw,1100px);max-height:78vh;object-fit:contain;border-radius:12px;background:#111;margin:0 auto}
+.fv-cap{display:flex;flex-wrap:wrap;gap:.3rem .9rem;align-items:baseline;color:#fff;margin-top:.6rem;font-size:.9rem;justify-content:center;text-align:center}.fv-cap b{font-family:var(--font-mono,monospace);font-size:1.05rem}.fv-cap small{color:#c9cfdb}.fv-cap a{color:#ffe600}
+.fv-x{position:absolute;top:-14px;right:-14px;width:2.4rem;height:2.4rem;border-radius:50%;border:0;background:#fff;font-size:1.05rem;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35)}
 /* ---- buscador y filtros en tablas ---- */
 .tf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .5rem;margin:.35rem 0 .5rem;padding:.4rem .5rem;border:1px dashed var(--color-border,#d5dbe1);border-radius:10px;background:var(--color-bg-subtle,#f7f8fa)}
 .tf-bar.act{border-style:solid;border-color:#2d3277;background:#f1f3fb}
@@ -3127,18 +3140,75 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       tt('Sobrante', T.fmt.usd0(Number(t.sobrante_costo) || 0), (t.sobrante_unid != null ? T.fmt.num(t.sobrante_unid) + ' uds.' : ''));
       tt('Neto', T.fmt.usd0((Number(t.sobrante_costo) || 0) - (Number(t.faltante_costo) || 0)), 'sobrante − faltante a costo');
       if (t.contadores) { const c = document.createElement('p'); c.className = 'note'; c.textContent = 'Contaron: ' + t.contadores; box.appendChild(c); }
-      const h4 = document.createElement('h3'); h4.textContent = 'Hallazgos del conteo (artículos con diferencia)'; h4.style.marginTop = '.75rem'; box.appendChild(h4);
-      let its = [], bit = [];
-      try { its = ok(await sb.from('toma_items').select('*').eq('toma_id', id).neq('diferencia', 0).order('dif_costo')); bit = ok(await sb.from('toma_bitacora').select('*').eq('toma_id', id).order('n')); } catch (e) {}
-      const tb = document.createElement('div'); tb.className = 'tt-scroll'; tb.style.maxHeight = '22rem';
-      const tab = document.createElement('table'); tab.className = 'tt-t'; tb.appendChild(tab); box.appendChild(tb);
-      const cab = ['Código', 'Descripción', 'Sistema', 'Contado', 'Diferencia', 'A costo', 'Resultado', 'Decisión', 'Justificación', 'Ubicaciones'];
-      tab.innerHTML = '<thead><tr>' + cab.map((c, i) => '<th' + ([2, 3, 4, 5].includes(i) ? ' class="n"' : '') + '><button>' + c + '</button></th>').join('') + '</tr></thead><tbody></tbody>';
-      const body = tab.querySelector('tbody');
-      if (!its.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = cab.length; td.textContent = t.contados == null ? 'El detalle de esta toma no está disponible (conteo ciego o sin permiso de resultados).' : 'Sin diferencias: todo lo contado coincide con el sistema.'; tr.appendChild(td); body.appendChild(tr); }
-      its.forEach((x) => { const tr = document.createElement('tr'); [x.codigo, x.descripcion, T.fmt.num(Number(x.stock_corte)), T.fmt.num(Number(x.contado)), (x.diferencia > 0 ? '+' : '') + T.fmt.num(Number(x.diferencia)), T.fmt.usd2(Number(x.dif_costo) || 0), null, x.decision || 'Pendiente', x.justificacion || '', x.ubicaciones || ''].forEach((v, i) => {
-        const td = document.createElement('td'); if ([2, 3, 4, 5].includes(i)) td.className = 'n'; if (i === 0) td.className = 'code';
-        if (i === 6) T.chip(td, x.resultado, /FALTANTE/.test(x.resultado) ? 'bad' : 'warn'); else td.textContent = v; tr.appendChild(td); }); body.appendChild(tr); });
+      // ---- artículos de la toma: avance, falta por contar, fotos y correcciones (lo mismo que ve la app de conteo) ----
+      let its = [], bit = [], lecs = [], FM = {};
+      try { its = await todas(() => sb.from('toma_items').select('*').eq('toma_id', id).order('codigo')); } catch (e) {}
+      try { bit = ok(await sb.from('toma_bitacora').select('*').eq('toma_id', id).order('n')); } catch (e) {}
+      try { lecs = await todas(() => sb.from('toma_lecturas').select('id, leido_en, codigo, cantidad, etiqueta_id, ubicacion, estado, origen, nota, por_nombre').eq('toma_id', id).order('leido_en')); } catch (e) {}
+      try { FM = await window.TT_FOTO.mapa(); } catch (e) {}
+      const contados = new Set(lecs.filter((l) => l.estado === 'VÁLIDA').map((l) => String(l.codigo).toUpperCase()));
+      const F = its.map((x) => { const s = Number(x.stock_corte) || 0, c = Number(x.contado) || 0, dif = Math.round((c - s) * 1000) / 1000;
+        return { x, s, c, dif, falta: dif < 0 ? -dif : 0, mas: dif > 0 ? dif : 0, contado: contados.has(String(x.codigo).toUpperCase()) || c > 0, foto: FM[String(x.codigo).toUpperCase()] || null }; });
+      const S = { s: 0, c: 0, falta: 0, nF: 0, mas: 0, nM: 0, ok: 0, cont: 0, sinFoto: 0 };
+      F.forEach((f) => { if (f.x.en_alcance === false) return; S.s += Math.max(f.s, 0); S.c += f.c; S.falta += f.falta; if (f.falta) S.nF++; S.mas += f.mas; if (f.mas) S.nM++; if (!f.dif && (f.s || f.c)) S.ok++; if (f.contado) S.cont++; if (!f.foto) S.sinFoto++; });
+      const h4 = document.createElement('h3'); h4.textContent = 'Artículos de la toma'; h4.style.marginTop = '.75rem'; box.appendChild(h4);
+      if (!its.length) { const pn = document.createElement('p'); pn.className = 'note'; pn.textContent = t.contados == null ? 'El detalle de esta toma no está disponible (conteo ciego o sin permiso de resultados).' : 'Todavía no hay artículos sincronizados para esta toma.'; box.appendChild(pn); }
+      else {
+        const pct = F.length ? S.cont / F.length : 0;
+        const av = document.createElement('div'); av.className = 'ct-av'; av.innerHTML = '<div class="ct-bar"><i style="width:' + Math.round(pct * 1000) / 10 + '%"></i></div>';
+        const avt = document.createElement('span'); avt.textContent = T.fmt.int(S.cont) + ' de ' + T.fmt.int(F.length) + ' artículos ya tienen conteo (' + T.fmt.pct(pct) + ')' + (t.estado === 'ABIERTA' || t.estado === 'RECONTEO' ? ' · la toma sigue abierta, se actualiza cada 5 minutos' : ''); av.appendChild(avt); box.appendChild(av);
+        const k = document.createElement('div'); k.className = 'ct-k'; box.appendChild(k);
+        const kp = (cls, t1, v, s) => { const d = document.createElement('div'); d.className = cls; const a = document.createElement('span'); a.textContent = t1; const b = document.createElement('b'); b.textContent = v; d.append(a, b); if (s) { const c = document.createElement('small'); c.textContent = s; d.appendChild(c); } k.appendChild(d); };
+        kp('', 'Unidades en el sistema', T.fmt.num(S.s), 'al corte de la toma'); kp('', 'Unidades contadas', T.fmt.num(S.c), '');
+        kp('r', 'Falta por contar', T.fmt.num(S.falta), T.fmt.int(S.nF) + ' artículos'); kp('z', 'Contado de más', T.fmt.num(S.mas), T.fmt.int(S.nM) + ' artículos');
+        kp('v', 'Cuadran con el sistema', T.fmt.int(S.ok), 'artículos'); kp('', 'Con foto', T.fmt.int(F.length - S.sinFoto), T.fmt.int(S.sinFoto) + ' sin foto');
+        const tools = document.createElement('div'); tools.className = 'tt-tools'; tools.style.marginTop = '.6rem';
+        const sel = document.createElement('select'); sel.className = 'tt-in'; sel.setAttribute('aria-label', 'Mostrar');
+        [['falta', 'Falta por contar (según sistema)'], ['dif', 'Con diferencia'], ['mas', 'Contado de más'], ['ok', 'Cuadran con el sistema'], ['sin', 'Sin contar'], ['foto', 'Sin foto'], ['', 'Todos']].forEach(([v, l]) => sel.appendChild(new Option(l, v)));
+        sel.value = S.nF ? 'falta' : S.nM ? 'dif' : '';
+        const q = document.createElement('input'); q.type = 'search'; q.className = 'tt-in'; q.placeholder = 'Buscar código o descripción'; tools.append(sel, q); box.appendChild(tools);
+        const n = document.createElement('p'); n.className = 'note'; box.appendChild(n);
+        const tb = document.createElement('div'); tb.className = 'tt-scroll'; tb.style.maxHeight = '30rem';
+        const tab = document.createElement('table'); tab.className = 'tt-t ct-tab'; tab.dataset.nofiltro = ''; tb.appendChild(tab); box.appendChild(tb);
+        const cab = [['', ''], ['Código', ''], ['Descripción', ''], ['Sistema', 'n'], ['Contado', 'n'], ['Diferencia', 'n'], ['Falta por contar', 'n'], ['A costo', 'n'], ['Resultado', ''], ['Decisión', ''], ['Dónde se contó', '']];
+        tab.innerHTML = '<thead><tr>' + cab.map(([c, k2]) => '<th' + (k2 ? ' class="' + k2 + '"' : '') + '>' + c + '</th>').join('') + '</tr></thead><tbody></tbody>';
+        const body = tab.querySelector('tbody');
+        const pintar = () => {
+          const v = sel.value, qq = q.value.trim().toLowerCase();
+          let L = F.filter((f) => (v === 'falta' ? f.falta > 0 : v === 'dif' ? f.dif !== 0 : v === 'mas' ? f.mas > 0 : v === 'ok' ? f.dif === 0 && (f.s || f.c) : v === 'sin' ? !f.contado : v === 'foto' ? !f.foto : true)
+            && (!qq || (f.x.codigo + ' ' + (f.x.descripcion || '')).toLowerCase().includes(qq)));
+          if (v === 'falta') L.sort((a, b) => b.falta - a.falta); else if (v === 'mas') L.sort((a, b) => b.mas - a.mas); else if (v === 'dif') L.sort((a, b) => Math.abs(b.dif) - Math.abs(a.dif));
+          n.textContent = T.fmt.int(L.length) + ' artículos' + (L.length > 500 ? ' · se muestran 500, use la búsqueda' : '') + ' · toque la foto para verla en grande y el código para ver su ficha';
+          body.replaceChildren();
+          L.slice(0, 500).forEach((f) => {
+            const tr = document.createElement('tr'); if (f.falta && f.contado) tr.className = 'ct-falt'; else if (f.mas) tr.className = 'ct-mas';
+            const td0 = document.createElement('td'); td0.className = 'ct-fc';
+            if (f.foto) { const im = document.createElement('img'); im.className = 'ct-mini'; im.loading = 'lazy'; im.alt = 'Foto de ' + f.x.codigo; im.src = window.TT_FOTO.url(f.foto.foto_id, 160); im.addEventListener('click', () => window.TT_FOTO.ver(f.foto, f.x.codigo, f.x.descripcion)); td0.appendChild(im); }
+            else { const sp = document.createElement('span'); sp.className = 'ct-sinf'; sp.textContent = '📷'; sp.title = 'Sin foto: se toma desde la app de conteo'; td0.appendChild(sp); }
+            tr.appendChild(td0);
+            const cel = (txt, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = txt; tr.appendChild(td); return td; };
+            cel(f.x.codigo, 'code'); cel(f.x.descripcion || ''); cel(T.fmt.num(f.s), 'n'); cel(f.contado ? T.fmt.num(f.c) : '—', 'n');
+            const d = cel((f.dif > 0 ? '+' : '') + T.fmt.num(f.dif) + (f.dif === 0 && (f.s || f.c) ? ' ✓' : ''), 'n ' + (f.dif < 0 ? 'ct-neg' : f.dif > 0 ? 'ct-pos' : 'ct-ok'));
+            cel(f.falta ? T.fmt.num(f.falta) : '—', 'n' + (f.falta ? ' ct-neg' : '')); cel(f.x.dif_costo ? T.fmt.usd2(Number(f.x.dif_costo)) : '—', 'n');
+            const r = document.createElement('td'); if (f.x.resultado) T.chip(r, f.x.resultado, /FALTANTE/.test(f.x.resultado) ? 'bad' : /SOBRANTE/.test(f.x.resultado) ? 'warn' : 'ok'); tr.appendChild(r);
+            cel(f.x.decision || (f.dif ? 'Pendiente' : '')); cel(f.x.ubicaciones || '');
+            body.appendChild(tr);
+          });
+          if (!L.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = cab.length; td.textContent = 'No hay artículos en esta vista.'; tr.appendChild(td); body.appendChild(tr); }
+        };
+        sel.addEventListener('change', pintar); q.addEventListener('input', pintar); pintar();
+      }
+      // correcciones y anulaciones hechas desde la app
+      const corr = lecs.filter((l) => l.estado === 'ANULADA' || /CORRECCI/i.test(l.origen || '')).reverse();
+      if (corr.length) {
+        const h6 = document.createElement('h3'); h6.textContent = 'Correcciones y anulaciones (' + corr.length + ')'; h6.style.marginTop = '.75rem'; box.appendChild(h6);
+        const sc2 = document.createElement('div'); sc2.className = 'tt-scroll'; sc2.style.maxHeight = '16rem'; const ct = document.createElement('table'); ct.className = 'tt-t'; ct.dataset.nofiltro = '';
+        ct.innerHTML = '<thead><tr><th>Hora</th><th>Código</th><th class="n">Cantidad</th><th>Ubicación</th><th>Qué pasó</th><th>Contó</th><th>Detalle</th></tr></thead><tbody></tbody>';
+        corr.forEach((l) => { const tr = document.createElement('tr'); const qp = l.estado === 'ANULADA' ? (/Correcci/i.test(l.nota || '') ? 'Corregida (anulada)' : 'Anulada') : 'Cantidad corregida';
+          [fmtF(l.leido_en), l.codigo, T.fmt.num(Number(l.cantidad) || 0), l.ubicacion || '', qp, l.por_nombre || '', l.nota || ''].forEach((v, i) => { const td = document.createElement('td'); if (i === 1) td.className = 'code'; if (i === 2) td.className = 'n';
+            if (i === 4) T.chip(td, v, l.estado === 'ANULADA' ? 'bad' : 'ok'); else td.textContent = v; if (i === 6) td.style.fontSize = '.8rem'; tr.appendChild(td); }); ct.querySelector('tbody').appendChild(tr); });
+        sc2.appendChild(ct); box.appendChild(sc2);
+      }
       const aj = AJ.filter((a) => a.toma_id === id);
       if (aj.length) { const a = document.createElement('p'); a.className = 'note'; a.textContent = 'Ajustes generados: ' + aj.length + ' · ' + aj.filter((x) => x.aplicado_en).length + ' aplicados en Profit · ' + aj.filter((x) => !x.aplicado_en).length + ' pendientes.'; box.appendChild(a); }
       if (bit.length) {
@@ -3962,6 +4032,31 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
     return { pintar };
   })();
 
+  // ---------- fotos de artículos (tomadas en la app de conteo, guardadas en Google Drive) ----------
+  window.TT_FOTO = (() => {
+    let cache = null, cuando = 0;
+    const url = (id, w) => 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + (w || 400);
+    async function mapa() {
+      if (cache && Date.now() - cuando < 120000) return cache;
+      const L = await todas(() => sb.from('articulo_fotos').select('codigo, foto_id, tomada_por, tomada_en').eq('empresa_id', EMPRESA).order('codigo'));
+      cache = {}; L.forEach((f) => { cache[String(f.codigo).toUpperCase()] = f; }); cuando = Date.now(); return cache;
+    }
+    const dlg = document.createElement('dialog'); dlg.className = 'fv-dlg'; document.body.appendChild(dlg);
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    function ver(f, codigo, desc) {
+      if (!f || !f.foto_id) return;
+      dlg.replaceChildren();
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'fv-x'; x.textContent = '✕'; x.setAttribute('aria-label', 'Cerrar'); x.addEventListener('click', () => dlg.close());
+      const im = document.createElement('img'); im.alt = 'Foto de ' + codigo; im.src = url(f.foto_id, 1600);
+      const cap = document.createElement('div'); cap.className = 'fv-cap';
+      const b = document.createElement('b'); b.textContent = codigo; const d = document.createElement('span'); d.textContent = desc || '';
+      const s = document.createElement('small'); s.textContent = 'Foto tomada en el conteo' + (f.tomada_por ? ' por ' + String(f.tomada_por).replace(/\s*<.*>/, '') : '') + (f.tomada_en ? ' · ' + fmtF(f.tomada_en) : '');
+      const a = document.createElement('a'); a.href = 'https://drive.google.com/file/d/' + encodeURIComponent(f.foto_id) + '/view'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Abrir original en Drive ↗';
+      cap.append(b, d, s, a); dlg.append(x, im, cap); dlg.showModal();
+    }
+    return { url, mapa, ver };
+  })();
+
   // ---------- buscador y filtros en todas las tablas + ficha de artículo ----------
   const nrm = (s) => String(s == null ? '' : s).toUpperCase().replace(/[\s\-._\/]/g, '');
   const sinAc = (s) => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -4074,8 +4169,8 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       const fotoBox = mk('div', 'fa-foto'); fotoBox.hidden = true; box.appendChild(fotoBox);
       sb.from('articulo_fotos').select('foto_id, tomada_por, tomada_en').eq('empresa_id', EMPRESA).eq('codigo', a.codigo).maybeSingle().then(ok).then((ft) => {
         if (!ft || !ft.foto_id) return; const im = mk('img'); im.alt = 'Foto de ' + a.codigo; im.loading = 'lazy'; im.src = 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(ft.foto_id) + '&sz=w900';
-        const ln = mk('a'); ln.href = 'https://drive.google.com/file/d/' + encodeURIComponent(ft.foto_id) + '/view'; ln.target = '_blank'; ln.rel = 'noopener'; ln.appendChild(im);
-        fotoBox.replaceChildren(ln, mk('small', null, 'Foto tomada en el conteo' + (ft.tomada_por ? ' por ' + ft.tomada_por : '') + ' · ' + fmtF(ft.tomada_en))); fotoBox.hidden = false;
+        im.title = 'Toque para ver en grande'; im.style.cursor = 'zoom-in'; im.addEventListener('click', () => window.TT_FOTO.ver(ft, a.codigo, a.descripcion));
+        fotoBox.replaceChildren(im, mk('small', null, 'Foto tomada en el conteo' + (ft.tomada_por ? ' por ' + ft.tomada_por : '') + ' · ' + fmtF(ft.tomada_en) + ' · toque la foto para verla en grande')); fotoBox.hidden = false;
       }).catch(() => {});
       const chips = mk('div', 'fa-chips'); [[a.familia, ''], [a.linea, ''], [a.estado, a.estado === 'Con stock' ? 'ok' : a.estado === 'Negativo' ? 'bad' : 'warn'], a.hallazgo && a.hallazgo !== 'OK' ? [a.hallazgo, 'bad'] : null].filter(Boolean).forEach(([t, k]) => chips.appendChild(mk('span', 'tt-chip ' + k, t))); box.appendChild(chips);
       const M = {}; dd('margen_art').forEach((m) => { M[m.fila] = m; }); const mg = M[a.fila] || {};
