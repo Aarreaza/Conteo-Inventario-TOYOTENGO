@@ -216,8 +216,35 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .sh-xrow b{font-weight:600;font-size:.9rem}.sh-xrow small{display:block;color:#5b6470;font-size:.78rem}
 .sh-xg label small{display:block;color:#5b6470;font-size:.78rem}
 .sh-auth-logo{display:block;width:min(240px,60vw);height:auto;margin:0 auto .25rem}
-@media (max-width:1180px){.sh-nav{display:contents}.sh-tools{margin-left:auto}.sh-tabs{order:3;flex:1 1 100%;justify-content:flex-start;overflow-x:auto;scrollbar-width:thin;padding-bottom:.15rem;margin-top:-.15rem}.sh-tabs button{flex:none}}
+@media (max-width:1440px){.sh-nav{display:contents}.sh-tools{margin-left:auto}.sh-tabs{order:3;flex:1 1 100%;justify-content:flex-start;overflow-x:auto;scrollbar-width:thin;padding-bottom:.15rem;margin-top:-.15rem}.sh-tabs button{flex:none}}
 @media (max-width:720px){.sh-brand small{display:none}.sh-brand img{height:36px}.sh-bar{position:static;min-height:0}:root{--tt-sticky:0px}.sh-who{display:none}.sh-mbtn{padding:.45rem .55rem}#n-admin{font-size:0;gap:0}#n-admin svg{width:20px;height:20px}#n-admin .sh-badge{font-size:.72rem}.tt-tabs{flex-wrap:nowrap!important;overflow-x:auto}.tt-tab{flex:none}}
+
+/* ---- buscador y filtros en tablas ---- */
+.tf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .5rem;margin:.35rem 0 .5rem;padding:.4rem .5rem;border:1px dashed var(--color-border,#d5dbe1);border-radius:10px;background:var(--color-bg-subtle,#f7f8fa)}
+.tf-bar.act{border-style:solid;border-color:#2d3277;background:#f1f3fb}
+.tf-ic{display:inline-flex;color:var(--color-fg-muted)}.tf-q{flex:1 1 15rem;min-width:10rem;font-size:.85rem;padding:.35rem .55rem}
+.tf-sels{display:contents}.tf-s{font-size:.8rem;padding:.3rem .45rem;max-width:13rem}.tf-s.on{border-color:#2d3277;background:#e6e9f7;font-weight:600}
+.tf-lim{font:inherit;font-size:.78rem;border:0;background:transparent;color:var(--brand-red,#c8102e);cursor:pointer;text-decoration:underline}
+.tf-n{margin-left:auto;font-size:.75rem;color:var(--color-fg-muted);white-space:nowrap}
+td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
+.sh-buscar{gap:.4rem}.sh-buscar svg{width:1.05rem;height:1.05rem;fill:currentColor}
+@media (max-width:700px){.sh-buscar span{display:none}.tf-s{max-width:100%;flex:1 1 9rem}.tf-n{margin-left:0;width:100%}}
+/* ---- ficha de artículo ---- */
+.fa-dlg{border:0;padding:0;border-radius:16px;width:min(960px,96vw);max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.35);background:var(--color-bg,#fff);color:inherit}
+.fa-dlg::backdrop{background:rgba(20,24,40,.55)}
+.fa-box{padding:1.1rem 1.25rem 1.4rem;max-height:92vh;overflow:auto}
+.fa-h{display:flex;align-items:center;gap:.75rem;position:sticky;top:-1.1rem;background:var(--color-bg,#fff);padding:.4rem 0;z-index:2}.fa-h h2{margin:0;font-family:var(--font-mono,monospace);font-size:1.3rem;flex:1}
+.fa-x{border:0;background:#f1f2f5;border-radius:50%;width:2.2rem;height:2.2rem;font-size:1rem;cursor:pointer}.fa-vol{border:1px solid var(--color-border,#d5dbe1);background:transparent;border-radius:99px;padding:.3rem .7rem;font:inherit;font-size:.8rem;cursor:pointer}
+.fa-desc{font-size:1.05rem;margin:.1rem 0 .5rem}.fa-chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.9rem}
+.fa-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:.6rem;margin-bottom:.8rem}
+.fa-kc{border:1px solid var(--color-border,#e3e5e8);border-top:4px solid #2d3277;border-radius:10px;padding:.55rem .7rem;display:flex;flex-direction:column;gap:.1rem}.fa-kc span{font-size:.75rem;color:var(--color-fg-muted)}.fa-kc b{font-family:var(--font-anthropic-serif);font-size:1.3rem;font-weight:400}.fa-kc small{font-size:.72rem;color:var(--color-fg-muted)}
+.fa-kc.ok{border-top-color:var(--color-ok)}.fa-kc.bad{border-top-color:var(--color-bad)}.fa-kc.warn{border-top-color:#e8a400}
+.fa-acc{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem}
+.fa-sec{margin-top:1.1rem}.fa-sec h3{display:flex;align-items:center;gap:.5rem;font-size:1rem;margin:0 0 .5rem;padding-bottom:.3rem;border-bottom:2px solid #f0f1f4}.fa-n{font-size:.72rem;background:#2d3277;color:#fff;border-radius:99px;padding:.05rem .5rem}.fa-sub{font-weight:600;margin:.7rem 0 .3rem;font-size:.85rem}
+.fa-bars{display:flex;align-items:flex-end;gap:4px;height:110px;margin:.3rem 0 .4rem;overflow-x:auto}.fa-bar{flex:1 0 26px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:.65rem;color:var(--color-fg-muted)}.fa-bar i{display:block;width:70%;background:linear-gradient(180deg,#2d3277,#4b52a8);border-radius:4px 4px 0 0}.fa-bv{color:var(--color-fg,#1f2328);font-weight:600}
+.fa-q{width:100%;font-size:1rem;padding:.6rem .75rem;margin:.4rem 0 .6rem}
+.fa-res{display:flex;flex-direction:column;gap:.3rem}.fa-it{display:grid;grid-template-columns:minmax(7rem,auto) 1fr auto;gap:.75rem;align-items:center;text-align:left;font:inherit;font-size:.88rem;border:1px solid var(--color-border,#e3e5e8);border-radius:8px;background:transparent;padding:.5rem .7rem;cursor:pointer}.fa-it:hover{background:#f1f3fb;border-color:#2d3277}.fa-it small{font-size:.75rem}.fa-it small.ok{color:var(--color-ok)}.fa-it small.muted{color:var(--color-fg-muted)}
+@media (max-width:600px){.fa-it{grid-template-columns:1fr auto}.fa-it span{grid-column:1/-1;order:3}.fa-box{padding:.9rem}}
 
 /* ---- tablero ---- */
 
@@ -335,6 +362,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
       <button id="n-exportar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5zM12 3v10.2l-3.6-3.6L7 11l5 5 5-5-1.4-1.4-3.6 3.6V3z"/></svg>Descargar Excel</button>
     </div>
     <div class="sh-tools">
+      <button class="sh-mbtn sh-buscar" id="n-buscar" type="button" title="Buscar artículo y ver su ficha (Ctrl+K)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 1 0 4.2 12.6l5.1 5.1 1.4-1.4-5.1-5.1A7 7 0 0 0 10 3zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/></svg><span>Buscar artículo</span></button>
       <div class="sh-menu sh-admin" id="m-admin" hidden>
         <button class="sh-mbtn" id="n-admin" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7 7 0 0 0-1.7-1L15 3h-4l-.3 2.6a7 7 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7 7 0 0 0 1.7 1L11 21h4l.3-2.6a7 7 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>Administración<span class="sh-badge" id="n-pend2" hidden></span><span class="sh-car" aria-hidden="true">▾</span></button>
         <div class="sh-pop" role="menu">
@@ -1314,6 +1342,7 @@ window.TT = (() => {
   };
   // sortable table body renderer
   const table = (tbl, rows, cols, keyOf, state) => {
+    if (window.TT_FILTRO) rows = window.TT_FILTRO(tbl, rows, cols, keyOf, state);
     const ths = [...tbl.querySelectorAll('thead th')];
     ths.forEach((th, i) => {
       const f = th.dataset.field; if (!f) return;
@@ -3919,6 +3948,186 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
     $('x-nada').addEventListener('click', () => { marcados.clear(); pintar(); });
     return { pintar };
   })();
+
+  // ---------- buscador y filtros en todas las tablas + ficha de artículo ----------
+  const nrm = (s) => String(s == null ? '' : s).toUpperCase().replace(/[\s\-._\/]/g, '');
+  const sinAc = (s) => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const NO_CAT = /^(codigo|descripcion|titulo|item_id|sku|id|fila|db_id|detalle|accion|justificacion|permalink|venta_id|factura|cliente|fecha|mes|corte|clave|archivo|correo|nombre|sugerido|ubicaciones|codigos|lineas)$/;
+  const TF = new Map();
+  function barra(tbl, modo) {
+    let F = TF.get(tbl); if (F) return F;
+    F = { q: '', sel: {}, modo, bar: document.createElement('div') }; TF.set(tbl, F);
+    const bar = F.bar; bar.className = 'tf-bar';
+    const card = tbl.closest('.tt-card') || tbl.parentElement, propio = card && [...card.querySelectorAll('input[type=search]')].some((i) => !i.closest('.tf-bar'));
+    const ic = document.createElement('span'); ic.className = 'tf-ic'; ic.setAttribute('aria-hidden', 'true'); ic.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/><path d="M3 5h4M3 9h2"/></svg>';
+    const q = document.createElement('input'); q.type = 'search'; q.className = 'tt-in tf-q'; q.placeholder = propio ? 'Filtrar más en esta tabla…' : 'Buscar artículo en esta tabla (código, descripción…)'; q.setAttribute('aria-label', 'Buscar en la tabla');
+    const sels = document.createElement('span'); sels.className = 'tf-sels';
+    const lim = document.createElement('button'); lim.type = 'button'; lim.className = 'tf-lim'; lim.textContent = 'Limpiar'; lim.hidden = true;
+    const cnt = document.createElement('span'); cnt.className = 'tf-n';
+    bar.append(ic, q, sels, lim, cnt); F.q_el = q; F.sels = sels; F.lim = lim; F.cnt = cnt;
+    const ancla = tbl.closest('.tt-scroll') || tbl; ancla.parentNode.insertBefore(bar, ancla);
+    let t = null; q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { F.q = q.value; aplicar(tbl); }, 180); });
+    lim.addEventListener('click', () => { F.q = ''; q.value = ''; F.sel = {}; aplicar(tbl); });
+    return F;
+  }
+  function aplicar(tbl) { const F = TF.get(tbl); if (!F) return; if (F.modo === 'datos') { if (F.redraw) F.redraw(); } else domFiltrar(tbl); }
+  function opciones(F, campos) {
+    // campos: [{k, lab, vals:Set}]
+    const vivos = new Set(campos.map((c) => c.k));
+    [...F.sels.querySelectorAll('select')].forEach((s) => { if (!vivos.has(s.dataset.k)) { s.remove(); delete F.sel[s.dataset.k]; } });
+    campos.forEach((c) => {
+      let s = F.sels.querySelector('select[data-k="' + c.k + '"]');
+      if (!s) { s = document.createElement('select'); s.className = 'tt-in tf-s'; s.dataset.k = c.k; s.setAttribute('aria-label', c.lab); s.addEventListener('change', () => { if (s.value) F.sel[c.k] = s.value; else delete F.sel[c.k]; aplicar(F.tbl); }); F.sels.appendChild(s); }
+      const cur = F.sel[c.k] || ''; s.replaceChildren(new Option(c.lab + ': todos', ''));
+      [...c.vals].sort((a, b) => a.localeCompare(b, 'es', { numeric: true })).forEach((v) => s.appendChild(new Option(v, v)));
+      if (cur && !c.vals.has(cur)) s.appendChild(new Option(cur, cur)); s.value = cur; s.classList.toggle('on', !!cur);
+    });
+  }
+  function marcar(F, n, total) {
+    const act = !!F.q || Object.keys(F.sel).length; F.lim.hidden = !act; F.bar.classList.toggle('act', act);
+    F.cnt.textContent = act ? 'Mostrando ' + n.toLocaleString('es-VE') + ' de ' + total.toLocaleString('es-VE') : total.toLocaleString('es-VE') + (total === 1 ? ' fila' : ' filas');
+  }
+  // modo datos: lo llama la función que pinta tablas (TT.table)
+  window.TT_FILTRO = (tbl, rows, cols, keyOf, state) => {
+    if (!tbl || tbl.dataset.nofiltro != null) return rows;
+    const F = barra(tbl, 'datos'); F.tbl = tbl;
+    F.redraw = state && state.redraw ? () => state.redraw() : () => window.TT.table(tbl, F.rows, cols, keyOf, state || {});
+    F.rows = rows;
+    const ths = [...tbl.querySelectorAll('thead th')].filter((th) => th.dataset.field);
+    const campos = [];
+    ths.forEach((th) => { const k = th.dataset.field; if (NO_CAT.test(k) || (cols && cols[k] && cols[k].num) || th.classList.contains('n')) return;
+      const vals = new Set(); for (const r of rows) { const v = r[k]; if (v == null || v === '' || typeof v === 'number') continue; vals.add(String(v)); if (vals.size > 40) break; }
+      if (vals.size >= 2 && vals.size <= 40) campos.push({ k, lab: (th.textContent || k).trim(), vals }); });
+    const card = tbl.closest('.tt-card') || tbl.parentElement, ya = new Set([...(card ? card.querySelectorAll('select') : [])].filter((x) => !x.closest('.tf-bar')).map((x) => sinAc(x.getAttribute('aria-label') || '')));
+    opciones(F, campos.filter((c) => !ya.has(sinAc(c.lab))).slice(0, 4));
+    const toks = sinAc(F.q).split(/\s+/).filter(Boolean), sk = Object.entries(F.sel);
+    let out = rows;
+    if (toks.length || sk.length) {
+      const flds = [...new Set(ths.map((th) => th.dataset.field).concat(['codigo', 'descripcion', 'titulo', 'item_id', 'sku']))];
+      out = rows.filter((r) => { for (const [k, v] of sk) if (String(r[k] ?? '') !== v) return false; if (!toks.length) return true;
+        const txt = sinAc(flds.map((f) => r[f]).filter((x) => x != null).join(' ')), cod = nrm(r.codigo || r.item_id || '');
+        return toks.every((t) => txt.includes(t) || (cod && cod.includes(nrm(t)))); });
+    }
+    marcar(F, out.length, rows.length);
+    return out;
+  };
+  // modo pantalla: tablas armadas a mano (bitácora, histórico, ventas ML, etc.)
+  function domFiltrar(tbl) {
+    const F = TF.get(tbl); const tb = tbl.querySelector('tbody'); if (!tb) return;
+    const ths = [...tbl.querySelectorAll('thead th')], trs = [...tb.rows].filter((tr) => tr.cells.length > 1 || !tr.cells[0] || !tr.cells[0].colSpan || tr.cells[0].colSpan === 1);
+    const campos = []; ths.forEach((th, i) => { if (th.classList.contains('n')) return; const lab = (th.textContent || '').trim(); if (/c[oó]digo|descrip|t[ií]tulo|detalle|fecha|correo|archivo|mes|a[ñn]o|acciones/i.test(lab)) return;
+      const vals = new Set(); trs.forEach((tr) => { const c = tr.cells[i]; const v = c ? c.textContent.trim() : ''; if (v && v !== '—') vals.add(v); }); if (vals.size >= 2 && vals.size <= 30) campos.push({ k: String(i), lab, vals }); });
+    opciones(F, campos.slice(0, 3));
+    const toks = sinAc(F.q).split(/\s+/).filter(Boolean), sk = Object.entries(F.sel); let n = 0;
+    trs.forEach((tr) => { const okk = sk.every(([k, v]) => { const c = tr.cells[Number(k)]; return c && c.textContent.trim() === v; }) && (!toks.length || toks.every((t) => sinAc(tr.textContent).includes(t)));
+      tr.hidden = !okk; if (okk) n++; });
+    marcar(F, n, trs.length);
+  }
+  function domEnganchar(id) {
+    const tbl = $(id); if (!tbl || TF.has(tbl)) return; const F = barra(tbl, 'dom'); F.tbl = tbl;
+    const tb = tbl.querySelector('tbody'); if (!tb) return; let p = false;
+    new MutationObserver(() => { if (p) return; p = true; requestAnimationFrame(() => { p = false; domFiltrar(tbl); }); }).observe(tb, { childList: true });
+    domFiltrar(tbl);
+  }
+  ['b-tabla', 'c-hist', 'seg-tabla', 'ml-vtabla', 'ml-meses', 'ml-top', 'u-tabla'].forEach((id) => { try { domEnganchar(id); } catch (e) {} });
+
+  // ---------- ficha del artículo ----------
+  const FICHA = (() => {
+    const dlg = document.createElement('dialog'); dlg.id = 'ficha'; dlg.className = 'fa-dlg'; document.body.appendChild(dlg);
+    const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    const idx = () => { const m = new Map(); ((SERVER && SERVER.articulos) || []).forEach((a) => { const k = nrm(a.codigo); if (k && !m.has(k)) m.set(k, a); }); return m; };
+    let IDX = null, IDXsrc = null; const art = (c) => { if (!SERVER) return null; if (IDXsrc !== SERVER.articulos) { IDX = idx(); IDXsrc = SERVER.articulos; } return IDX.get(nrm(c)) || null; };
+    const dd = (n) => { const d = window.dash && dash.data(n); return d && d.status === 'ok' ? d.data : []; };
+    function cabeza(titulo, cerrar) { const h = mk('div', 'fa-h'); h.appendChild(mk('h2', null, titulo)); const x = mk('button', 'fa-x', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar'); x.addEventListener('click', () => dlg.close()); h.appendChild(x); return h; }
+    function buscar(inicial) {
+      dlg.replaceChildren(); const box = mk('div', 'fa-box'); dlg.appendChild(box); box.appendChild(cabeza('Buscar artículo'));
+      const q = mk('input', 'tt-in fa-q'); q.type = 'search'; q.placeholder = 'Código o descripción (ej.: 90915, filtro aceite, prado)'; q.value = inicial || ''; box.appendChild(q);
+      const L = mk('div', 'fa-res'); box.appendChild(L);
+      const pinta = () => { L.replaceChildren(); const toks = sinAc(q.value).split(/\s+/).filter(Boolean); if (!toks.length) { L.appendChild(mk('p', 'tt-note', 'Escriba al menos una palabra o parte del código.')); return; }
+        const res = ((SERVER && SERVER.articulos) || []).filter((a) => { const t = sinAc(a.codigo + ' ' + a.descripcion + ' ' + a.familia + ' ' + a.linea), c = nrm(a.codigo); return toks.every((x) => t.includes(x) || c.includes(nrm(x))); })
+          .sort((a, b) => (nrm(a.codigo).startsWith(nrm(q.value)) ? -1 : 0) - (nrm(b.codigo).startsWith(nrm(q.value)) ? -1 : 0) || (b.stock > 0) - (a.stock > 0));
+        if (!res.length) { L.appendChild(mk('p', 'tt-note', 'No hay artículos que coincidan.')); return; }
+        res.slice(0, 40).forEach((a) => { const b = mk('button', 'fa-it'); b.type = 'button'; b.append(mk('b', 'code', a.codigo), mk('span', null, a.descripcion), mk('small', a.stock > 0 ? 'ok' : 'muted', 'Stock ' + window.TT.fmt.num(a.stock))); b.addEventListener('click', () => abrir(a.codigo)); L.appendChild(b); });
+        if (res.length > 40) L.appendChild(mk('p', 'tt-note', res.length + ' resultados · se muestran 40, escriba más para afinar.')); };
+      let t; q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(pinta, 150); }); q.addEventListener('keydown', (e) => { if (e.key === 'Enter') { const f = L.querySelector('.fa-it'); if (f) f.click(); } });
+      pinta(); if (!dlg.open) dlg.showModal(); setTimeout(() => q.focus(), 30);
+    }
+    async function abrir(codigo) {
+      const a = art(codigo), T = window.TT; if (!a) { buscar(codigo); return; }
+      dlg.replaceChildren(); const box = mk('div', 'fa-box'); dlg.appendChild(box);
+      const h = cabeza(a.codigo); const vol = mk('button', 'fa-vol', '← Buscar otro'); vol.type = 'button'; vol.addEventListener('click', () => buscar('')); h.insertBefore(vol, h.firstChild); box.appendChild(h);
+      box.appendChild(mk('p', 'fa-desc', a.descripcion));
+      const chips = mk('div', 'fa-chips'); [[a.familia, ''], [a.linea, ''], [a.estado, a.estado === 'Con stock' ? 'ok' : a.estado === 'Negativo' ? 'bad' : 'warn'], a.hallazgo && a.hallazgo !== 'OK' ? [a.hallazgo, 'bad'] : null].filter(Boolean).forEach(([t, k]) => chips.appendChild(mk('span', 'tt-chip ' + k, t))); box.appendChild(chips);
+      const M = {}; dd('margen_art').forEach((m) => { M[m.fila] = m; }); const mg = M[a.fila] || {};
+      const pr = ((SERVER && SERVER.precios) || []).find((p) => nrm(p.codigo) === nrm(a.codigo));
+      const rot = dd('rot_articulos').find((r) => nrm(r.codigo) === nrm(a.codigo)), rep = dd('reposicion').find((r) => nrm(r.codigo) === nrm(a.codigo));
+      const K = mk('div', 'fa-k'); box.appendChild(K);
+      const kp = (t, v, s, cls) => { const d = mk('div', 'fa-kc ' + (cls || '')); d.append(mk('span', null, t), mk('b', null, v)); if (s) d.appendChild(mk('small', null, s)); K.appendChild(d); };
+      kp('Stock', T.fmt.num(a.stock), 'disponible ' + T.fmt.num(a.disponible) + ' · comprometido ' + T.fmt.num(a.comprometido), a.stock > 0 ? 'ok' : 'bad');
+      kp('Por llegar', T.fmt.num(a.por_llegar || 0), '');
+      kp('Costo unitario', a.costo == null ? '—' : T.fmt.usd2(a.costo), 'valor ' + T.fmt.usd0(a.valor || 0));
+      const precio = mg.precio != null ? mg.precio : pr ? pr.precio_1 : null;
+      kp('Precio de venta', precio == null ? '—' : T.fmt.usd2(precio), pr && pr.precio_2 ? 'precio 2: ' + T.fmt.usd2(pr.precio_2) : '', '');
+      kp('Margen', mg.margen == null ? '—' : T.fmt.pct(mg.margen), '', mg.margen == null ? '' : mg.margen < 0 ? 'bad' : mg.margen < 0.2 ? 'warn' : 'ok');
+      if (rot) kp('Rotación', rot.cobertura == null ? '—' : Math.round(rot.cobertura) + ' días', 'vendido ' + T.fmt.num(rot.vendido || 0) + (rot.clase ? ' · clase ' + rot.clase : ''), rot.cobertura != null && rot.cobertura < 30 ? 'warn' : '');
+      if (rep) kp('Lista de compra', 'Sugerido ' + T.fmt.num(rep.sugerido || 0), (rep.prioridad || '') + (rep.inversion ? ' · ' + T.fmt.usd0(rep.inversion) : ''), 'warn');
+      const acc = mk('div', 'fa-acc'); box.appendChild(acc);
+      const btn = (t, fn) => { const b = mk('button', 'sh-btn lt', t); b.type = 'button'; b.addEventListener('click', fn); acc.appendChild(b); };
+      btn('Ver en la tabla de artículos', () => { dlg.close(); ver('v-tablero'); setTimeout(() => { const i = document.getElementById('a-q'); if (i) { ['a-f', 'a-l'].forEach((x) => { const s = document.getElementById(x); if (s) s.value = ''; }); const e = document.getElementById('a-e'); if (e) e.value = ''; i.value = a.codigo; window.TT.show('articulos'); i.dispatchEvent(new Event('input')); } }, 60); });
+      btn('Descargar ficha (Excel)', () => bajarFicha(a));
+      const sec = (t, n) => { const s = mk('section', 'fa-sec'); const hh = mk('h3', null, t); if (n != null) hh.appendChild(mk('span', 'fa-n', String(n))); s.appendChild(hh); box.appendChild(s); return s; };
+      const tabla = (s, cab, filas, numIdx) => { const w = mk('div', 'tt-scroll'); w.style.maxHeight = '16rem'; const t = mk('table', 'tt-t'); t.dataset.nofiltro = ''; const th = mk('thead'), tr = mk('tr'); cab.forEach((c, i) => tr.appendChild(mk('th', (numIdx || []).includes(i) ? 'n' : '', c))); th.appendChild(tr); t.appendChild(th);
+        const tb = mk('tbody'); filas.forEach((f) => { const r = mk('tr'); f.forEach((v, i) => { const td = mk('td', (numIdx || []).includes(i) ? 'n' : ''); if (v instanceof Node) td.appendChild(v); else td.textContent = v == null ? '—' : v; r.appendChild(td); }); tb.appendChild(r); }); t.appendChild(tb); w.appendChild(t); s.appendChild(w); };
+      // ventas
+      const V = ((SERVER && SERVER.ventas) || []).filter((v) => nrm(v.codigo) === nrm(a.codigo));
+      const sv = sec('Ventas en tienda (Profit)', V.length);
+      if (!V.length) sv.appendChild(mk('p', 'tt-note', 'Sin ventas registradas para este código en el periodo cargado.'));
+      else { const pm = {}; V.forEach((v) => { const o = pm[v.mes] = pm[v.mes] || { u: 0, t: 0, f: new Set() }; o.u += v.cantidad; o.t += v.total; o.f.add(v.factura); });
+        const meses = Object.keys(pm).sort(), mx = Math.max(...meses.map((m) => pm[m].u), 1); const g = mk('div', 'fa-bars');
+        meses.forEach((m) => { const c = mk('div', 'fa-bar'); const i = mk('i'); i.style.height = Math.max(4, pm[m].u / mx * 100) + '%'; c.title = m + ': ' + T.fmt.num(pm[m].u) + ' unid. · ' + T.fmt.usd0(pm[m].t); c.append(mk('small', 'fa-bv', T.fmt.num(pm[m].u)), i, mk('small', null, m.slice(2))); g.appendChild(c); }); sv.appendChild(g);
+        const tu = V.reduce((s, v) => s + v.cantidad, 0), tt = V.reduce((s, v) => s + v.total, 0); sv.appendChild(mk('p', 'tt-note', T.fmt.num(tu) + ' unidades · ' + T.fmt.usd0(tt) + ' en ' + new Set(V.map((v) => v.factura)).size + ' facturas'));
+        tabla(sv, ['Fecha', 'Factura', 'Cliente', 'Vendedor', 'Cant.', 'Total'], V.slice().sort((x, y) => String(y.fecha).localeCompare(String(x.fecha))).slice(0, 25).map((v) => [v.fecha, v.factura, v.cliente, v.vendedor, T.fmt.num(v.cantidad), T.fmt.usd2(v.total)]), [4, 5]); }
+      // mercado libre
+      let RML = null; try { RML = window.TT_ML && window.TT_ML._conciliar(); } catch (e) {}
+      const P = RML ? RML.pubs.filter((p) => p.codigo && nrm(p.codigo) === nrm(a.codigo)) : [];
+      const sm = sec('Mercado Libre', P.length);
+      if (!P.length) sm.appendChild(mk('p', 'tt-note', a.stock > 0 ? '⚠ Este artículo tiene stock y no está publicado en Mercado Libre.' : 'No está publicado en Mercado Libre.'));
+      else tabla(sm, ['Publicación', 'Título', 'Precio ML', 'Stock ML', 'Margen ML', 'Estado'], P.map((p) => { const l = mk('a', null, p.item_id); l.href = p.permalink || '#'; l.target = '_blank'; l.rel = 'noopener'; return [l, p.titulo, p.precio_usd == null ? '—' : T.fmt.usd2(p.precio_usd), p.stock_ml == null ? '—' : T.fmt.num(p.stock_ml), p.margen_ml == null ? '—' : T.fmt.pct(p.margen_ml), p.problema || (p.activa ? 'Activa' : 'Inactiva')]; }), [2, 3, 4]);
+      // hallazgos
+      const H = ((SERVER && SERVER.hallazgos) || []).filter((x) => nrm(x.codigo) === nrm(a.codigo));
+      if (H.length) { const sh = sec('Hallazgos de auditoría', H.length); tabla(sh, ['Prioridad', 'Tipo', 'Detalle', 'Acción', 'Responsable', 'Resuelto'], H.map((x) => [x.prioridad, x.tipo, x.detalle, x.accion, x.responsable, x.resuelto || 'No'])); }
+      // conteos y ajustes (consulta al servidor)
+      const sc = sec('Conteos físicos y ajustes'); const cargando = mk('p', 'tt-note', 'Cargando…'); sc.appendChild(cargando);
+      try {
+        const [it, aj] = await Promise.all([
+          sb.from('toma_items').select('toma_id, stock_corte, contado, diferencia, dif_costo, resultado, decision, ubicacion').eq('codigo', a.codigo).then(ok).catch(() => []),
+          sb.from('ajustes').select('toma_id, ajuste, tipo, costo, stock_sistema, contado, aprobado_en, aplicado_en, aplicado_por').eq('empresa_id', EMPRESA).eq('codigo', a.codigo).order('aprobado_en', { ascending: false }).then(ok).catch(() => []),
+        ]);
+        cargando.remove();
+        if (!it.length && !aj.length) sc.appendChild(mk('p', 'tt-note', 'Este artículo no ha entrado en ninguna toma de conteo.'));
+        if (it.length) tabla(sc, ['Toma', 'Sistema', 'Contado', 'Diferencia', 'A costo', 'Resultado', 'Decisión', 'Ubicación'], it.map((x) => [x.toma_id, T.fmt.num(Number(x.stock_corte) || 0), x.contado == null ? '—' : T.fmt.num(Number(x.contado)), x.diferencia == null ? '—' : (x.diferencia > 0 ? '+' : '') + T.fmt.num(Number(x.diferencia)), x.dif_costo == null ? '—' : T.fmt.usd2(Number(x.dif_costo)), x.resultado, x.decision || 'Pendiente', x.ubicacion]), [1, 2, 3, 4]);
+        if (aj.length) { sc.appendChild(mk('p', 'fa-sub', 'Ajustes')); tabla(sc, ['Toma', 'Ajuste', 'Tipo', 'Aprobado', 'Aplicado en Profit'], aj.map((x) => [x.toma_id, (x.ajuste > 0 ? '+' : '') + T.fmt.num(Number(x.ajuste)), x.tipo, fmtF(x.aprobado_en), x.aplicado_en ? fmtF(x.aplicado_en) + (x.aplicado_por ? ' · ' + x.aplicado_por : '') : 'Pendiente']), [1]); }
+      } catch (e) { cargando.textContent = 'No se pudo consultar los conteos: ' + e.message; }
+      if (!dlg.open) dlg.showModal(); dlg.scrollTop = 0; box.scrollTop = 0;
+      bitacora('VER FICHA', a.codigo);
+    }
+    function bajarFicha(a) {
+      if (!window.XLSX) return; const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{ Código: a.codigo, Descripción: a.descripcion, Familia: a.familia, Marca: a.linea, Estado: a.estado, Stock: a.stock, Disponible: a.disponible, Comprometido: a.comprometido, 'Por llegar': a.por_llegar, 'Costo US$': a.costo, 'Valor US$': a.valor, Hallazgo: a.hallazgo }]), 'Artículo');
+      const V = ((SERVER && SERVER.ventas) || []).filter((v) => nrm(v.codigo) === nrm(a.codigo)); if (V.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(V.map((v) => ({ Fecha: v.fecha, Factura: v.factura, Cliente: v.cliente, Vendedor: v.vendedor, Cantidad: v.cantidad, 'Total US$': v.total }))), 'Ventas');
+      XLSX.writeFile(wb, 'Ficha_' + String(a.codigo).replace(/[^\w-]/g, '_') + '.xlsx');
+    }
+    // cualquier código de artículo en cualquier tabla abre su ficha
+    document.addEventListener('click', (e) => {
+      const td = e.target.closest('td.code, td[data-field="codigo"]'); if (!td || e.target.closest('a,button,input,select') || td.closest('#ficha')) return;
+      const c = td.textContent.trim().split(/\s+/)[0]; if (!c || !art(c)) return; e.stopPropagation(); abrir(c);
+    }, true);
+    document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && SERVER) { e.preventDefault(); buscar(''); } });
+    return { abrir, buscar };
+  })();
+  window.TT_FICHA = FICHA;
+  $('n-buscar').addEventListener('click', () => FICHA.buscar(''));
 
   // ---------- arranque ----------
   if (location.hash.includes('access_token') || location.hash.includes('type=signup')) {
