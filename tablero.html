@@ -236,6 +236,9 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .fv-dlg img{display:block;max-width:min(92vw,1100px);max-height:78vh;object-fit:contain;border-radius:12px;background:#111;margin:0 auto}
 .fv-cap{display:flex;flex-wrap:wrap;gap:.3rem .9rem;align-items:baseline;color:#fff;margin-top:.6rem;font-size:.9rem;justify-content:center;text-align:center}.fv-cap b{font-family:var(--font-mono,monospace);font-size:1.05rem}.fv-cap small{color:#c9cfdb}.fv-cap a{color:#ffe600}
 .fv-x{position:absolute;top:-14px;right:-14px;width:2.4rem;height:2.4rem;border-radius:50%;border:0;background:#fff;font-size:1.05rem;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.ft-col{width:56px}.ft-mini{width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--color-border,#e3e5e8);cursor:zoom-in;display:block;background:#f3f5f8}
+.fa-gal{margin-top:.5rem;width:100%}.fa-galt{display:block;font-size:.75rem;color:var(--color-fg-muted);margin-bottom:.3rem}.fa-galr{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.2rem}
+.fa-gi{border:1px solid var(--color-border,#e3e5e8);background:#fff;border-radius:8px;padding:3px;cursor:zoom-in;display:flex;flex-direction:column;align-items:center;gap:2px;flex:0 0 auto}.fa-gi img{width:64px;height:64px;object-fit:cover;border-radius:6px}.fa-gi small{font-size:.65rem;color:var(--color-fg-muted)}
 /* ---- buscador y filtros en tablas ---- */
 .tf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .5rem;margin:.35rem 0 .5rem;padding:.4rem .5rem;border:1px dashed var(--color-border,#d5dbe1);border-radius:10px;background:var(--color-bg-subtle,#f7f8fa)}
 .tf-bar.act{border-style:solid;border-color:#2d3277;background:#f1f3fb}
@@ -975,6 +978,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="tt-scroll">
         <table class="tt-t" id="t-art" data-source="articulos" data-row-key="fila">
           <thead><tr>
+            <th data-field="foto" class="ft-col"><button>Foto</button></th>
             <th data-field="codigo"><button>Código</button></th>
             <th data-field="descripcion"><button>Descripción</button></th>
             <th data-field="familia" class="tt-hide-n"><button>Familia</button></th>
@@ -1599,7 +1603,7 @@ window.TT = (() => {
     const rows = a.data.map((r) => ({ ...r, precio: M[r.fila] ? M[r.fila].precio : null, margen: M[r.fila] ? M[r.fila].margen : null })).filter((r) => (!sf.value || r.familia === sf.value) && (!sl.value || r.linea === sl.value) && (!se.value || r.estado === se.value)
       && (!t || (r.codigo + ' ' + r.descripcion).toLowerCase().includes(t)));
     const n = table(document.getElementById('t-art'), rows, {
-      codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num }, comprometido: { num: true, fmt: fmt.num }, disponible: { num: true, fmt: fmt.num },
+      foto: { render: (td, r) => window.TT_FOTO && window.TT_FOTO.celda(td, r.codigo, r.descripcion, draw) }, codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num }, comprometido: { num: true, fmt: fmt.num }, disponible: { num: true, fmt: fmt.num },
       costo: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) }, valor: { num: true, fmt: fmt.usd2 },
       precio: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) }, margen: { num: true, fmt: (v) => (v == null ? '—' : fmt.pct(v)) },
       hallazgo: { render: (td, r) => chip(td, r.hallazgo, r.hallazgo === 'OK' ? 'ok' : (/NEGATIVO|DUPLICADO|VALOR SIN/.test(r.hallazgo) ? 'bad' : 'warn')) },
@@ -4050,11 +4054,21 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       const im = document.createElement('img'); im.alt = 'Foto de ' + codigo; im.src = url(f.foto_id, 1600);
       const cap = document.createElement('div'); cap.className = 'fv-cap';
       const b = document.createElement('b'); b.textContent = codigo; const d = document.createElement('span'); d.textContent = desc || '';
-      const s = document.createElement('small'); s.textContent = 'Foto tomada en el conteo' + (f.tomada_por ? ' por ' + String(f.tomada_por).replace(/\s*<.*>/, '') : '') + (f.tomada_en ? ' · ' + fmtF(f.tomada_en) : '');
+      const s = document.createElement('small'); s.textContent = 'Foto del artículo' + (f.tomada_por ? ' por ' + String(f.tomada_por).replace(/\s*<.*>/, '') : '') + (f.tomada_en ? ' · ' + fmtF(f.tomada_en) : '');
       const a = document.createElement('a'); a.href = 'https://drive.google.com/file/d/' + encodeURIComponent(f.foto_id) + '/view'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Abrir original en Drive ↗';
       cap.append(b, d, s, a); dlg.append(x, im, cap); dlg.showModal();
     }
-    return { url, mapa, ver };
+    async function historial(codigo) {
+      return await todas(() => sb.from('articulo_fotos_hist').select('foto_id, tomada_por, toma_id, tomada_en').eq('empresa_id', EMPRESA).eq('codigo', codigo).order('tomada_en', { ascending: false }));
+    }
+    let pidiendo = false;
+    function celda(td, codigo, desc, redraw) {
+      if (!cache) { if (!pidiendo) { pidiendo = true; mapa().then(() => { pidiendo = false; if (redraw) redraw(); }).catch(() => { pidiendo = false; cache = cache || {}; }); } return; }
+      const f = cache[String(codigo).toUpperCase()]; if (!f) return;
+      const im = document.createElement('img'); im.className = 'ft-mini'; im.loading = 'lazy'; im.alt = 'Foto de ' + codigo; im.src = url(f.foto_id, 120); im.title = 'Ver foto';
+      im.addEventListener('click', (e) => { e.stopPropagation(); ver(f, codigo, desc); }); td.appendChild(im);
+    }
+    return { url, mapa, ver, historial, celda };
   })();
 
   // ---------- buscador y filtros en todas las tablas + ficha de artículo ----------
@@ -4170,7 +4184,16 @@ const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12
       sb.from('articulo_fotos').select('foto_id, tomada_por, tomada_en').eq('empresa_id', EMPRESA).eq('codigo', a.codigo).maybeSingle().then(ok).then((ft) => {
         if (!ft || !ft.foto_id) return; const im = mk('img'); im.alt = 'Foto de ' + a.codigo; im.loading = 'lazy'; im.src = 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(ft.foto_id) + '&sz=w900';
         im.title = 'Toque para ver en grande'; im.style.cursor = 'zoom-in'; im.addEventListener('click', () => window.TT_FOTO.ver(ft, a.codigo, a.descripcion));
-        fotoBox.replaceChildren(im, mk('small', null, 'Foto tomada en el conteo' + (ft.tomada_por ? ' por ' + ft.tomada_por : '') + ' · ' + fmtF(ft.tomada_en) + ' · toque la foto para verla en grande')); fotoBox.hidden = false;
+        fotoBox.replaceChildren(im, mk('small', null, 'Foto principal · tomada' + (ft.tomada_por ? ' por ' + ft.tomada_por : '') + ' · ' + fmtF(ft.tomada_en) + ' · toque la foto para verla en grande')); fotoBox.hidden = false;
+        window.TT_FOTO.historial(a.codigo).then((H) => {
+          if (!H || H.length < 2) return;
+          const g = mk('div', 'fa-gal'); g.appendChild(mk('small', 'fa-galt', 'Historial de fotos del artículo (' + H.length + ') · quedan guardadas en la base de inventario'));
+          const row = mk('div', 'fa-galr');
+          H.forEach((h) => { const b = mk('button', 'fa-gi'); b.type = 'button'; b.title = fmtF(h.tomada_en) + (h.tomada_por ? ' · ' + h.tomada_por : '');
+            const ii = mk('img'); ii.loading = 'lazy'; ii.alt = ''; ii.src = window.TT_FOTO.url(h.foto_id, 140); b.append(ii, mk('small', null, fmtF(h.tomada_en).slice(0, 8)));
+            b.addEventListener('click', () => window.TT_FOTO.ver(h, a.codigo, a.descripcion)); row.appendChild(b); });
+          g.appendChild(row); fotoBox.appendChild(g);
+        }).catch(() => {});
       }).catch(() => {});
       const chips = mk('div', 'fa-chips'); [[a.familia, ''], [a.linea, ''], [a.estado, a.estado === 'Con stock' ? 'ok' : a.estado === 'Negativo' ? 'bad' : 'warn'], a.hallazgo && a.hallazgo !== 'OK' ? [a.hallazgo, 'bad'] : null].filter(Boolean).forEach(([t, k]) => chips.appendChild(mk('span', 'tt-chip ' + k, t))); box.appendChild(chips);
       const M = {}; dd('margen_art').forEach((m) => { M[m.fila] = m; }); const mg = M[a.fila] || {};
