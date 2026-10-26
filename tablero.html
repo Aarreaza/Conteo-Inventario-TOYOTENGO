@@ -4330,7 +4330,24 @@ function zoomEn(box){
       });
       listo(); setTimeout(() => $q('.fi-paste').focus(), 50);
     }
-    return { url, mapa, ver, historial, celda, editor, subir, importar, internet, yaMapa: () => cache };
+    // fotos al día: cada 45 s (y al volver a la pestaña) revisa si alguien tomó o cambió fotos en el conteo, el generador o aquí
+    let refrescando = false;
+    async function refrescar() {
+      if (refrescando || document.hidden || !YO || !cache) return;
+      refrescando = true;
+      try {
+        const L = await todas(() => sb.from('articulo_fotos').select('codigo, foto_id, tomada_por, tomada_en').eq('empresa_id', EMPRESA).order('codigo'));
+        const nuevo = {}; L.forEach((f) => { nuevo[String(f.codigo).toUpperCase()] = f; });
+        const viejo = cache || {}, cods = [];
+        new Set([...Object.keys(viejo), ...Object.keys(nuevo)]).forEach((k) => { if ((viejo[k] && viejo[k].foto_id) !== (nuevo[k] && nuevo[k].foto_id)) cods.push(k); });
+        cache = nuevo; cuando = Date.now();
+        if (cods.length) document.dispatchEvent(new CustomEvent('tt-fotos', { detail: { codigos: cods } }));
+      } catch (e) {}
+      refrescando = false;
+    }
+    setInterval(refrescar, 45000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refrescar(); });
+    return { url, mapa, ver, historial, celda, editor, subir, importar, internet, yaMapa: () => cache, refrescar };
   })();
 
   // ---------- buscador y filtros en todas las tablas + ficha de artículo ----------
@@ -4548,8 +4565,8 @@ function zoomEn(box){
     return { abrir, buscar };
   })();
   window.TT_FICHA = FICHA;
-  document.addEventListener('tt-fotos', () => { TF.forEach((F, tbl) => { if (F.foto) aplicar(tbl); }); });
-  document.addEventListener('tt-fotos', () => { const d = document.getElementById('ficha'), h = d && d.open && d.querySelector('.fa-h h2'); if (h && h.textContent && !d.querySelector('.fa-q')) FICHA.abrir(h.textContent.trim()); });
+  document.addEventListener('tt-fotos', () => { TF.forEach((F, tbl) => { if (F.modo === 'datos' && F.rows && F.rows[0] && 'codigo' in F.rows[0] && document.body.contains(tbl)) aplicar(tbl); }); });
+  document.addEventListener('tt-fotos', (e) => { const d = document.getElementById('ficha'), h = d && d.open && d.querySelector('.fa-h h2'); if (!h || !h.textContent || d.querySelector('.fa-q')) return; const c = h.textContent.trim(), L = e.detail && e.detail.codigos; if (L && !L.includes(c.toUpperCase())) return; FICHA.abrir(c); });
   $('n-buscar').addEventListener('click', () => FICHA.buscar(''));
 
 
