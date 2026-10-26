@@ -285,6 +285,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .zm:fullscreen img{width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;object-fit:contain;border-radius:0;margin:0}
 .zm:-webkit-full-screen{background:#000}
 .fv-zm{width:fit-content;max-width:100%;margin:0 auto;line-height:0;border-radius:12px}.fv-zm img{border-radius:0}.fi-zb{width:fit-content;max-width:100%;line-height:0;border-radius:10px}
+.ft-sin{width:34px;height:34px;border:1.5px dashed #b8c4d2;border-radius:7px;background:#f7f9fb;font-size:14px;opacity:.55;cursor:pointer;padding:0;line-height:1}.ft-sin:hover{opacity:1;border-color:#17304f}
 
 /* ---- tablero ---- */
 
@@ -4152,7 +4153,9 @@ function zoomEn(box){
     let pidiendo = false;
     function celda(td, codigo, desc, redraw) {
       if (!cache) { if (!pidiendo) { pidiendo = true; mapa().then(() => { pidiendo = false; if (redraw) redraw(); }).catch(() => { pidiendo = false; cache = cache || {}; }); } return; }
-      const f = cache[String(codigo).toUpperCase()]; if (!f) return;
+      const f = cache[String(codigo).toUpperCase()];
+      if (!f) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ft-sin'; b.textContent = '📷'; b.title = editor() ? 'Sin foto · toque para agregarla' : 'Sin foto';
+        b.addEventListener('click', (e) => { e.stopPropagation(); if (window.TT_FICHA) window.TT_FICHA.abrir(codigo); }); td.appendChild(b); return; }
       const im = document.createElement('img'); im.className = 'ft-mini'; im.loading = 'lazy'; im.alt = 'Foto de ' + codigo; im.src = url(f.foto_id, 120); im.title = 'Ver foto';
       im.addEventListener('click', (e) => { e.stopPropagation(); ver(f, codigo, desc); }); td.appendChild(im);
     }
@@ -4327,7 +4330,7 @@ function zoomEn(box){
       });
       listo(); setTimeout(() => $q('.fi-paste').focus(), 50);
     }
-    return { url, mapa, ver, historial, celda, editor, subir, importar, internet };
+    return { url, mapa, ver, historial, celda, editor, subir, importar, internet, yaMapa: () => cache };
   })();
 
   // ---------- buscador y filtros en todas las tablas + ficha de artículo ----------
@@ -4348,14 +4351,14 @@ function zoomEn(box){
     bar.append(ic, q, sels, lim, cnt); F.q_el = q; F.sels = sels; F.lim = lim; F.cnt = cnt;
     const ancla = tbl.closest('.tt-scroll') || tbl; ancla.parentNode.insertBefore(bar, ancla);
     let t = null; q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { F.q = q.value; aplicar(tbl); }, 180); });
-    lim.addEventListener('click', () => { F.q = ''; q.value = ''; F.sel = {}; aplicar(tbl); });
+    lim.addEventListener('click', () => { F.q = ''; q.value = ''; F.sel = {}; F.foto = ''; const fs = sels.querySelector('select[data-foto]'); if (fs) { fs.value = ''; fs.classList.remove('on'); } aplicar(tbl); });
     return F;
   }
   function aplicar(tbl) { const F = TF.get(tbl); if (!F) return; if (F.modo === 'datos') { if (F.redraw) F.redraw(); } else domFiltrar(tbl); }
   function opciones(F, campos) {
     // campos: [{k, lab, vals:Set}]
     const vivos = new Set(campos.map((c) => c.k));
-    [...F.sels.querySelectorAll('select')].forEach((s) => { if (!vivos.has(s.dataset.k)) { s.remove(); delete F.sel[s.dataset.k]; } });
+    [...F.sels.querySelectorAll('select[data-k]')].forEach((s) => { if (!vivos.has(s.dataset.k)) { s.remove(); delete F.sel[s.dataset.k]; } });
     campos.forEach((c) => {
       let s = F.sels.querySelector('select[data-k="' + c.k + '"]');
       if (!s) { s = document.createElement('select'); s.className = 'tt-in tf-s'; s.dataset.k = c.k; s.setAttribute('aria-label', c.lab); s.addEventListener('change', () => { if (s.value) F.sel[c.k] = s.value; else delete F.sel[c.k]; aplicar(F.tbl); }); F.sels.appendChild(s); }
@@ -4365,7 +4368,7 @@ function zoomEn(box){
     });
   }
   function marcar(F, n, total) {
-    const act = !!F.q || Object.keys(F.sel).length; F.lim.hidden = !act; F.bar.classList.toggle('act', act);
+    const act = !!F.q || Object.keys(F.sel).length || !!F.foto; F.lim.hidden = !act; F.bar.classList.toggle('act', act);
     F.cnt.textContent = act ? 'Mostrando ' + n.toLocaleString('es-VE') + ' de ' + total.toLocaleString('es-VE') : total.toLocaleString('es-VE') + (total === 1 ? ' fila' : ' filas');
   }
   // modo datos: lo llama la función que pinta tablas (TT.table)
@@ -4388,6 +4391,21 @@ function zoomEn(box){
       out = rows.filter((r) => { for (const [k, v] of sk) if (String(r[k] ?? '') !== v) return false; if (!toks.length) return true;
         const txt = sinAc(flds.map((f) => r[f]).filter((x) => x != null).join(' ')), cod = nrm(r.codigo || r.item_id || '');
         return toks.every((t) => txt.includes(t) || (cod && cod.includes(nrm(t)))); });
+    }
+    // filtro de foto: con foto / sin foto (para saber cuáles faltan por fotografiar)
+    if (rows.length && rows[0] && 'codigo' in rows[0] && window.TT_FOTO) {
+      let fs = F.sels.querySelector('select[data-foto]');
+      if (!fs) {
+        fs = document.createElement('select'); fs.className = 'tt-in tf-s tf-foto'; fs.dataset.foto = '1'; fs.setAttribute('aria-label', 'Foto');
+        [['', '📷 Foto: todos'], ['no', '📷 Sin foto (por tomar)'], ['si', '📷 Con foto']].forEach(([v, l]) => fs.appendChild(new Option(l, v)));
+        fs.addEventListener('change', () => { F.foto = fs.value; fs.classList.toggle('on', !!fs.value); aplicar(tbl); });
+        F.sels.appendChild(fs);
+      }
+      if (F.foto) {
+        const FM = window.TT_FOTO.yaMapa();
+        if (!FM) { if (!F.cargandoFoto) { F.cargandoFoto = true; window.TT_FOTO.mapa().then(() => { F.cargandoFoto = false; aplicar(tbl); }).catch(() => { F.cargandoFoto = false; }); } }
+        else out = out.filter((r) => !!FM[String(r.codigo == null ? '' : r.codigo).toUpperCase()] === (F.foto === 'si'));
+      }
     }
     marcar(F, out.length, rows.length);
     return out;
@@ -4530,6 +4548,7 @@ function zoomEn(box){
     return { abrir, buscar };
   })();
   window.TT_FICHA = FICHA;
+  document.addEventListener('tt-fotos', () => { TF.forEach((F, tbl) => { if (F.foto) aplicar(tbl); }); });
   document.addEventListener('tt-fotos', () => { const d = document.getElementById('ficha'), h = d && d.open && d.querySelector('.fa-h h2'); if (h && h.textContent && !d.querySelector('.fa-q')) FICHA.abrir(h.textContent.trim()); });
   $('n-buscar').addEventListener('click', () => FICHA.buscar(''));
 
