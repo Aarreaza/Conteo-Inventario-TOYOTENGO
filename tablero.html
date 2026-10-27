@@ -4116,7 +4116,9 @@ function zoomEn(box){
 }
   window.TT_FOTO = (() => {
     let cache = null, cuando = 0;
-    const url = (id, w) => 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + (w || 400);
+    const SBF = 'https://dwltkoxhnexehikjuaji.supabase.co/storage/v1/object/public/fotos-articulos/';
+    const url = (id, w) => { id = String(id || ''); return id.indexOf('sb:') === 0 ? SBF + encodeURI(id.slice(3)) + ((w || 400) <= 400 ? '_m' : '') + '.jpg' : 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + (w || 400); };
+    const original = (id) => { id = String(id || ''); return id.indexOf('sb:') === 0 ? SBF + encodeURI(id.slice(3)) + '.jpg' : 'https://drive.google.com/file/d/' + encodeURIComponent(id) + '/view'; };
     async function mapa() {
       if (cache && Date.now() - cuando < 120000) return cache;
       const L = await todas(() => sb.from('articulo_fotos').select('codigo, foto_id, tomada_por, tomada_en').eq('empresa_id', EMPRESA).order('codigo'));
@@ -4132,7 +4134,7 @@ function zoomEn(box){
       const cap = document.createElement('div'); cap.className = 'fv-cap';
       const b = document.createElement('b'); b.textContent = codigo; const d = document.createElement('span'); d.textContent = desc || '';
       const s = document.createElement('small'); s.textContent = 'Foto del artículo' + (f.tomada_por ? ' por ' + String(f.tomada_por).replace(/\s*<.*>/, '') : '') + (f.tomada_en ? ' · ' + fmtF(f.tomada_en) : '');
-      const a = document.createElement('a'); a.href = 'https://drive.google.com/file/d/' + encodeURIComponent(f.foto_id) + '/view'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Abrir original en Drive ↗';
+      const a = document.createElement('a'); a.href = original(f.foto_id); a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Abrir original ↗';
       cap.append(b, d, s, a);
       if (opc && opc.hacerPrincipal && editor()) {
         const pb = document.createElement('button'); pb.type = 'button'; pb.className = 'sh-btn lt fv-pb'; pb.textContent = '★ Usar esta como foto principal'; let conf = false;
@@ -4187,8 +4189,8 @@ function zoomEn(box){
     async function subir(codigo, file, h, opc) {
       opc = opc || {};
       if (h == null) h = await huella(file);
-      const data = await achicar(file, 1280, 0.85);
-      const v = await gas('tSubirFoto', [codigo, data, h, opc.principal !== false, opc.fuente || '']);
+      const data = await achicar(file, 1280, 0.85), mini = await achicar(file, 400, 0.8);
+      const v = await gas('tSubirFoto', [codigo, data, h, opc.principal !== false, opc.fuente || '', mini]);
       cache = null; bitacora(opc.fuente ? 'FOTO DE INTERNET' : 'SUBIR FOTO', codigo + (opc.principal === false ? ' (solo historial)' : ' (principal)'));
       return v;
     }
@@ -4491,7 +4493,7 @@ function zoomEn(box){
         g.appendChild(row); fotoBox.appendChild(g);
       };
       sb.from('articulo_fotos').select('foto_id, tomada_por, tomada_en').eq('empresa_id', EMPRESA).eq('codigo', a.codigo).maybeSingle().then(ok).then((ft) => {
-        if (!ft || !ft.foto_id) { sinFoto(); return; } const im = mk('img'); im.alt = 'Foto de ' + a.codigo; im.loading = 'lazy'; im.src = 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(ft.foto_id) + '&sz=w900';
+        if (!ft || !ft.foto_id) { sinFoto(); return; } const im = mk('img'); im.alt = 'Foto de ' + a.codigo; im.loading = 'lazy'; im.src = window.TT_FOTO.url(ft.foto_id, 900);
         im.title = 'Toque para ver en grande'; im.style.cursor = 'zoom-in'; im.addEventListener('click', () => window.TT_FOTO.ver(ft, a.codigo, a.descripcion));
         fotoBox.replaceChildren(im, mk('small', null, 'Foto principal · tomada' + (ft.tomada_por ? ' por ' + ft.tomada_por : '') + ' · ' + fmtF(ft.tomada_en) + ' · toque la foto para verla en grande')); { const w = fotoAcc(); if (w) fotoBox.appendChild(w); }
         window.TT_FOTO.historial(a.codigo).then((H) => galeria(H, ft)).catch(() => {});
