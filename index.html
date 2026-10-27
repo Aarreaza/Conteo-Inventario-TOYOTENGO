@@ -10,10 +10,9 @@ button{margin-top:16px;padding:12px 20px;font-size:16px;border:0;border-radius:8
 </head><body>
 <div class="c"><b>TOYOTENGO · Conteo de inventario</b><div class="m" id="m">Cargando la última versión…</div></div>
 <script>
-/* Esta página solo trae el programa de conteo desde Google (la misma hoja del generador de etiquetas).
-   Así cualquier mejora que se publique en Google llega sola a todos los teléfonos.
-   Está aquí, fuera de Google, porque Google no permite la cámara en vivo dentro de sus páginas. */
-var API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12iL6Luk1na_SZUJtQ1WbaBM88r55Gl_KAuayMM3Fvyh0rAql/exec";
+/* Esta página trae la última versión del programa de conteo (app.html) y lo conecta al servidor central.
+   Así cualquier mejora que se publique llega sola a todos los teléfonos. */
+var API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/inventario";   // servidor central (Supabase)
 var GUARDADA = "toyo_conteo_html";
 function poner(h){
   h = h.replace(/<head>/i, "<head><script>window.TOYO_API=" + JSON.stringify(API) + ";<\/script>");
@@ -22,7 +21,7 @@ function poner(h){
 function cargar(){
   var vieja = null; try{ vieja = localStorage.getItem(GUARDADA); }catch(e){}
   var listo = false, t = setTimeout(function(){ if (!listo && vieja){ listo = true; poner(vieja); } }, 15000);
-  fetch(API + "?p=fuente&t=" + Date.now(), {cache:"no-store"})
+  fetch("app.html?t=" + Date.now(), {cache:"no-store"})
     .then(function(r){ if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
     .then(function(h){
       if (h.indexOf("TOYOTENGO") < 0 || h.indexOf("</html>") < 0) throw new Error("respuesta inesperada");

@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>TOYOTENGO · Conteo de inventario</title>
+<style>
+:root{--az:#17304f;--az2:#24466f;--rj:#C8102E;--vd:#1f7a4d;--am:#d08a00;--gr:#5b6773;--bg:#eef1f4;--ln:#dde3e9}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:#111;font-family:Arial,Helvetica,sans-serif;font-size:15px}
+body{padding-bottom:40px}
+button{font:inherit;cursor:pointer;border:0;border-radius:7px;padding:10px 14px;background:var(--az);color:#fff}
+button:disabled{opacity:.45;cursor:default}
+button.lt{background:#e3e8ee;color:var(--az)} button.rj{background:var(--rj)} button.vd{background:var(--vd)} button.am{background:var(--am)}
+button.sm{padding:6px 10px;font-size:13px}
+input,select,textarea{font:inherit;padding:9px 10px;border:1px solid #aab2ba;border-radius:7px;background:#fff;width:100%}
+textarea{min-height:90px}
+label{font-size:13px;font-weight:bold;color:#33404d;display:block;margin:10px 0 4px}
+.top{background:var(--az);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+.top b{font-size:16px;letter-spacing:.3px}
+.top .yo{margin-left:auto;font-size:12.5px;text-align:right;line-height:1.3}
+.top .yo a{color:#cfe0f5;cursor:pointer;text-decoration:underline}
+.top .atras{background:transparent;padding:4px 8px;font-size:20px;line-height:1}
+.wrap{max-width:900px;margin:0 auto;padding:12px}
+.card{background:#fff;border:1px solid #c9d0d8;border-radius:10px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 8px;font-size:15px;color:var(--az);text-transform:uppercase;letter-spacing:.4px}
+.muted{color:var(--gr);font-size:13px;line-height:1.5}
+.fila{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fila>*{flex:1 1 auto}
+.chip{display:inline-block;padding:3px 9px;border-radius:11px;font-weight:bold;font-size:12px;white-space:nowrap}
+.e-ABIERTA,.e-RECONTEO{background:#d9f2e3;color:#14613a}
+.e-REV{background:#fff1cc;color:#7a5200}
+.e-REVISADA{background:#e0ecfa;color:#17406f}
+.e-APROBADA{background:#e6ebf0;color:#33404d}
+.e-ANULADA{background:#fde2e2;color:#8a1324}
+.toma{display:block;width:100%;text-align:left;background:#fff;color:#111;border:1px solid #c9d0d8;margin-bottom:8px;padding:12px}
+.toma .t1{display:flex;gap:8px;align-items:center;font-weight:bold}
+.toma .t2{font-size:12.5px;color:var(--gr);margin-top:4px;line-height:1.45}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin:8px 0}
+.kpi{background:#f4f6f8;border-radius:8px;padding:8px 10px}
+.kpi .n{font-size:19px;font-weight:bold;color:var(--az)}
+.kpi .t{font-size:11.5px;color:var(--gr)}
+.kpi.mal .n{color:var(--rj)} .kpi.bien .n{color:var(--vd)}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}
+.tabs button{background:#e3e8ee;color:var(--az);white-space:nowrap;padding:8px 12px;font-size:14px}
+.tabs button.on{background:var(--az);color:#fff}
+/* conteo */
+.ubic{display:flex;align-items:center;gap:10px;background:#fff7e6;border:2px solid var(--am);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.ubic .v{font-size:22px;font-weight:bold;letter-spacing:.5px;color:#5a3c00}
+.ubic.ok{background:#e9f6ee;border-color:var(--vd)} .ubic.ok .v{color:#14613a}
+.cam{position:relative;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:4/3;max-height:52vh;margin:0 auto 10px}
+.cam video{width:100%;height:100%;object-fit:cover;display:block}
+.cam .marco{position:absolute;inset:16% 18%;border:3px solid rgba(255,255,255,.85);border-radius:12px;box-shadow:0 0 0 999px rgba(0,0,0,.25)}
+.cam .flash{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s}
+.cam .msg{position:absolute;left:0;right:0;bottom:0;padding:8px 10px;color:#fff;background:rgba(0,0,0,.55);font-size:13px;text-align:center}
+.lect{display:flex;gap:8px;align-items:flex-start;border-bottom:1px solid var(--ln);padding:8px 2px;font-size:13.5px}
+.lect .ic{font-size:18px;width:22px;text-align:center;line-height:1.2}
+.lect .tx{flex:1;min-width:0}
+.lect .tx b{font-family:Consolas,monospace}
+.lect .sub{color:var(--gr);font-size:12px;margin-top:2px}
+.lect.dup{background:#fdeeee} .lect.av{background:#fff8e8} .lect.pend .ic{color:var(--am)}
+.big{font-size:20px;padding:14px}
+.aviso{position:fixed;left:10px;right:10px;bottom:12px;max-width:600px;margin:0 auto;background:#14202e;color:#fff;border-radius:10px;padding:12px 14px;
+       font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.35);z-index:30;display:none;line-height:1.45}
+.aviso.mal{background:#8a1324} .aviso.bien{background:#14613a}
+.modal{position:fixed;inset:0;background:rgba(10,20,35,.6);display:none;align-items:center;justify-content:center;z-index:40;padding:14px}
+.modal .caja{background:#fff;border-radius:12px;padding:16px;max-width:460px;width:100%;max-height:92vh;overflow:auto}
+.modal h3{margin:0 0 6px;color:var(--az)}
+table.t{width:100%;border-collapse:collapse;font-size:12.5px}
+table.t th{background:var(--az);color:#fff;text-align:left;padding:6px;position:sticky;top:0;font-weight:bold}
+table.t td{border-bottom:1px solid var(--ln);padding:5px 6px;vertical-align:top}
+table.t td.n,table.t th.n{text-align:right;white-space:nowrap}
+table.t tr.falt td{background:#fff5f5} table.t tr.sobr td{background:#f3f8ff}
+.scroll{overflow:auto;max-height:65vh;border:1px solid var(--ln);border-radius:8px}
+#rTabla table.t,#kRes table.t{min-width:760px}
+.rojo{color:var(--rj);font-weight:bold} .verde{color:var(--vd);font-weight:bold}
+.bloque{background:#fdeeee;border:1px solid #e3b6bc;color:#8a1324;border-radius:8px;padding:10px 12px;font-size:13.5px;margin:8px 0;line-height:1.5}
+.ok{background:#e9f6ee;border:1px solid #a9d8bb;color:#14613a;border-radius:8px;padding:10px 12px;font-size:13.5px;margin:8px 0;line-height:1.5}
+.amar{background:#fff7e6;border:1px solid #f0cf8a;color:#6b4a00;border-radius:8px;padding:10px 12px;font-size:13.5px;margin:8px 0;line-height:1.5}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.oculto{display:none!important}
+#acta{display:none}
+.qrs{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}
+.qrs .q{border:1px dashed #999;padding:4mm;text-align:center;font-family:Arial;break-inside:avoid}
+.qrs .q b{display:block;font-size:20pt;margin-top:2mm}
+@media print{
+  body{background:#fff;padding:0}
+  body>*:not(#acta){display:none!important}
+  #acta{display:block!important;font-size:11px;padding:0 4mm}
+  #acta table.t th{background:#ddd!important;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:letter;margin:12mm}
+}
+.mini{width:42px;height:42px;object-fit:cover;border-radius:6px;border:1px solid var(--ln);flex:0 0 42px;background:#f3f5f8}
+.sinmini{width:42px;height:42px;border-radius:6px;border:1px dashed #c3ccd6;display:flex;align-items:center;justify-content:center;font-size:17px;color:#9aa6b2;flex:0 0 42px}
+table.t tr.art{cursor:pointer} table.t tr.art:active td{background:#eef3f9}
+.fotoG{margin:10px 0;border-radius:10px;overflow:hidden;background:#f3f5f8;text-align:center}
+.fotoG img{width:100%;max-height:52vh;object-fit:contain;display:block}
+.zm{position:relative;overflow:hidden;touch-action:none;cursor:zoom-in;-webkit-user-select:none;user-select:none}
+.zm.zm-on{cursor:grab}.zm.zm-on:active{cursor:grabbing}
+.zm img{transform-origin:0 0;-webkit-user-drag:none;user-select:none;will-change:transform}
+.zm-bt{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:3}
+.zm-bt button{width:34px!important;height:34px!important;min-height:0!important;flex:0 0 auto!important;border-radius:8px;border:none;background:rgba(15,25,40,.72);color:#fff;font-size:17px;line-height:1;cursor:pointer;padding:0;margin:0;box-shadow:none}
+.zm-bt button:hover{background:rgba(15,25,40,.9)}
+.zm-tip{position:absolute;left:8px;bottom:12px;z-index:2;font-size:11px;color:#fff;background:rgba(15,25,40,.6);padding:3px 7px;border-radius:6px;pointer-events:none;transition:opacity .6s}.zm-tip.zm-tip-off{opacity:0}
+.zm:fullscreen{background:#000;display:flex;align-items:center;justify-content:center;border-radius:0}
+.zm:fullscreen img{width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;object-fit:contain;border-radius:0;margin:0}
+.zm:-webkit-full-screen{background:#000}
+
+.sinfoto{padding:34px 10px;color:#7a8794;font-size:15px;line-height:1.6}
+.dk{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:8px 0}
+.dk div{border:1px solid var(--ln);border-radius:9px;padding:8px 10px;background:#fff}
+.dk b{display:block;font-size:19px}.dk span{font-size:11.5px;color:var(--gr)}
+.dk .r{border-color:#f2b8bf;background:#fff5f6}.dk .r b{color:#a4152b}.dk .z{border-color:#bcd3f0;background:#f3f8ff}.dk .z b{color:#1d4f91}.dk .v{border-color:#bfe3cc;background:#f2fbf5}.dk .v b{color:#14613a}
+.difn{color:#a4152b;font-weight:bold}.difp{color:#1d4f91;font-weight:bold}.dif0{color:#14613a}
+.barra{height:8px;background:#e6ebf0;border-radius:99px;overflow:hidden;margin:6px 0 2px}.barra i{display:block;height:100%;background:#1f8a4c}
+.hfotos{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px}
+.hf{border:2px solid transparent;background:#f3f5f8;border-radius:8px;padding:2px;display:flex;flex-direction:column;align-items:center;gap:1px;flex:0 0 auto;cursor:pointer}
+.hf.on{border-color:var(--vd)}.hf img{width:58px;height:58px;object-fit:cover;border-radius:6px}.hf small{font-size:10px;color:var(--gr)}
+</style></head><body>
+
+<div class="top">
+  <button class="atras oculto" id="atras" onclick="volver()">‹</button>
+  <b id="titulo">TOYOTENGO · Conteo</b>
+  <div class="yo" id="yo"></div>
+</div>
+
+<!-- entrar -->
+<div class="wrap" id="vEntrar" style="display:none">
+  <div class="card">
+    <h2>Entrar</h2>
+    <div class="muted">Cada conteo, revisión y aprobación queda registrado con su nombre. Use el correo que el administrador anotó en la lista de usuarios.</div>
+    <label>Correo</label><input id="eCor" type="email" autocomplete="username" inputmode="email">
+    <label>PIN (4 a 8 números)</label><input id="ePin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8">
+    <div id="eNomFila" class="oculto"><label>Nombre (solo la primera vez)</label><input id="eNom" autocomplete="given-name"><label>Apellido</label><input id="eApe" autocomplete="family-name"></div>
+    <div id="eClaveFila" class="oculto"><label>Clave de acceso del programa</label><input id="eClave"></div>
+    <div id="eMsg" class="muted" style="margin-top:8px"></div>
+    <div class="acciones"><button class="big" style="flex:1" onclick="entrar()">Entrar</button></div>
+    <div class="muted" style="margin-top:10px">¿Primera vez? El PIN que escriba ahora queda como suyo. Si lo olvida, el administrador lo borra y usted crea uno nuevo.</div>
+  </div>
+</div>
+
+<!-- inicio -->
+<div class="wrap" id="vInicio" style="display:none">
+  <div id="iAcc" class="acciones" style="margin-bottom:10px"></div>
+  <div id="iLista"></div>
+</div>
+
+<!-- nueva toma -->
+<div class="wrap" id="vNueva" style="display:none">
+  <div class="card">
+    <h2>Nueva toma de inventario</h2>
+    <label>Tipo</label>
+    <select id="nTipo" onchange="pintarNueva()">
+      <option value="MUESTRA">Muestra aleatoria (conteo sorpresa durante el mes)</option>
+      <option value="TOTAL">Toma total estática (todo el inventario)</option>
+      <option value="DIRIGIDA">Dirigida (códigos escogidos: hallazgos, reclamos, alto valor)</option>
+    </select>
+    <div id="nAyuda" class="muted" style="margin-top:6px"></div>
+    <label>Descripción</label><input id="nDesc" placeholder="Ej.: Muestra semana 3 de octubre">
+    <div id="nMuestra">
+      <div class="fila">
+        <div><label>Cuántos artículos</label><input id="nN" type="number" min="1" max="2000" value="30"></div>
+        <div><label>Cómo escoger</label><select id="nCrit"><option value="valor">Más probabilidad a los de mayor valor</option><option value="uniforme">Todos con la misma probabilidad</option></select></div>
+      </div>
+      <label style="font-weight:normal"><input type="checkbox" id="nSolo" checked style="width:auto"> Solo artículos con stock en el sistema</label>
+    </div>
+    <div id="nDir" class="oculto">
+      <label>Códigos (uno por línea, o pegados desde Excel)</label><textarea id="nCods"></textarea>
+      <label>Motivo</label><input id="nMot" placeholder="Ej.: hallazgos de prioridad alta de la conciliación">
+    </div>
+    <label>Solo una ubicación (opcional)</label><select id="nUb"><option value="">Todas las ubicaciones</option></select><div class="muted" id="nUbAyuda" style="font-size:12px"></div>
+    <label style="font-weight:normal"><input type="checkbox" id="nCiego" checked style="width:auto"> Conteo ciego: quien cuenta no ve el stock del sistema (recomendado)</label>
+    <label>Observaciones</label><input id="nObs">
+    <div class="amar" style="margin-top:12px">Al crear la toma se congela el <b>stock del sistema</b> de cada artículo (corte). Si en la toma total hay movimientos durante el conteo, cargue el Excel del sistema al terminar y use <b>Actualizar stock de corte</b> antes de revisar.</div>
+    <div class="acciones"><button class="vd big" style="flex:1" onclick="crearToma()">Crear toma</button></div>
+  </div>
+</div>
+
+<!-- toma -->
+<div class="wrap" id="vToma" style="display:none">
+  <div class="card" id="tCab"></div>
+  <div class="tabs" id="tTabs"></div>
+
+  <div id="pContar">
+    <div class="ubic" id="ubBox">
+      <div style="flex:1"><div class="muted" style="color:inherit">Ubicación donde está contando</div><div class="v" id="ubVal">— sin elegir —</div></div>
+      <button class="am" onclick="pedirUbic()">Cambiar</button>
+    </div>
+    <div class="cam" id="camBox" style="display:none">
+      <video id="video" playsinline muted></video>
+      <div class="marco"></div><div class="flash" id="flash"></div>
+      <div class="msg" id="camMsg">Apunte al QR de la etiqueta</div>
+    </div>
+    <div class="acciones" id="camAcc">
+      <button class="vd big" id="bCam" style="flex:2" onclick="alternarCamara()">📷 Encender cámara</button>
+      <button class="lt big" style="flex:1" onclick="document.getElementById('foto').click()">Foto</button>
+      <input type="file" id="foto" accept="image/*" capture="environment" class="oculto" onchange="leerFoto(this)">
+      <input type="file" id="fotoArt" accept="image/*" capture="environment" class="oculto" onchange="subirFotoArt(this)">
+      <input type="file" id="fotoGal" accept="image/*" class="oculto" onchange="subirFotoArt(this)">
+    </div>
+    <div id="camAyuda" class="muted" style="margin:6px 0 10px"></div>
+    <div class="card" style="padding:10px 12px">
+      <div class="fila">
+        <input id="lector" placeholder="Lector de códigos o escriba el código y Enter" autocomplete="off" autocapitalize="characters"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();entradaTexto(this.value,'LECTOR');this.value='';}">
+        <button class="lt" style="flex:0 0 auto" onclick="manual()">A mano</button>
+      </div>
+      <div id="cola" class="muted" style="margin-top:6px"></div>
+    </div>
+    <div class="card" style="padding:6px 12px"><div id="ultimas"></div></div>
+  </div>
+
+  <div id="pLista" class="oculto">
+    <div class="card">
+      <div class="fila"><input id="lBus" placeholder="Buscar código, descripción o ubicación" oninput="pintarLista()">
+        <select id="lFil" onchange="pintarLista()" style="flex:0 0 170px"><option value="">Todos</option><option value="sin">Sin contar</option><option value="con">Ya contados</option><option value="rec">En reconteo</option><option value="falta">Falta por contar (según sistema)</option><option value="dif">Con diferencia</option><option value="mas">Contado de más</option><option value="ok">Cuadran con el sistema</option><option value="foto">Sin foto</option></select></div>
+      <div id="lRes" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div id="pRes" class="oculto">
+    <div class="card"><div id="rKpi"></div><div id="rAcc" class="acciones"></div></div>
+    <div class="card">
+      <div class="fila">
+        <select id="rFil" onchange="pintarResultados()" style="flex:0 0 210px">
+          <option value="dif">Con diferencia</option><option value="pend">Diferencias sin decisión</option><option value="falt">Faltantes</option>
+          <option value="sobr">Sobrantes</option><option value="sin">Sin contar (con stock)</option><option value="fuera">Fuera del alcance / no en base</option>
+          <option value="dato">Sin costo o sin precio</option><option value="">Todos</option></select>
+        <input id="rBus" placeholder="Buscar" oninput="pintarResultados()">
+      </div>
+      <div id="rTabla" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div id="pLect" class="oculto">
+    <div class="card">
+      <div class="fila"><input id="kBus" placeholder="Buscar código, etiqueta, ubicación o contador" oninput="pintarLecturas()">
+        <select id="kFil" onchange="pintarLecturas()" style="flex:0 0 160px"><option value="">Todas</option><option value="mias">Mías</option><option value="av">Con aviso</option><option value="anu">Anuladas</option><option value="man">A mano / sin ID</option></select></div>
+      <div id="kRes" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div id="pBit" class="oculto"><div class="card"><div id="bRes">Cargando…</div></div></div>
+</div>
+
+<!-- ajustes -->
+<div class="wrap" id="vAjustes" style="display:none">
+  <div class="card">
+    <h2>Ajustes aprobados para el sistema administrativo</h2>
+    <div class="muted">Salen de las tomas aprobadas. Descárguelos, cárguelos en el sistema administrativo y márquelos como aplicados. Después cargue en el generador el Excel actualizado del sistema.</div>
+    <div class="fila" style="margin-top:10px"><select id="aFil" onchange="pintarAjustes()"><option value="pend">Pendientes de aplicar</option><option value="">Todos</option></select></div>
+    <div id="aRes" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- usuarios -->
+<div class="wrap" id="vUsuarios" style="display:none">
+  <div class="card">
+    <h2>Usuarios y roles</h2>
+    <div class="muted"><b>CONTADOR</b> cuenta con el teléfono · <b>REVISOR</b> crea tomas, cierra el conteo, decide sobre las diferencias y firma la revisión · <b>APROBADOR</b> aprueba o devuelve y genera los ajustes · <b>ADMIN</b> además maneja esta lista. Por control interno, quien contó no debería revisar ni aprobar esa toma, y quien revisa no debería aprobar.</div>
+    <div id="uRes" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <h2 id="uTit">Agregar usuario</h2>
+    <label>Nombre</label><input id="uNom" autocomplete="off">
+    <label>Apellido</label><input id="uApe" autocomplete="off">
+    <label>Correo</label><input id="uCor" type="email">
+    <label>Roles</label>
+    <div class="fila" id="uRoles"></div>
+    <label style="font-weight:normal"><input type="checkbox" id="uAct" checked style="width:auto"> Activo</label>
+    <label style="font-weight:normal"><input type="checkbox" id="uPin" style="width:auto"> Borrar su PIN (lo vuelve a crear al entrar)</label>
+    <div class="acciones"><button class="vd" onclick="guardarUsuario()">Guardar</button><button class="lt" onclick="editarUsuario(null)">Limpiar</button></div>
+  </div>
+</div>
+
+<!-- etiquetas de ubicación -->
+<div class="wrap" id="vUbic" style="display:none">
+  <div class="card">
+    <h2>Etiquetas QR de ubicación</h2>
+    <div class="muted">Péguelas en cada estante o pasillo. Al escanearlas, el teléfono cambia solo la ubicación del conteo. Se imprimen en hoja carta, en cualquier impresora.</div>
+    <label>Ubicaciones (una por línea)</label><textarea id="uLista" placeholder="A-01&#10;A-02&#10;B-01"></textarea>
+    <div class="fila" style="margin-top:6px">
+      <input id="uPre" placeholder="Prefijo: A-" style="flex:1 1 90px"><input id="uDe" type="number" placeholder="Desde 1" style="flex:1 1 70px"><input id="uHa" type="number" placeholder="Hasta 20" style="flex:1 1 70px">
+      <button class="lt" style="flex:0 0 auto" onclick="serieUbic()">Agregar serie</button>
+    </div>
+    <div class="acciones"><button onclick="imprimirUbic()">Imprimir etiquetas</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="caja" id="mCaja"></div></div>
+<div class="aviso" id="aviso"></div>
+<div id="acta"></div>
+<canvas id="lienzo" style="display:none"></canvas>
+<script>
+var QRCode;
+(function () {
+	function QR8bitByte(data) {
+		this.mode = QRMode.MODE_8BIT_BYTE;
+		this.data = data;
+		this.parsedData = [];
+		for (var i = 0, l = this.data.length; i < l; i++) {
+			var byteArray = [];
+			var code = this.data.charCodeAt(i);
+			if (code > 0x10000) {
+				byteArray[0] = 0xF0 | ((code & 0x1C0000) >>> 18);
+				byteArray[1] = 0x80 | ((code & 0x3F000) >>> 12);
+				byteArray[2] = 0x80 | ((code & 0xFC0) >>> 6);
+				byteArray[3] = 0x80 | (code & 0x3F);
+			} else if (code > 0x800) {
+				byteArray[0] = 0xE0 | ((code & 0xF000) >>> 12);
+				byteArray[1] = 0x80 | ((code & 0xFC0) >>> 6);
+				byteArray[2] = 0x80 | (code & 0x3F);
+			} else if (code > 0x80) {
+				byteArray[0] = 0xC0 | ((code & 0x7C0) >>> 6);
+				byteArray[1] = 0x80 | (code & 0x3F);
+			} else {
+				byteArray[0] = code;
+			}
+			this.parsedData.push(byteArray);
+		}
+		this.parsedData = Array.prototype.concat.apply([], this.parsedData);
+		if (this.parsedData.length != this.data.length) {
+			this.parsedData.unshift(191);
+			this.parsedData.unshift(187);
+			this.parsedData.unshift(239);
+		}
+	}
+	QR8bitByte.prototype = {
+		getLength: function (buffer) { return this.parsedData.length; },
+		write: function (buffer) {
+			for (var i = 0, l = this.parsedData.length; i < l; i++) {
+				buffer.put(this.parsedData[i], 8);
+			}
+		}
+	};
+	function QRCodeModel(typeNumber, errorCorrectLevel) {
+		this.typeNumber = typeNumber;
+		this.errorCorrectLevel = errorCorrectLevel;
+		this.modules = null;
+		this.moduleCount = 0;
+		this.dataCache = null;
+		this.dataList = [];
+	}
+	QRCodeModel.prototype={addData:function(data){var newData=new QR8bitByte(data);this.dataList.push(newData);this.dataCache=null;},isDark:function(row,col){if(row<0||this.moduleCount<=row||col<0||this.moduleCount<=col){throw new Error(row+","+col);}
+	return this.modules[row][col];},getModuleCount:function(){return this.moduleCount;},make:function(){this.makeImpl(false,this.getBestMaskPattern());},makeImpl:function(test,maskPattern){this.moduleCount=this.typeNumber*4+17;this.modules=new Array(this.moduleCount);for(var row=0;row<this.moduleCount;row++){this.modules[row]=new Array(this.moduleCount);for(var col=0;col<this.moduleCount;col++){this.modules[row][col]=null;}}
+	this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(test,maskPattern);if(this.typeNumber>=7){this.setupTypeNumber(test);}
+	if(this.dataCache==null){this.dataCache=QRCodeModel.createData(this.typeNumber,this.errorCorrectLevel,this.dataList);}
+	this.mapData(this.dataCache,maskPattern);},setupPositionProbePattern:function(row,col){for(var r=-1;r<=7;r++){if(row+r<=-1||this.moduleCount<=row+r)continue;for(var c=-1;c<=7;c++){if(col+c<=-1||this.moduleCount<=col+c)continue;if((0<=r&&r<=6&&(c==0||c==6))||(0<=c&&c<=6&&(r==0||r==6))||(2<=r&&r<=4&&2<=c&&c<=4)){this.modules[row+r][col+c]=true;}else{this.modules[row+r][col+c]=false;}}}},getBestMaskPattern:function(){var minLostPoint=0;var pattern=0;for(var i=0;i<8;i++){this.makeImpl(true,i);var lostPoint=QRUtil.getLostPoint(this);if(i==0||minLostPoint>lostPoint){minLostPoint=lostPoint;pattern=i;}}
+	return pattern;},createMovieClip:function(target_mc,instance_name,depth){var qr_mc=target_mc.createEmptyMovieClip(instance_name,depth);var cs=1;this.make();for(var row=0;row<this.modules.length;row++){var y=row*cs;for(var col=0;col<this.modules[row].length;col++){var x=col*cs;var dark=this.modules[row][col];if(dark){qr_mc.beginFill(0,100);qr_mc.moveTo(x,y);qr_mc.lineTo(x+cs,y);qr_mc.lineTo(x+cs,y+cs);qr_mc.lineTo(x,y+cs);qr_mc.endFill();}}}
+	return qr_mc;},setupTimingPattern:function(){for(var r=8;r<this.moduleCount-8;r++){if(this.modules[r][6]!=null){continue;}
+	this.modules[r][6]=(r%2==0);}
+	for(var c=8;c<this.moduleCount-8;c++){if(this.modules[6][c]!=null){continue;}
+	this.modules[6][c]=(c%2==0);}},setupPositionAdjustPattern:function(){var pos=QRUtil.getPatternPosition(this.typeNumber);for(var i=0;i<pos.length;i++){for(var j=0;j<pos.length;j++){var row=pos[i];var col=pos[j];if(this.modules[row][col]!=null){continue;}
+	for(var r=-2;r<=2;r++){for(var c=-2;c<=2;c++){if(r==-2||r==2||c==-2||c==2||(r==0&&c==0)){this.modules[row+r][col+c]=true;}else{this.modules[row+r][col+c]=false;}}}}}},setupTypeNumber:function(test){var bits=QRUtil.getBCHTypeNumber(this.typeNumber);for(var i=0;i<18;i++){var mod=(!test&&((bits>>i)&1)==1);this.modules[Math.floor(i/3)][i%3+this.moduleCount-8-3]=mod;}
+	for(var i=0;i<18;i++){var mod=(!test&&((bits>>i)&1)==1);this.modules[i%3+this.moduleCount-8-3][Math.floor(i/3)]=mod;}},setupTypeInfo:function(test,maskPattern){var data=(this.errorCorrectLevel<<3)|maskPattern;var bits=QRUtil.getBCHTypeInfo(data);for(var i=0;i<15;i++){var mod=(!test&&((bits>>i)&1)==1);if(i<6){this.modules[i][8]=mod;}else if(i<8){this.modules[i+1][8]=mod;}else{this.modules[this.moduleCount-15+i][8]=mod;}}
+	for(var i=0;i<15;i++){var mod=(!test&&((bits>>i)&1)==1);if(i<8){this.modules[8][this.moduleCount-i-1]=mod;}else if(i<9){this.modules[8][15-i-1+1]=mod;}else{this.modules[8][15-i-1]=mod;}}
+	this.modules[this.moduleCount-8][8]=(!test);},mapData:function(data,maskPattern){var inc=-1;var row=this.moduleCount-1;var bitIndex=7;var byteIndex=0;for(var col=this.moduleCount-1;col>0;col-=2){if(col==6)col--;while(true){for(var c=0;c<2;c++){if(this.modules[row][col-c]==null){var dark=false;if(byteIndex<data.length){dark=(((data[byteIndex]>>>bitIndex)&1)==1);}
+	var mask=QRUtil.getMask(maskPattern,row,col-c);if(mask){dark=!dark;}
+	this.modules[row][col-c]=dark;bitIndex--;if(bitIndex==-1){byteIndex++;bitIndex=7;}}}
+	row+=inc;if(row<0||this.moduleCount<=row){row-=inc;inc=-inc;break;}}}}};QRCodeModel.PAD0=0xEC;QRCodeModel.PAD1=0x11;QRCodeModel.createData=function(typeNumber,errorCorrectLevel,dataList){var rsBlocks=QRRSBlock.getRSBlocks(typeNumber,errorCorrectLevel);var buffer=new QRBitBuffer();for(var i=0;i<dataList.length;i++){var data=dataList[i];buffer.put(data.mode,4);buffer.put(data.getLength(),QRUtil.getLengthInBits(data.mode,typeNumber));data.write(buffer);}
+	var totalDataCount=0;for(var i=0;i<rsBlocks.length;i++){totalDataCount+=rsBlocks[i].dataCount;}
+	if(buffer.getLengthInBits()>totalDataCount*8){throw new Error("code length overflow. ("
+	+buffer.getLengthInBits()
+	+">"
+	+totalDataCount*8
+	+")");}
+	if(buffer.getLengthInBits()+4<=totalDataCount*8){buffer.put(0,4);}
+	while(buffer.getLengthInBits()%8!=0){buffer.putBit(false);}
+	while(true){if(buffer.getLengthInBits()>=totalDataCount*8){break;}
+	buffer.put(QRCodeModel.PAD0,8);if(buffer.getLengthInBits()>=totalDataCount*8){break;}
+	buffer.put(QRCodeModel.PAD1,8);}
+	return QRCodeModel.createBytes(buffer,rsBlocks);};QRCodeModel.createBytes=function(buffer,rsBlocks){var offset=0;var maxDcCount=0;var maxEcCount=0;var dcdata=new Array(rsBlocks.length);var ecdata=new Array(rsBlocks.length);for(var r=0;r<rsBlocks.length;r++){var dcCount=rsBlocks[r].dataCount;var ecCount=rsBlocks[r].totalCount-dcCount;maxDcCount=Math.max(maxDcCount,dcCount);maxEcCount=Math.max(maxEcCount,ecCount);dcdata[r]=new Array(dcCount);for(var i=0;i<dcdata[r].length;i++){dcdata[r][i]=0xff&buffer.buffer[i+offset];}
+	offset+=dcCount;var rsPoly=QRUtil.getErrorCorrectPolynomial(ecCount);var rawPoly=new QRPolynomial(dcdata[r],rsPoly.getLength()-1);var modPoly=rawPoly.mod(rsPoly);ecdata[r]=new Array(rsPoly.getLength()-1);for(var i=0;i<ecdata[r].length;i++){var modIndex=i+modPoly.getLength()-ecdata[r].length;ecdata[r][i]=(modIndex>=0)?modPoly.get(modIndex):0;}}
+	var totalCodeCount=0;for(var i=0;i<rsBlocks.length;i++){totalCodeCount+=rsBlocks[i].totalCount;}
+	var data=new Array(totalCodeCount);var index=0;for(var i=0;i<maxDcCount;i++){for(var r=0;r<rsBlocks.length;r++){if(i<dcdata[r].length){data[index++]=dcdata[r][i];}}}
+	for(var i=0;i<maxEcCount;i++){for(var r=0;r<rsBlocks.length;r++){if(i<ecdata[r].length){data[index++]=ecdata[r][i];}}}
+	return data;};var QRMode={MODE_NUMBER:1<<0,MODE_ALPHA_NUM:1<<1,MODE_8BIT_BYTE:1<<2,MODE_KANJI:1<<3};var QRErrorCorrectLevel={L:1,M:0,Q:3,H:2};var QRMaskPattern={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7};var QRUtil={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:(1<<10)|(1<<8)|(1<<5)|(1<<4)|(1<<2)|(1<<1)|(1<<0),G18:(1<<12)|(1<<11)|(1<<10)|(1<<9)|(1<<8)|(1<<5)|(1<<2)|(1<<0),G15_MASK:(1<<14)|(1<<12)|(1<<10)|(1<<4)|(1<<1),getBCHTypeInfo:function(data){var d=data<<10;while(QRUtil.getBCHDigit(d)-QRUtil.getBCHDigit(QRUtil.G15)>=0){d^=(QRUtil.G15<<(QRUtil.getBCHDigit(d)-QRUtil.getBCHDigit(QRUtil.G15)));}
+	return((data<<10)|d)^QRUtil.G15_MASK;},getBCHTypeNumber:function(data){var d=data<<12;while(QRUtil.getBCHDigit(d)-QRUtil.getBCHDigit(QRUtil.G18)>=0){d^=(QRUtil.G18<<(QRUtil.getBCHDigit(d)-QRUtil.getBCHDigit(QRUtil.G18)));}
+	return(data<<12)|d;},getBCHDigit:function(data){var digit=0;while(data!=0){digit++;data>>>=1;}
+	return digit;},getPatternPosition:function(typeNumber){return QRUtil.PATTERN_POSITION_TABLE[typeNumber-1];},getMask:function(maskPattern,i,j){switch(maskPattern){case QRMaskPattern.PATTERN000:return(i+j)%2==0;case QRMaskPattern.PATTERN001:return i%2==0;case QRMaskPattern.PATTERN010:return j%3==0;case QRMaskPattern.PATTERN011:return(i+j)%3==0;case QRMaskPattern.PATTERN100:return(Math.floor(i/2)+Math.floor(j/3))%2==0;case QRMaskPattern.PATTERN101:return(i*j)%2+(i*j)%3==0;case QRMaskPattern.PATTERN110:return((i*j)%2+(i*j)%3)%2==0;case QRMaskPattern.PATTERN111:return((i*j)%3+(i+j)%2)%2==0;default:throw new Error("bad maskPattern:"+maskPattern);}},getErrorCorrectPolynomial:function(errorCorrectLength){var a=new QRPolynomial([1],0);for(var i=0;i<errorCorrectLength;i++){a=a.multiply(new QRPolynomial([1,QRMath.gexp(i)],0));}
+	return a;},getLengthInBits:function(mode,type){if(1<=type&&type<10){switch(mode){case QRMode.MODE_NUMBER:return 10;case QRMode.MODE_ALPHA_NUM:return 9;case QRMode.MODE_8BIT_BYTE:return 8;case QRMode.MODE_KANJI:return 8;default:throw new Error("mode:"+mode);}}else if(type<27){switch(mode){case QRMode.MODE_NUMBER:return 12;case QRMode.MODE_ALPHA_NUM:return 11;case QRMode.MODE_8BIT_BYTE:return 16;case QRMode.MODE_KANJI:return 10;default:throw new Error("mode:"+mode);}}else if(type<41){switch(mode){case QRMode.MODE_NUMBER:return 14;case QRMode.MODE_ALPHA_NUM:return 13;case QRMode.MODE_8BIT_BYTE:return 16;case QRMode.MODE_KANJI:return 12;default:throw new Error("mode:"+mode);}}else{throw new Error("type:"+type);}},getLostPoint:function(qrCode){var moduleCount=qrCode.getModuleCount();var lostPoint=0;for(var row=0;row<moduleCount;row++){for(var col=0;col<moduleCount;col++){var sameCount=0;var dark=qrCode.isDark(row,col);for(var r=-1;r<=1;r++){if(row+r<0||moduleCount<=row+r){continue;}
+	for(var c=-1;c<=1;c++){if(col+c<0||moduleCount<=col+c){continue;}
+	if(r==0&&c==0){continue;}
+	if(dark==qrCode.isDark(row+r,col+c)){sameCount++;}}}
+	if(sameCount>5){lostPoint+=(3+sameCount-5);}}}
+	for(var row=0;row<moduleCount-1;row++){for(var col=0;col<moduleCount-1;col++){var count=0;if(qrCode.isDark(row,col))count++;if(qrCode.isDark(row+1,col))count++;if(qrCode.isDark(row,col+1))count++;if(qrCode.isDark(row+1,col+1))count++;if(count==0||count==4){lostPoint+=3;}}}
+	for(var row=0;row<moduleCount;row++){for(var col=0;col<moduleCount-6;col++){if(qrCode.isDark(row,col)&&!qrCode.isDark(row,col+1)&&qrCode.isDark(row,col+2)&&qrCode.isDark(row,col+3)&&qrCode.isDark(row,col+4)&&!qrCode.isDark(row,col+5)&&qrCode.isDark(row,col+6)){lostPoint+=40;}}}
+	for(var col=0;col<moduleCount;col++){for(var row=0;row<moduleCount-6;row++){if(qrCode.isDark(row,col)&&!qrCode.isDark(row+1,col)&&qrCode.isDark(row+2,col)&&qrCode.isDark(row+3,col)&&qrCode.isDark(row+4,col)&&!qrCode.isDark(row+5,col)&&qrCode.isDark(row+6,col)){lostPoint+=40;}}}
+	var darkCount=0;for(var col=0;col<moduleCount;col++){for(var row=0;row<moduleCount;row++){if(qrCode.isDark(row,col)){darkCount++;}}}
+	var ratio=Math.abs(100*darkCount/moduleCount/moduleCount-50)/5;lostPoint+=ratio*10;return lostPoint;}};var QRMath={glog:function(n){if(n<1){throw new Error("glog("+n+")");}
+	return QRMath.LOG_TABLE[n];},gexp:function(n){while(n<0){n+=255;}
+	while(n>=256){n-=255;}
+	return QRMath.EXP_TABLE[n];},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)};for(var i=0;i<8;i++){QRMath.EXP_TABLE[i]=1<<i;}
+	for(var i=8;i<256;i++){QRMath.EXP_TABLE[i]=QRMath.EXP_TABLE[i-4]^QRMath.EXP_TABLE[i-5]^QRMath.EXP_TABLE[i-6]^QRMath.EXP_TABLE[i-8];}
+	for(var i=0;i<255;i++){QRMath.LOG_TABLE[QRMath.EXP_TABLE[i]]=i;}
+	function QRPolynomial(num,shift){if(num.length==undefined){throw new Error(num.length+"/"+shift);}
+	var offset=0;while(offset<num.length&&num[offset]==0){offset++;}
+	this.num=new Array(num.length-offset+shift);for(var i=0;i<num.length-offset;i++){this.num[i]=num[i+offset];}}
+	QRPolynomial.prototype={get:function(index){return this.num[index];},getLength:function(){return this.num.length;},multiply:function(e){var num=new Array(this.getLength()+e.getLength()-1);for(var i=0;i<this.getLength();i++){for(var j=0;j<e.getLength();j++){num[i+j]^=QRMath.gexp(QRMath.glog(this.get(i))+QRMath.glog(e.get(j)));}}
+	return new QRPolynomial(num,0);},mod:function(e){if(this.getLength()-e.getLength()<0){return this;}
+	var ratio=QRMath.glog(this.get(0))-QRMath.glog(e.get(0));var num=new Array(this.getLength());for(var i=0;i<this.getLength();i++){num[i]=this.get(i);}
+	for(var i=0;i<e.getLength();i++){num[i]^=QRMath.gexp(QRMath.glog(e.get(i))+ratio);}
+	return new QRPolynomial(num,0).mod(e);}};function QRRSBlock(totalCount,dataCount){this.totalCount=totalCount;this.dataCount=dataCount;}
+	QRRSBlock.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]];QRRSBlock.getRSBlocks=function(typeNumber,errorCorrectLevel){var rsBlock=QRRSBlock.getRsBlockTable(typeNumber,errorCorrectLevel);if(rsBlock==undefined){throw new Error("bad rs block @ typeNumber:"+typeNumber+"/errorCorrectLevel:"+errorCorrectLevel);}
+	var length=rsBlock.length/3;var list=[];for(var i=0;i<length;i++){var count=rsBlock[i*3+0];var totalCount=rsBlock[i*3+1];var dataCount=rsBlock[i*3+2];for(var j=0;j<count;j++){list.push(new QRRSBlock(totalCount,dataCount));}}
+	return list;};QRRSBlock.getRsBlockTable=function(typeNumber,errorCorrectLevel){switch(errorCorrectLevel){case QRErrorCorrectLevel.L:return QRRSBlock.RS_BLOCK_TABLE[(typeNumber-1)*4+0];case QRErrorCorrectLevel.M:return QRRSBlock.RS_BLOCK_TABLE[(typeNumber-1)*4+1];case QRErrorCorrectLevel.Q:return QRRSBlock.RS_BLOCK_TABLE[(typeNumber-1)*4+2];case QRErrorCorrectLevel.H:return QRRSBlock.RS_BLOCK_TABLE[(typeNumber-1)*4+3];default:return undefined;}};function QRBitBuffer(){this.buffer=[];this.length=0;}
+	QRBitBuffer.prototype={get:function(index){var bufIndex=Math.floor(index/8);return((this.buffer[bufIndex]>>>(7-index%8))&1)==1;},put:function(num,length){for(var i=0;i<length;i++){this.putBit(((num>>>(length-i-1))&1)==1);}},getLengthInBits:function(){return this.length;},putBit:function(bit){var bufIndex=Math.floor(this.length/8);if(this.buffer.length<=bufIndex){this.buffer.push(0);}
+	if(bit){this.buffer[bufIndex]|=(0x80>>>(this.length%8));}
+	this.length++;}};var QRCodeLimitLength=[[17,14,11,7],[32,26,20,14],[53,42,32,24],[78,62,46,34],[106,84,60,44],[134,106,74,58],[154,122,86,64],[192,152,108,84],[230,180,130,98],[271,213,151,119],[321,251,177,137],[367,287,203,155],[425,331,241,177],[458,362,258,194],[520,412,292,220],[586,450,322,250],[644,504,364,280],[718,560,394,310],[792,624,442,338],[858,666,482,382],[929,711,509,403],[1003,779,565,439],[1091,857,611,461],[1171,911,661,511],[1273,997,715,535],[1367,1059,751,593],[1465,1125,805,625],[1528,1190,868,658],[1628,1264,908,698],[1732,1370,982,742],[1840,1452,1030,790],[1952,1538,1112,842],[2068,1628,1168,898],[2188,1722,1228,958],[2303,1809,1283,983],[2431,1911,1351,1051],[2563,1989,1423,1093],[2699,2099,1499,1139],[2809,2213,1579,1219],[2953,2331,1663,1273]];
+	function _isSupportCanvas() { return typeof CanvasRenderingContext2D != "undefined"; }
+	function _getAndroid() {
+		var android = false; var sAgent = navigator.userAgent;
+		if (/android/i.test(sAgent)) { android = true; var aMat = sAgent.toString().match(/android ([0-9]\.[0-9])/i);
+			if (aMat && aMat[1]) { android = parseFloat(aMat[1]); } }
+		return android;
+	}
+	var Drawing = !_isSupportCanvas() ? (function () {
+		var Drawing = function (el, htOption) { this._el = el; this._htOption = htOption; };
+		Drawing.prototype.draw = function (oQRCode) {
+            var _htOption = this._htOption; var _el = this._el;
+			var nCount = oQRCode.getModuleCount();
+			var nWidth = Math.floor(_htOption.width / nCount);
+			var nHeight = Math.floor(_htOption.height / nCount);
+			var aHTML = ['<table style="border:0;border-collapse:collapse;">'];
+			for (var row = 0; row < nCount; row++) { aHTML.push('<tr>');
+				for (var col = 0; col < nCount; col++) {
+					aHTML.push('<td style="border:0;border-collapse:collapse;padding:0;margin:0;width:' + nWidth + 'px;height:' + nHeight + 'px;background-color:' + (oQRCode.isDark(row, col) ? _htOption.colorDark : _htOption.colorLight) + ';"></td>'); }
+				aHTML.push('</tr>'); }
+			aHTML.push('</table>'); _el.innerHTML = aHTML.join('');
+			var elTable = _el.childNodes[0];
+			var nLeftMarginTable = (_htOption.width - elTable.offsetWidth) / 2;
+			var nTopMarginTable = (_htOption.height - elTable.offsetHeight) / 2;
+			if (nLeftMarginTable > 0 && nTopMarginTable > 0) { elTable.style.margin = nTopMarginTable + "px " + nLeftMarginTable + "px"; }
+		};
+		Drawing.prototype.clear = function () { this._el.innerHTML = ''; };
+		return Drawing;
+	})() : (function () {
+		function _onMakeImage() { this._elImage.src = this._elCanvas.toDataURL("image/png"); this._elImage.style.display = "block"; this._elCanvas.style.display = "none"; }
+		var Drawing = function (el, htOption) {
+    		this._bIsPainted = false; this._android = _getAndroid();
+			this._htOption = htOption;
+			this._elCanvas = document.createElement("canvas");
+			this._elCanvas.width = htOption.width; this._elCanvas.height = htOption.height;
+			el.appendChild(this._elCanvas); this._el = el;
+			this._oContext = this._elCanvas.getContext("2d");
+			this._bIsPainted = false;
+			this._elImage = document.createElement("img");
+			this._elImage.alt = "Scan me!"; this._elImage.style.display = "none";
+			this._el.appendChild(this._elImage); this._bSupportDataURI = null;
+		};
+		Drawing.prototype.draw = function (oQRCode) {
+            var _elImage = this._elImage; var _oContext = this._oContext; var _htOption = this._htOption;
+			var nCount = oQRCode.getModuleCount();
+			var nWidth = _htOption.width / nCount; var nHeight = _htOption.height / nCount;
+			var nRoundedWidth = Math.round(nWidth); var nRoundedHeight = Math.round(nHeight);
+			_elImage.style.display = "none"; this.clear();
+			for (var row = 0; row < nCount; row++) { for (var col = 0; col < nCount; col++) {
+					var bIsDark = oQRCode.isDark(row, col);
+					var nLeft = col * nWidth; var nTop = row * nHeight;
+					_oContext.strokeStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;
+					_oContext.lineWidth = 1;
+					_oContext.fillStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;
+					_oContext.fillRect(nLeft, nTop, nWidth, nHeight);
+					_oContext.strokeRect(Math.floor(nLeft) + 0.5, Math.floor(nTop) + 0.5, nRoundedWidth, nRoundedHeight);
+					_oContext.strokeRect(Math.ceil(nLeft) - 0.5, Math.ceil(nTop) - 0.5, nRoundedWidth, nRoundedHeight); } }
+			this._bIsPainted = true;
+		};
+		Drawing.prototype.makeImage = function () { if (this._bIsPainted) { _onMakeImage.call(this); } };
+		Drawing.prototype.isPainted = function () { return this._bIsPainted; };
+		Drawing.prototype.clear = function () { this._oContext.clearRect(0, 0, this._elCanvas.width, this._elCanvas.height); this._bIsPainted = false; };
+		return Drawing;
+	})();
+	function _getTypeNumber(sText, nCorrectLevel) {
+		var nType = 1; var length = _getUTF8Length(sText);
+		for (var i = 0, len = QRCodeLimitLength.length; i <= len; i++) {
+			var nLimit = 0;
+			switch (nCorrectLevel) {
+				case QRErrorCorrectLevel.L : nLimit = QRCodeLimitLength[i][0]; break;
+				case QRErrorCorrectLevel.M : nLimit = QRCodeLimitLength[i][1]; break;
+				case QRErrorCorrectLevel.Q : nLimit = QRCodeLimitLength[i][2]; break;
+				case QRErrorCorrectLevel.H : nLimit = QRCodeLimitLength[i][3]; break;
+			}
+			if (length <= nLimit) { break; } else { nType++; }
+		}
+		if (nType > QRCodeLimitLength.length) { throw new Error("Too long data"); }
+		return nType;
+	}
+	function _getUTF8Length(sText) {
+		var replacedText = encodeURI(sText).toString().replace(/\%[0-9a-fA-F]{2}/g, 'a');
+		return replacedText.length + (replacedText.length != sText ? 3 : 0);
+	}
+	QRCode = function (el, vOption) {
+		this._htOption = { width : 256, height : 256, typeNumber : 4, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRErrorCorrectLevel.H };
+		if (typeof vOption === 'string') { vOption = { text : vOption }; }
+		if (vOption) { for (var i in vOption) { this._htOption[i] = vOption[i]; } }
+		if (typeof el == "string") { el = document.getElementById(el); }
+		this._android = _getAndroid(); this._el = el; this._oQRCode = null;
+		this._oDrawing = new Drawing(this._el, this._htOption);
+		if (this._htOption.text) { this.makeCode(this._htOption.text); }
+	};
+	QRCode.prototype.makeCode = function (sText) {
+		this._oQRCode = new QRCodeModel(_getTypeNumber(sText, this._htOption.correctLevel), this._htOption.correctLevel);
+		this._oQRCode.addData(sText); this._oQRCode.make();
+		this._el.title = sText; this._oDrawing.draw(this._oQRCode); this.makeImage();
+	};
+	QRCode.prototype.makeImage = function () { if (typeof this._oDrawing.makeImage == "function" && (!this._android || this._android >= 3)) { this._oDrawing.makeImage(); } };
+	QRCode.prototype.clear = function () { this._oDrawing.clear(); };
+	QRCode.CorrectLevel = QRErrorCorrectLevel;
+})();
+
+</script>
+<script>
+/* =========================================================================
+   TOYOTENGO · Conteo de inventario con el teléfono
+   Funciona de dos maneras con el mismo archivo:
+   - dentro de Google (enlace /exec?p=conteo): habla con la hoja por google.script.run
+   - publicada aparte (GitHub Pages) para tener cámara en vivo: habla por internet con el mismo enlace /exec
+   ========================================================================= */
+var LS = {
+  get: function(k, d){ try{ var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set: function(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  del: function(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+var EN_GOOGLE = !!(window.google && google.script && google.script.run);
+var SERVIDOR = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/inventario";   // servidor central (Supabase)
+var API_URL = SERVIDOR || window.TOYO_API || "";
+var CLAVE = LS.get("toyo_clave", ""), TOK = LS.get("cnt_tok", ""), YO = LS.get("cnt_yo", null);
+var DEV = LS.get("cnt_dev", "") || (function(){ var d = "D" + Math.random().toString(36).slice(2, 7).toUpperCase(); LS.set("cnt_dev", d); return d; })();
+var SEQ = LS.get("cnt_seq", 0);
+var TOMAS = [], BASE = null, BIX = {}, VISTA = "", PILA = [];
+var TOMA = null, ITEMS = [], IX = {}, LECT = {}, ORDEN = [], DESDE = 0, VE = false, PEST = "";
+var COLA = [], ENVIANDO = false, SONDEO = null, UB = "", CAMURL = "";
+/* ubicaciones oficiales de Toyotengo (para agregar una nueva, añádala a esta lista y publique versión nueva) */
+var UBICACIONES = ["ALMACEN PRINCIPAL", "TIENDA 1", "TIENDA 2"];
+
+/* ---------- utilidades ---------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function pad(n){ return (n < 10 ? "0" : "") + n; }
+function ahoraISO(){ var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()); }
+function hoy(){ return ahoraISO().slice(0, 10); }
+function fh(iso){ if (!iso) return ""; var p = String(iso); return p.slice(8,10) + "/" + p.slice(5,7) + "/" + p.slice(0,4) + (p.length > 10 ? " " + p.slice(11,16) : ""); }
+function hora(iso){ return String(iso || "").slice(11, 16); }
+function key(c){ return String(c == null ? "" : c).replace(/\s+/g, " ").trim().toUpperCase(); }
+function n0(v){ var x = Math.round(Number(v) * 1000) / 1000; return String(x).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+function nEnt(v){ var x = Math.round(Number(v) || 0); return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+function m2(v){ var x = Number(v) || 0, s = Math.abs(x).toFixed(2).split("."); return (x < 0 ? "-" : "") + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "," + s[1]; }
+function pct(v){ return v == null || isNaN(v) ? "—" : String(Math.round(v * 10) / 10).replace(".", ",") + "%"; }
+function tiene(rol){ return !!YO && (YO.roles.indexOf("ADMIN") >= 0 || YO.roles.indexOf(rol) >= 0); }
+function estClase(e){ return e === "EN REVISIÓN" ? "e-REV" : "e-" + e; }
+function chip(e){ return '<span class="chip ' + estClase(e) + '">' + esc(e) + '</span>'; }
+function activa(){ return TOMA && (TOMA.est === "ABIERTA" || TOMA.est === "RECONTEO"); }
+
+var AVT = null;
+function aviso(txt, tipo, ms){
+  var a = $("aviso"); a.className = "aviso " + (tipo || ""); a.innerHTML = txt; a.style.display = "block";
+  clearTimeout(AVT); AVT = setTimeout(function(){ a.style.display = "none"; }, ms || 3500);
+}
+function modal(html){ $("mCaja").innerHTML = html; $("modal").style.display = "flex"; }
+function cerrarModal(){ $("modal").style.display = "none"; }
+
+/* sonido y vibración: verde = contó, rojo = repetida o rechazada */
+var AC = null;
+function pitar(ok){
+  try{
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    var t = AC.currentTime;
+    [0, ok ? null : 0.22].forEach(function(d){
+      if (d == null) return;
+      var o = AC.createOscillator(), g = AC.createGain();
+      o.frequency.value = ok ? 1150 : 260; o.type = ok ? "sine" : "square";
+      g.gain.setValueAtTime(0.18, t + d); g.gain.exponentialRampToValueAtTime(0.001, t + d + (ok ? 0.09 : 0.2));
+      o.connect(g); g.connect(AC.destination); o.start(t + d); o.stop(t + d + (ok ? 0.1 : 0.21));
+    });
+  }catch(e){}
+  try{ navigator.vibrate && navigator.vibrate(ok ? 60 : [220, 90, 220]); }catch(e){}
+  var f = $("flash"); if (f){ f.style.background = ok ? "rgba(31,122,77,.55)" : "rgba(200,16,46,.6)"; f.style.opacity = 1; setTimeout(function(){ f.style.opacity = 0; }, 220); }
+}
+
+/* ---------- conexión con la hoja ---------- */
+function api(fn){
+  var args = [].slice.call(arguments, 1);
+  var todos = fn === "cEntrar" ? [CLAVE].concat(args) : [CLAVE, TOK].concat(args);
+  var p;
+  if (EN_GOOGLE && !SERVIDOR){
+    p = new Promise(function(ok, mal){
+      var r = google.script.run.withSuccessHandler(ok).withFailureHandler(mal);
+      r[fn].apply(r, todos);
+    });
+  } else if (API_URL){
+    p = fetch(API_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({fn:fn, args:todos}), redirect:"follow"})
+      .then(function(r){ return r.json(); })
+      .then(function(o){ if (!o.ok) throw new Error(o.error); return o.v; });
+  } else p = Promise.reject(new Error("Esta página tiene que abrirse desde su enlace."));
+  return p.catch(function(err){
+    var m = String(err && (err.message || err) || "error");
+    if (/SESION/.test(m)){ salir(true); throw new Error("Su sesión venció: entre otra vez."); }
+    if (/CLAVE/.test(m)){ $("eClaveFila").classList.remove("oculto"); mostrar("vEntrar"); throw new Error("Falta la clave de acceso del programa."); }
+    throw new Error(m.replace(/^(Error|Exception):\s*/, "").replace(/^PERMISO: /, ""));
+  });
+}
+function fallo(err){ aviso(esc(err.message || err), "mal", 6000); }
+
+/* ---------- vistas ---------- */
+function mostrar(v, sinPila){
+  ["vEntrar","vInicio","vNueva","vToma","vAjustes","vUsuarios","vUbic"].forEach(function(x){ $(x).style.display = x === v ? "block" : "none"; });
+  if (!sinPila && VISTA && VISTA !== v && VISTA !== "vEntrar") PILA.push(VISTA);
+  VISTA = v;
+  $("atras").classList.toggle("oculto", v === "vInicio" || v === "vEntrar");
+  if (v !== "vToma") apagarCamara();
+  var tt = {vEntrar:"TOYOTENGO · Conteo", vInicio:"TOYOTENGO · Conteo", vNueva:"Nueva toma", vAjustes:"Ajustes", vUsuarios:"Usuarios", vUbic:"Ubicaciones"};
+  if (tt[v]) $("titulo").textContent = tt[v];
+  window.scrollTo(0, 0);
+}
+function volver(){
+  var v = PILA.pop() || "vInicio";
+  if (v === "vToma" && !TOMA) v = "vInicio";
+  if (VISTA === "vToma"){ pararSondeo(); TOMA = null; }
+  if (v === "vInicio") inicio(); else mostrar(v, true);
+}
+function pintarYo(){
+  $("yo").innerHTML = YO ? esc(YO.n) + '<br><span style="opacity:.8">' + esc(YO.roles.join(" · ")) + '</span> · <a onclick="salir()">Salir</a>' : "";
+}
+
+/* ---------- entrar ---------- */
+async function entrar(){
+  var c = $("eCor").value.trim().toLowerCase(), p = $("ePin").value.trim(), n = $("eNom").value.trim(), a = $("eApe").value.trim();
+  if (!$("eClaveFila").classList.contains("oculto")){ CLAVE = $("eClave").value.trim(); LS.set("toyo_clave", CLAVE); }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c)){ $("eMsg").textContent = "Escriba su correo."; return; }
+  if (!/^\d{4,8}$/.test(p)){ $("eMsg").textContent = "El PIN es de 4 a 8 números."; return; }
+  $("eMsg").textContent = "Verificando…";
+  try{
+    var r = await api("cEntrar", c, p, n, a);
+    TOK = r.tok; YO = r.usuario; LS.set("cnt_tok", TOK); LS.set("cnt_yo", YO); LS.set("cnt_correo", c);
+    $("ePin").value = ""; $("eMsg").textContent = "";
+    if (r.nuevo) aviso("PIN creado. Guárdelo: lo necesita cada vez que entre.", "bien", 5000);
+    pintarYo(); inicio();
+  }catch(err){ $("eMsg").innerHTML = '<span class="rojo">' + esc(err.message) + '</span>'; }
+}
+function salir(vencida){
+  apagarCamara(); pararSondeo();
+  TOK = ""; YO = null; LS.del("cnt_tok"); LS.del("cnt_yo"); TOMA = null; PILA = [];
+  pintarYo(); $("eCor").value = LS.get("cnt_correo", ""); mostrar("vEntrar", true);
+  if (vencida) $("eMsg").textContent = "Vuelva a entrar con su PIN.";
+}
+
+/* ---------- inicio ---------- */
+async function inicio(){
+  mostrar("vInicio", true); PILA = [];
+  $("iLista").innerHTML = '<div class="muted">Cargando…</div>';
+  try{
+    var r = await api("cInicio"); YO = r.usuario; LS.set("cnt_yo", YO); pintarYo(); TOMAS = r.tomas; CAMURL = r.cam || "";
+  }catch(err){ $("iLista").innerHTML = '<div class="bloque">' + esc(err.message) + ' <button class="sm lt" onclick="inicio()">Reintentar</button></div>'; return; }
+  var acc = "";
+  if (tiene("REVISOR") || tiene("APROBADOR")) acc += '<button class="vd" onclick="nueva()">+ Nueva toma</button><button class="lt" onclick="verAjustes()">Ajustes</button>';
+  if (tiene("ADMIN")) acc += '<button class="lt" onclick="verUsuarios()">Usuarios</button><button class="lt" style="color:#b42318" onclick="eliminarTomas()">🗑 Eliminar tomas</button>';
+  acc += '<button class="lt" onclick="buscarArticulo()">📷 Artículos y fotos</button>';
+  acc += '<button class="lt" onclick="mostrar(\'vUbic\')">Etiquetas de ubicación</button>';
+  $("iAcc").innerHTML = acc;
+  var act = TOMAS.filter(function(t){ return t.est === "ABIERTA" || t.est === "RECONTEO"; });
+  var rev = TOMAS.filter(function(t){ return t.est === "EN REVISIÓN" || t.est === "REVISADA"; });
+  var fin = TOMAS.filter(function(t){ return t.est === "APROBADA" || t.est === "ANULADA"; }).slice(0, 30);
+  function grupo(tit, l, vacio){
+    return '<div class="card"><h2>' + tit + '</h2>' + (l.length ? l.map(tarjeta).join("") : '<div class="muted">' + vacio + '</div>') + '</div>';
+  }
+  $("iLista").innerHTML = grupo("Para contar", act, tiene("CONTADOR") ? "No hay tomas abiertas. Cuando el revisor cree una, aparece aquí." : "No hay tomas abiertas.")
+    + ((tiene("REVISOR") || tiene("APROBADOR")) ? grupo("En revisión y por aprobar", rev, "Nada pendiente.") : "")
+    + grupo("Cerradas", fin, "Todavía no hay tomas cerradas.");
+}
+function tarjeta(t){
+  var res = t.exac != null && t.est !== "ABIERTA" ? ' · exactitud ' + pct(t.exac) + ' · faltante ' + m2(t.falt) + ' · sobrante ' + m2(t.sobr) : "";
+  return '<button class="toma" onclick="abrirToma(\'' + esc(t.id) + '\')"><div class="t1">' + esc(t.id) + ' ' + chip(t.est)
+    + '<span style="font-weight:normal;color:#5b6773;font-size:12.5px">' + esc(t.tipo) + (t.ronda > 1 ? " · ronda " + t.ronda : "") + '</span></div>'
+    + '<div style="margin-top:4px">' + esc(t.desc) + '</div>'
+    + '<div class="t2">' + nEnt(t.n) + ' artículos · corte ' + fh(t.corte) + ' · creó ' + esc(String(t.creo).replace(/\s*<.*>/, "")) + res
+    + (t.rev ? '<br>Revisó ' + esc(String(t.rev).replace(/\s*<.*>/, "")) + ' ' + fh(t.frev) : "")
+    + (t.apr ? ' · Aprobó ' + esc(String(t.apr).replace(/\s*<.*>/, "")) + ' ' + fh(t.fapr) : "") + '</div></button>';
+}
+
+/* ---------- nueva toma ---------- */
+function nueva(){ mostrar("vNueva"); pintarNueva(); llenarUbicaciones(); }
+/* lista de ubicaciones para escoger: las que tienen los artículos en la base (se llenan al aprobar tomas) */
+async function llenarUbicaciones(){
+  var s = $("nUb"), previa = s.value, ay = $("nUbAyuda");
+  ay.textContent = "Cargando ubicaciones…";
+  try{ await cargarBase(); }catch(err){ ay.textContent = "No se pudieron cargar las ubicaciones: " + err.message; return; }
+  var cuenta = {};
+  BASE.forEach(function(a){
+    if (a.x) return;
+    String(a.ub || "").split(/\s*,\s*/).forEach(function(u){ u = u.replace(/\s+/g, " ").trim().toUpperCase(); if (u) cuenta[u] = (cuenta[u] || 0) + 1; });
+  });
+  var extra = Object.keys(cuenta).filter(function(u){ return UBICACIONES.indexOf(u) < 0; }).sort(function(a, b){ return a.localeCompare(b, "es", {numeric: true}); });
+  var l = UBICACIONES.concat(extra);
+  UBIC_CUENTA = cuenta;
+  s.innerHTML = '<option value="">Todas las ubicaciones</option>' + l.map(function(u, i){ var n = cuenta[u] || 0; return '<option value="' + esc(u) + '">' + (i < UBICACIONES.length ? (i + 1) + '. ' : '') + esc(u) + (n ? ' (' + n + (n === 1 ? ' artículo' : ' artículos') + ')' : '') + '</option>'; }).join("");
+  if (previa && l.indexOf(previa) >= 0) s.value = previa;
+  s.onchange = ayudaUbic; ayudaUbic();
+}
+var UBIC_CUENTA = {};
+function ayudaUbic(){
+  var u = $("nUb").value, n = UBIC_CUENTA[u] || 0;
+  $("nUbAyuda").textContent = !u ? "" : n ? "Se escogen solo los artículos registrados en " + u + "." :
+    "Todavía no hay artículos registrados en " + u + " (se registran solos al aprobar tomas). La toma quedará marcada como de " + u + " y se escogerá entre todos los artículos.";
+}
+function pintarNueva(){
+  var t = $("nTipo").value;
+  $("nMuestra").classList.toggle("oculto", t !== "MUESTRA");
+  $("nDir").classList.toggle("oculto", t !== "DIRIGIDA");
+  $("nAyuda").innerHTML = {
+    MUESTRA: "El sistema escoge los artículos al azar en el momento de crear la toma (nadie sabe antes cuáles saldrán) y deja anotada la semilla para poder demostrarlo. Recomendado: varias muestras pequeñas en el mes, en días distintos.",
+    TOTAL: "Se cuentan todos los artículos activos. Lo ideal es <b>congelar movimientos</b> (no despachar ni recibir) mientras dura el conteo.",
+    DIRIGIDA: "Para verificar códigos puntuales: hallazgos de la conciliación, diferencias anteriores, artículos de alto valor o con reclamos."
+  }[t];
+}
+async function crearToma(){
+  var t = $("nTipo").value, o = {tipo:t, desc:$("nDesc").value, ciego:$("nCiego").checked, ubic:$("nUb").value, obs:$("nObs").value};
+  if (o.ubic && !(UBIC_CUENTA[o.ubic] > 0)){ o.desc = (o.desc ? o.desc + " · " : "") + "Ubicación: " + o.ubic; o.ubic = ""; }
+  if (t === "MUESTRA"){ o.n = +$("nN").value; o.criterio = $("nCrit").value; o.soloStock = $("nSolo").checked; }
+  if (t === "DIRIGIDA"){ o.codigos = $("nCods").value.split(/[\n\r\t;]+/).map(function(s){ return s.trim(); }).filter(String); o.motivo = $("nMot").value; }
+  if (t === "TOTAL" && !confirm("¿Crear una toma TOTAL? Se congela el stock de todos los artículos activos en este momento.")) return;
+  try{
+    var r = await api("cCrearToma", o);
+    aviso("Toma " + r.id + " creada.", "bien");
+    ["nDesc","nCods","nMot","nObs","nUb"].forEach(function(i){ $(i).value = ""; });
+    PILA = ["vInicio"]; abrirToma(r.id, true);
+  }catch(err){ fallo(err); }
+}
+
+/* ---------- base de artículos (para reconocer códigos) ---------- */
+async function cargarBase(){
+  if (BASE) return;
+  BASE = await api("cBase"); BIX = {};
+  BASE.forEach(function(a){ BIX[key(a.c)] = a; });
+}
+
+/* ---------- toma ---------- */
+async function abrirToma(id, sinPila){
+  mostrar("vToma", sinPila);
+  $("tCab").innerHTML = '<div class="muted">Cargando la toma ' + esc(id) + '…</div>'; $("tTabs").innerHTML = "";
+  ["pContar","pLista","pRes","pLect","pBit"].forEach(function(p){ $(p).classList.add("oculto"); });
+  try{
+    var r = await api("cToma", id);
+    TOMA = r.toma; VE = r.ve; ITEMS = r.items; IX = {}; ITEMS.forEach(function(it){ IX[key(it.c)] = it; });
+    LECT = {}; ORDEN = []; DESDE = r.desde; r.lecturas.forEach(meterLectura);
+    COLA = LS.get("cnt_cola_" + id, []); COLA.forEach(function(l){ if (!LECT[l.id]) meterLectura(pendiente(l)); });
+    UB = LS.get("cnt_ub_" + id, "");
+    if (TOMA.tipo === "TOTAL") cargarBase().catch(function(){});
+  }catch(err){ $("tCab").innerHTML = '<div class="bloque">' + esc(err.message) + '</div>'; return; }
+  $("titulo").textContent = TOMA.id + " · " + TOMA.tipo;
+  var pes = [];
+  if (activa() && tiene("CONTADOR")) pes.push(["pContar", "Contar"]);
+  pes.push(["pLista", "Artículos"]);
+  if (VE) pes.push(["pRes", "Resultados"]);
+  pes.push(["pLect", "Lecturas"]);
+  if (tiene("REVISOR") || tiene("APROBADOR")) pes.push(["pBit", "Bitácora"]);
+  $("tTabs").innerHTML = pes.map(function(p){ return '<button id="tab_' + p[0] + '" onclick="pestana(\'' + p[0] + '\')">' + p[1] + '</button>'; }).join("");
+  pintarCab();
+  pestana(pes[0][0] === "pContar" ? "pContar" : (VE ? "pRes" : pes[0][0]));
+  enviar(); iniciarSondeo();
+}
+function pestana(p){
+  PEST = p;
+  ["pContar","pLista","pRes","pLect","pBit"].forEach(function(x){
+    $(x).classList.toggle("oculto", x !== p);
+    var b = $("tab_" + x); if (b) b.classList.toggle("on", x === p);
+  });
+  if (p !== "pContar") apagarCamara();
+  if (p === "pContar") pintarContar();
+  if (p === "pLista") pintarLista();
+  if (p === "pRes") pintarResultados();
+  if (p === "pLect") pintarLecturas();
+  if (p === "pBit") pintarBitacora();
+}
+function pintarCab(){
+  var t = TOMA, h = '<div class="fila" style="align-items:center"><div style="flex:1"><b style="font-size:17px">' + esc(t.id) + '</b> ' + chip(t.est)
+    + (t.ronda > 1 ? ' <span class="chip e-REV">Reconteo · ronda ' + t.ronda + '</span>' : "") + '<div style="margin-top:4px">' + esc(t.desc) + '</div></div></div>'
+    + '<div class="muted" style="margin-top:6px">' + esc(t.met) + '<br>Corte del stock: ' + fh(t.corte) + ' · creó ' + esc(t.creo)
+    + (t.ciego ? ' · <b>conteo ciego</b>' : '') + (t.cerro ? '<br>Cerró el conteo: ' + esc(t.cerro) + ' ' + fh(t.fcerro) : '')
+    + (t.rev ? '<br>Revisó: ' + esc(t.rev) + ' ' + fh(t.frev) : '') + (t.apr ? '<br>Aprobó: ' + esc(t.apr) + ' ' + fh(t.fapr) : '') + '</div>'
+    + (t.obs ? '<div class="amar" style="white-space:pre-line">' + esc(t.obs) + '</div>' : '');
+  if (t.est === "RECONTEO") h += '<div class="amar"><b>Reconteo:</b> solo se cuentan los artículos marcados por el revisor. Cuente de nuevo <b>todas</b> las unidades de esos artículos, en todas sus ubicaciones. Lo ideal es que lo haga una persona distinta a la del primer conteo.</div>';
+  $("tCab").innerHTML = h;
+}
+
+/* ---------- lecturas en memoria ---------- */
+/* compacta del servidor: [id, t, c, q, etq, ub, ronda, por, est, org, nota, correo] */
+function meterLectura(a){
+  var l = Array.isArray(a) ? {id:a[0], t:a[1], c:a[2], q:a[3], etq:a[4], ub:a[5], ronda:a[6], por:a[7], est:a[8], org:a[9], nota:a[10], correo:a[11]} : a;
+  if (!LECT[l.id]) ORDEN.push(l.id);
+  LECT[l.id] = l;
+}
+function pendiente(l){
+  var it = IX[key(l.c)];
+  return {id:l.id, t:l.t, c:l.c, q:l.q, etq:l.etq, ub:l.ub, ronda: it ? it.ronda : TOMA.ronda, por:YO.n, est:"PEND", org:l.o, nota:"", correo:YO.c, d:l.d};
+}
+function validas(){ return ORDEN.map(function(id){ return LECT[id]; }).filter(function(l){ return l.est === "VÁLIDA" || l.est === "PEND"; }); }
+function etiquetaLeida(etq, ronda){
+  for (var i = ORDEN.length - 1; i >= 0; i--){
+    var l = LECT[ORDEN[i]];
+    if (l.etq === etq && l.ronda === ronda && (l.est === "VÁLIDA" || l.est === "PEND")) return l;
+  }
+  return null;
+}
+/* lo contado por artículo en su ronda vigente */
+function contados(){
+  var m = {};
+  validas().forEach(function(l){
+    var it = IX[key(l.c)], r = it ? it.ronda : 1;
+    if (l.ronda !== r) return;
+    var e = m[key(l.c)] || (m[key(l.c)] = {q:0, n:0, ub:{}, quien:{}, mio:0});
+    e.q += Number(l.q) || 0; e.n++;
+    e.ub[l.ub || "SIN UBICACIÓN"] = (e.ub[l.ub || "SIN UBICACIÓN"] || 0) + (Number(l.q) || 0);
+    e.quien[l.por] = 1; if (l.correo === YO.c) e.mio += Number(l.q) || 0;
+  });
+  return m;
+}
+
+/* ---------- pantalla de contar ---------- */
+function pintarContar(){
+  var b = $("ubBox");
+  b.classList.toggle("ok", !!UB); $("ubVal").textContent = UB || "— sin elegir —";
+  $("camAyuda").innerHTML = CAM.err ? CAM.err : (EN_GOOGLE ? "" : "");
+  pintarCola(); pintarUltimas();
+}
+function pedirUbic(){
+  var usadas = {}; validas().forEach(function(l){ if (l.ub) usadas[l.ub] = 1; });
+  var lista = Object.keys(usadas).filter(function(u){ return UBICACIONES.indexOf(u) < 0; }).sort().slice(0, 40);
+  modal('<h3>¿Dónde está contando?</h3><div class="muted">Escoja la ubicación.</div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">' + UBICACIONES.map(function(u, i){ return '<button class="' + (u === UB ? 'vd' : 'lt') + ' big" onclick="ponerUbic(\'' + esc(u) + '\')">' + (i + 1) + '. ' + esc(u) + '</button>'; }).join("") + '</div>'
+    + '<label style="margin-top:12px">Otra ubicación (o escanee su QR)</label><input id="mUb" value="' + (UBICACIONES.indexOf(UB) < 0 ? esc(UB) : '') + '" autocapitalize="characters" onkeydown="if(event.key===\'Enter\')ponerUbic(this.value)">'
+    + (lista.length ? '<div class="fila" style="margin-top:8px;flex-wrap:wrap">' + lista.map(function(u){ return '<button class="lt sm" style="flex:0 0 auto" onclick="ponerUbic(\'' + esc(u) + '\')">' + esc(u) + '</button>'; }).join("") + '</div>' : "")
+    + '<div class="acciones"><button class="vd" onclick="ponerUbic($(\'mUb\').value)">Listo</button><button class="lt" onclick="cerrarModal()">Cancelar</button></div>');
+}
+function ponerUbic(v){
+  v = String(v || "").replace(/\s+/g, " ").trim().toUpperCase().slice(0, 40);
+  if (!v){ aviso("Escriba la ubicación.", "mal"); return; }
+  UB = v; LS.set("cnt_ub_" + TOMA.id, UB); cerrarModal(); pintarContar();
+  aviso("Contando en <b>" + esc(UB) + "</b>", "bien", 1800);
+}
+
+/* lee lo que trae el QR: TOYOTENGO|COD:..|DESC:..|INV:fecha|CANT:12|PRES:CAJA|ID:20261022-081512-ab3f.7  o  TOYOTENGO|UBIC:A-01 */
+function leerQR(t){
+  t = String(t || "").trim();
+  if (!t) return null;
+  if (/^TOYOTENGO\|/i.test(t)){
+    var o = {}, cur = null;
+    t.split("|").slice(1).forEach(function(p){
+      var m = p.match(/^(COD|DESC|INV|ING|CANT|PRES|ID|UBIC):(.*)$/i);
+      if (m){ cur = m[1].toUpperCase(); o[cur] = m[2]; } else if (cur) o[cur] += "|" + p;
+    });
+    if (o.UBIC != null) return {ubic: o.UBIC};
+    if (!o.COD) return null;
+    var q = Math.max(1, Math.floor(Number(o.CANT) || 1));
+    return {c:o.COD.trim(), d:(o.DESC || "").trim(), q:q, p:q > 1 ? (o.PRES || "CAJA") : "UNIDAD", etq:(o.ID || "").trim(), fecha:o.INV || o.ING || ""};
+  }
+  var u = t.match(/^UBIC:(.+)$/i); if (u) return {ubic:u[1]};
+  return {c:t, d:"", q:1, p:"UNIDAD", etq:""};
+}
+
+var ULT = {txt:"", t:0};
+function entradaTexto(txt, origen){
+  if (!TOMA || !activa()){ aviso("La toma no está abierta para contar.", "mal"); return; }
+  var r = leerQR(txt);
+  if (!r){ aviso("No se entendió el código leído.", "mal"); pitar(false); return; }
+  if (r.ubic != null){ ponerUbic(r.ubic); pitar(true); return; }
+  if (!UB){ pitar(false); aviso("Primero indique la <b>ubicación</b> donde está contando (escanee su QR o pulse Cambiar).", "mal", 5000); pedirUbic(); return; }
+  var it = IX[key(r.c)];
+  if (TOMA.est === "RECONTEO" && (!it || it.ronda !== TOMA.ronda)){ pitar(false); agregarHistorial({c:r.c, msg:"No está en el reconteo: no se cuenta.", mal:true}); return; }
+  if (!it && TOMA.tipo !== "TOTAL"){ pitar(false); agregarHistorial({c:r.c, msg:"No está en esta toma (" + TOMA.tipo.toLowerCase() + "): no se cuenta.", mal:true}); return; }
+  var ronda = it ? it.ronda : 1;
+  if (r.etq){
+    var prev = etiquetaLeida(r.etq, ronda);
+    if (prev){
+      pitar(false);
+      agregarHistorial({c:r.c, msg:"ETIQUETA YA CONTADA por " + esc(prev.por) + " a las " + hora(prev.t) + " en " + esc(prev.ub || "?") + ". No se volvió a sumar.", mal:true});
+      aviso("<b>Esta etiqueta ya se contó</b><br>" + esc(prev.por) + " · " + hora(prev.t) + " · " + esc(prev.ub || ""), "mal", 4000);
+      return;
+    }
+    registrar(r, origen);
+  } else {
+    // etiqueta vieja (sin número único) o código escrito: se pide la cantidad que hay en esta ubicación
+    pedirCantidad(r, origen);
+  }
+}
+function pedirCantidad(r, origen){
+  var b = (BIX[key(r.c)] || IX[key(r.c)] || {}), cnt = contados()[key(r.c)];
+  var aqui = 0, quien = {};
+  validas().forEach(function(l){ if (key(l.c) === key(r.c) && l.ub === UB){ aqui += Number(l.q) || 0; quien[l.por] = 1; } });
+  var nombre = esc(r.c) + (r.d || b.d ? ' · ' + esc(r.d || b.d) : '');
+  modal('<h3>¿Cuántas unidades hay aquí?</h3><div><b style="font-family:Consolas,monospace">' + nombre + '</b></div>'
+    + '<div class="muted" style="margin-top:4px">Ubicación <b>' + esc(UB) + '</b>. ' + (r.q > 1 ? 'La etiqueta es de <b>' + esc(r.p) + ' x' + r.q + '</b>: escriba unidades (no cajas). ' : '')
+    + 'Esta etiqueta no tiene número único, así que cuente todas las unidades de este artículo en esta ubicación y escriba el total.</div>'
+    + (aqui ? '<div class="bloque">Ya se contaron <b>' + n0(aqui) + '</b> unidades de este código en ' + esc(UB) + ' (' + esc(Object.keys(quien).join(", ")) + '). Escriba solo las que <b>no</b> se hayan contado.</div>' : '')
+    + (!IX[key(r.c)] && !BIX[key(r.c)] ? '<div class="amar">Este código no está en la base: quedará como <b>sobrante no registrado</b>.</div>' : '')
+    + '<label>Unidades</label><input id="mQ" type="number" inputmode="decimal" min="0" step="any" value="' + (r.q > 1 ? r.q : "") + '" onkeydown="if(event.key===\'Enter\')okCantidad()">'
+    + '<div class="acciones"><button class="vd big" style="flex:1" onclick="okCantidad()">Contar</button><button class="lt" onclick="cerrarModal()">Cancelar</button></div>');
+  window._PEND = {r:r, origen:origen};
+  setTimeout(function(){ var i = $("mQ"); if (i){ i.focus(); i.select(); } }, 60);
+}
+function okCantidad(){
+  var q = Number(String($("mQ").value).replace(",", "."));
+  if (!isFinite(q) || q <= 0){ aviso("Escriba una cantidad mayor que 0.", "mal"); return; }
+  if (q > 5000 && !confirm("¿Seguro? " + q + " unidades.")) return;
+  var p = window._PEND; cerrarModal(); p.r.q = q; registrar(p.r, p.origen === "CÁMARA" ? "CÁMARA S/ID" : p.origen);
+}
+function manual(){
+  modal('<h3>Contar a mano</h3><div class="muted">Para artículos sin etiqueta. Quedará marcado como conteo a mano.</div>'
+    + '<label>Código</label><input id="mC" autocapitalize="characters" list="dlCod" oninput="sugerir(this.value)"><datalist id="dlCod"></datalist><div id="mCd" class="muted"></div>'
+    + '<div class="acciones"><button class="vd" onclick="var c=$(\'mC\').value.trim(); if(c){cerrarModal(); pedirCantidad({c:c,d:\'\',q:1,p:\'UNIDAD\',etq:\'\'},\'MANUAL\');}">Siguiente</button><button class="lt" onclick="cerrarModal()">Cancelar</button></div>');
+  setTimeout(function(){ $("mC").focus(); }, 60);
+}
+function sugerir(v){
+  var k = key(v), dl = $("dlCod"), out = [], fuente = TOMA.tipo === "TOTAL" && BASE ? BASE : ITEMS;
+  if (k.length >= 2) for (var i = 0; i < fuente.length && out.length < 12; i++){ if (key(fuente[i].c).indexOf(k) >= 0) out.push(fuente[i]); }
+  dl.innerHTML = out.map(function(a){ return '<option value="' + esc(a.c) + '">' + esc(a.d) + '</option>'; }).join("");
+  var ex = IX[k] || BIX[k]; $("mCd").textContent = ex ? ex.d : (k ? "No está en la lista." : "");
+}
+
+function nuevoId(){ SEQ++; LS.set("cnt_seq", SEQ); return DEV + "-" + SEQ; }
+function registrar(r, origen){
+  var l = {id:nuevoId(), t:ahoraISO(), c:r.c, q:r.q, p:r.p, etq:r.etq || "", ub:UB, o:origen || "CÁMARA", dev:DEV, d:r.d || ""};
+  COLA.push(l); LS.set("cnt_cola_" + TOMA.id, COLA);
+  meterLectura(pendiente(l));
+  pitar(true);
+  var it = IX[key(r.c)] || BIX[key(r.c)];
+  agregarHistorial({id:l.id});
+  if (!r.etq) aviso("Contadas " + n0(r.q) + " u. de " + esc(r.c), "bien", 1500);
+  pintarCola();
+  enviar();
+}
+
+/* historial visible en pantalla (lo último arriba) */
+var HIST = [];
+function agregarHistorial(h){ HIST.unshift(h); HIST = HIST.slice(0, 60); pintarUltimas(); }
+function pintarUltimas(){
+  var el = $("ultimas"); if (!el) return;
+  if (!HIST.length){
+    var mias = validas().filter(function(l){ return l.correo === YO.c; }).slice(-15).reverse();
+    HIST = mias.map(function(l){ return {id:l.id}; });
+  }
+  el.innerHTML = HIST.length ? HIST.slice(0, 25).map(function(h){
+    if (!h.id) return '<div class="lect dup"><div class="ic">✕</div><div class="tx"><b>' + esc(h.c) + '</b><div class="sub rojo">' + h.msg + '</div></div></div>';
+    var l = LECT[h.id]; if (!l) return "";
+    var it = IX[key(l.c)] || BIX[key(l.c)] || {}, cls = l.est === "PEND" ? "pend" : l.est === "VÁLIDA" ? (l.nota ? "av" : "") : "dup";
+    var ic = l.est === "PEND" ? "⏳" : l.est === "VÁLIDA" ? "✓" : "✕";
+    return '<div class="lect ' + cls + '"><div class="ic">' + ic + '</div>' + (it.f ? '<img class="mini" style="margin-right:8px;cursor:pointer" src="' + fotoUrl(it.f, 96) + '" alt="" onclick="fichaArt(\'' + esc(l.c) + '\')">' : '<div class="sinmini" style="margin-right:8px;cursor:pointer" title="Agregar foto" onclick="fichaArt(\'' + esc(l.c) + '\')">📷</div>') + '<div class="tx"><b>' + esc(l.c) + '</b> · ' + n0(l.q) + ' u.'
+      + '<div class="sub">' + esc((it.d || l.d || "").slice(0, 60)) + '</div>'
+      + '<div class="sub">' + hora(l.t) + ' · ' + esc(l.ub) + (l.etq ? ' · etiqueta ' + esc(l.etq.split(".").pop()) : ' · sin número único') + (l.est === "PEND" ? ' · enviando…' : '') + '</div>'
+      + (l.nota ? '<div class="sub" style="color:#7a5200">' + esc(l.nota) + '</div>' : '') + '</div>'
+      + (l.est !== "ANULADA" && l.est !== "RECHAZADA" ? '<div style="display:flex;flex-direction:column;gap:4px">' + (puedeEditar(l) ? '<button class="am sm" onclick="editarLectura(\'' + esc(l.id) + '\')">Editar</button>' : '') + '<button class="lt sm" onclick="anular(\'' + esc(l.id) + '\')">Anular</button></div>' : '') + '</div>';
+  }).join("") : '<div class="muted" style="padding:8px 0">Aquí aparecen sus lecturas. Verde = contada; ⏳ = guardada en el teléfono, enviándose.</div>';
+}
+function pintarCola(){
+  var el = $("cola"); if (!el) return;
+  var m = validas().filter(function(l){ return l.correo === YO.c; }), u = 0;
+  m.forEach(function(l){ u += Number(l.q) || 0; });
+  el.innerHTML = 'Usted lleva <b>' + nEnt(m.length) + '</b> lecturas (' + n0(u) + ' unidades) en esta toma.'
+    + (COLA.length ? ' <span class="rojo">' + COLA.length + ' sin enviar</span>' + (ENVIANDO ? " (enviando…)" : ' <button class="sm lt" onclick="enviar()">Enviar ya</button>') : ' <span class="verde">Todo enviado ✓</span>');
+}
+
+/* envío en lotes; si no hay internet quedan guardadas en el teléfono y se reintenta */
+var REINT = null;
+async function enviar(){
+  if (ENVIANDO || !COLA.length || !TOMA) return;
+  ENVIANDO = true; pintarCola();
+  var id = TOMA.id, lote = COLA.slice(0, 150);
+  try{
+    var r = await api("cLeer", id, lote);
+    var por = {}; r.res.forEach(function(x){ por[x.id] = x; });
+    lote.forEach(function(l){
+      var x = por[l.id], le = LECT[l.id]; if (!x || !le) return;
+      if (x.st === "OK" || x.st === "YA"){ le.est = "VÁLIDA"; le.nota = x.aviso || le.nota || ""; }
+      else if (x.st === "DUP"){
+        le.est = "RECHAZADA"; le.nota = "Repetida: ya la contó " + x.por + " a las " + hora(x.t) + " en " + (x.ub || "?");
+        pitar(false); aviso("<b>" + esc(l.c) + ": etiqueta ya contada</b><br>" + esc(le.nota), "mal", 6000);
+      } else { le.est = "RECHAZADA"; le.nota = x.msg || "Rechazada"; pitar(false); aviso("<b>" + esc(l.c) + "</b>: " + esc(le.nota), "mal", 6000); }
+    });
+    var hechos = {}; lote.forEach(function(l){ if (por[l.id]) hechos[l.id] = 1; });
+    COLA = COLA.filter(function(l){ return !hechos[l.id]; });
+    if (TOMA && TOMA.id === id) LS.set("cnt_cola_" + id, COLA);
+  }catch(err){
+    clearTimeout(REINT); REINT = setTimeout(enviar, 6000);
+    if (/está (EN REVISIÓN|REVISADA|APROBADA|ANULADA)/.test(err.message)) fallo(err);
+  }
+  ENVIANDO = false;
+  if (TOMA && TOMA.id === id){ pintarCola(); pintarUltimas(); if (COLA.length) setTimeout(enviar, 400); }
+}
+
+function anular(id){
+  var l = LECT[id]; if (!l) return;
+  if (l.est === "PEND"){
+    if (!confirm("¿Quitar esta lectura que todavía no se envió?")) return;
+    COLA = COLA.filter(function(x){ return x.id !== id; }); LS.set("cnt_cola_" + TOMA.id, COLA);
+    l.est = "ANULADA"; l.nota = "Quitada antes de enviar"; pintarUltimas(); pintarCola(); return;
+  }
+  var mot = prompt("Motivo para anular la lectura de " + l.c + " (" + n0(l.q) + " u.):", "Leída por error");
+  if (!mot) return;
+  api("cAnularLectura", TOMA.id, id, mot).then(function(){
+    l.est = "ANULADA"; l.nota = "Anulada: " + mot; aviso("Lectura anulada.", "bien");
+    pintarUltimas(); pintarCola(); if (PEST === "pLect") pintarLecturas(); if (PEST === "pRes") pintarResultados();
+  }).catch(fallo);
+}
+
+/* ---------- corregir una lectura (anula la original y registra la cantidad correcta) ---------- */
+function puedeEditar(l){
+  if (!l || !TOMA || (l.est !== "VÁLIDA" && l.est !== "PEND") || !activa() || !tiene("CONTADOR")) return false;
+  return l.correo === YO.c || tiene("REVISOR");
+}
+function editarLectura(id){
+  var l = LECT[id];
+  if (!puedeEditar(l)){ aviso("Esta lectura ya no se puede corregir.", "mal"); return; }
+  var it = artDe(l.c) || {}, ubs = UBICACIONES.slice();
+  if (UB && ubs.indexOf(UB) < 0) ubs.push(UB);
+  if (l.ub && ubs.indexOf(l.ub) < 0) ubs.push(l.ub);
+  window._ED = id;
+  modal('<h3>Corregir lectura</h3><div class="fila" style="align-items:center;gap:10px;flex-wrap:nowrap">'
+    + (it.f ? '<img class="mini" src="' + fotoUrl(it.f, 120) + '" alt="">' : '<div class="sinmini">📷</div>')
+    + '<div style="min-width:0"><b>' + esc(l.c) + '</b><div class="muted">' + esc((it.d || l.d || "").slice(0, 70)) + '</div></div></div>'
+    + '<div class="muted" style="margin-top:8px">Registrado: <b>' + n0(l.q) + ' u.</b> en ' + esc(l.ub || "sin ubicación") + (l.etq ? ' · etiqueta ' + esc(l.etq.split(".").pop()) : '') + ' · ' + hora(l.t) + '</div>'
+    + '<label>Cantidad correcta</label><input id="edQ" type="number" inputmode="decimal" min="0" step="any" value="' + Number(l.q) + '">'
+    + '<label>Ubicación</label><select id="edU">' + ubs.map(function(u){ return '<option' + (u === l.ub ? ' selected' : '') + '>' + esc(u) + '</option>'; }).join("") + '</select>'
+    + '<label>Motivo de la corrección</label><input id="edM" value="Cantidad mal contada">'
+    + '<div class="muted" style="font-size:12px;margin-top:6px">La lectura original queda anulada y se registra otra con la cantidad correcta (origen CORRECCIÓN). Ponga 0 si no había nada. Todo queda en la Bitácora.</div>'
+    + '<div class="acciones"><button class="vd big" style="flex:2" onclick="guardarEdicion()">Guardar corrección</button><button class="lt big" style="flex:1" onclick="fichaArt(\'' + esc(l.c) + '\')">📷 Foto</button></div>'
+    + '<div class="acciones"><button class="lt" style="flex:1" onclick="cerrarModal()">Cancelar</button></div>');
+  setTimeout(function(){ var i = $("edQ"); if (i){ i.focus(); i.select(); } }, 60);
+}
+function repintarTodo(){ pintarUltimas(); pintarCola(); if (PEST === "pLect") pintarLecturas(); if (PEST === "pRes") pintarResultados(); if (PEST === "pLista") pintarLista(); }
+async function guardarEdicion(){
+  var id = window._ED, l = LECT[id]; if (!l) return;
+  var q = Number(String($("edQ").value).replace(",", ".")), ub = $("edU").value, mot = String($("edM").value).trim();
+  if (!isFinite(q) || q < 0){ aviso("Escriba una cantidad válida (0 si no había nada).", "mal"); return; }
+  if (mot.length < 4){ aviso("Escriba el motivo de la corrección.", "mal"); return; }
+  if (q === Number(l.q) && ub === l.ub){ cerrarModal(); return; }
+  if (q > 5000 && !confirm("¿Seguro? " + q + " unidades.")) return;
+  if (l.est === "PEND"){   // todavía no se envió: se corrige en el teléfono
+    if (q === 0){ COLA = COLA.filter(function(x){ return x.id !== id; }); l.est = "ANULADA"; l.nota = "Quitada antes de enviar: " + mot; }
+    else { COLA.forEach(function(x){ if (x.id === id){ x.q = q; x.ub = ub; } }); l.q = q; l.ub = ub; }
+    LS.set("cnt_cola_" + TOMA.id, COLA); cerrarModal(); aviso("Lectura corregida.", "bien"); repintarTodo(); return;
+  }
+  var det = "Corrección: " + mot + " · antes " + n0(l.q) + " u. en " + (l.ub || "sin ubicación") + (q ? " · ahora " + n0(q) + " u. en " + ub : " · queda en 0");
+  try{
+    await api("cAnularLectura", TOMA.id, id, det);
+    l.est = "ANULADA"; l.nota = det;
+    if (q > 0){
+      var nl = {id:nuevoId(), t:ahoraISO(), c:l.c, q:q, p:"UNIDAD", etq:l.etq || "", ub:ub, o:"CORRECCIÓN", dev:DEV, d:l.d || ""};
+      COLA.push(nl); LS.set("cnt_cola_" + TOMA.id, COLA); meterLectura(pendiente(nl)); agregarHistorial({id:nl.id}); enviar();
+    }
+    cerrarModal(); aviso(q ? "Lectura corregida: " + n0(q) + " u. de " + esc(l.c) + "." : "Lectura anulada (queda en 0).", "bien"); repintarTodo();
+  }catch(err){ fallo(err); }
+}
+
+/* ---------- fotos al día: si alguien toma o cambia una foto (aquí, en el generador o en el tablero) se ve sola en 30 s ---------- */
+var FOTO_V = -1, FOTO_OCUP = false;
+async function sondearFotos(){
+  if (FOTO_OCUP || document.hidden || !TOK) return;
+  FOTO_OCUP = true;
+  try{
+    var r = await api("cFotosCambios", FOTO_V);
+    if (r && r.v !== FOTO_V && r.m){
+      var primera = FOTO_V < 0, cambio = false; FOTO_V = r.v;
+      [ITEMS, BASE].forEach(function(L){ (L || []).forEach(function(a){ var f = r.m[key(a.c)] || ""; if ((a.f || "") !== f){ if (f) a.f = f; else delete a.f; cambio = true; } }); });
+      if (cambio && !primera && TOMA){ try{ repintarTodo(); }catch(e){} }
+      if (cambio && !primera && typeof pintarBA === "function" && $("baRes")) pintarBA();
+    } else if (r) FOTO_V = r.v;
+  }catch(e){}
+  FOTO_OCUP = false;
+}
+setInterval(sondearFotos, 30000);
+document.addEventListener("visibilitychange", function(){ if (!document.hidden) sondearFotos(); });
+
+/* ---------- novedades de los demás ---------- */
+function iniciarSondeo(){ pararSondeo(); SONDEO = setInterval(sondear, 9000); }
+function pararSondeo(){ if (SONDEO) clearInterval(SONDEO); SONDEO = null; }
+var SONDEANDO = false;
+async function sondear(){
+  if (SONDEANDO || document.hidden || !TOMA) return;
+  SONDEANDO = true;
+  var id = TOMA.id;
+  try{
+    var r = await api("cNovedades", id, DESDE);
+    if (!TOMA || TOMA.id !== id){ SONDEANDO = false; return; }
+    var antes = TOMA.est;
+    r.lecturas.forEach(function(a){ var ex = LECT[a[0]]; if (ex && ex.est === "PEND") return; meterLectura(a); });
+    r.anuladas.forEach(function(x){ if (LECT[x]) LECT[x].est = "ANULADA"; });
+    DESDE = r.desde; TOMA = r.toma;
+    if (antes !== TOMA.est){ aviso("La toma pasó a <b>" + esc(TOMA.est) + "</b>.", "", 5000); var p = PEST; abrirToma(id, true); return; }
+    pintarCab();
+    if (PEST === "pContar"){ pintarCola(); }
+    else if (PEST === "pLista") pintarLista();
+    else if (PEST === "pRes" && !EDITANDO) pintarResultados();
+    else if (PEST === "pLect") pintarLecturas();
+  }catch(err){}
+  SONDEANDO = false;
+}
+
+/* ---------- fotos de artículos ---------- */
+function fotoUrl(id, w){ id = String(id || ""); if (id.indexOf("sb:") === 0) return "https://dwltkoxhnexehikjuaji.supabase.co/storage/v1/object/public/fotos-articulos/" + encodeURI(id.slice(3)) + ((w || 160) <= 400 ? "_m" : "") + ".jpg"; return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w" + (w || 160); }
+function artDe(c){ return IX[key(c)] || BIX[key(c)] || null; }
+var FICHA_C = "";
+function fichaArt(c){
+  FICHA_C = c;
+  var it = artDe(c) || {c:c, d:""}, f = it.f, cnt = TOMA ? contados()[key(c)] : null;
+  var h = '<h3>' + esc(it.c) + '</h3><div class="muted">' + esc(it.d || "") + (it.ub ? ' · Ubicación: ' + esc(it.ub) : '') + '</div>'
+    + '<div class="fotoG">' + (f ? '<img src="' + fotoUrl(f, 1600) + '" alt="Foto de ' + esc(it.c) + '" onerror="this.outerHTML=\'<div class=sinfoto>No se pudo cargar la foto.</div>\'">' : '<div class="sinfoto">📷<br>Este artículo todavía no tiene foto.<br>Tómela para que todos lo reconozcan.</div>') + '</div>';
+  if (TOMA && IX[key(c)]){
+    var cont = cnt ? cnt.q : 0;
+    if (VE){
+      var s = Number(it.s) || 0, dif = Math.round((cont - s) * 1000) / 1000;
+      h += '<div class="dk"><div><span>Sistema</span><b>' + n0(s) + '</b></div><div><span>Contado</span><b>' + n0(cont) + '</b></div>'
+        + '<div class="' + (dif < 0 ? 'r' : dif > 0 ? 'z' : 'v') + '"><span>' + (dif < 0 ? 'Falta por contar' : dif > 0 ? 'Contado de más' : 'Cuadra') + '</span><b>' + (dif === 0 ? '✓' : n0(Math.abs(dif))) + '</b></div></div>';
+    } else h += '<div class="dk"><div><span>Contado en esta toma</span><b>' + n0(cont) + '</b></div></div>';
+    if (cnt) h += '<div class="muted" style="font-size:12px">Contado en: ' + esc(Object.keys(cnt.ub).map(function(u){ return u + " (" + n0(cnt.ub[u]) + ")"; }).join(", ")) + '</div>';
+  }
+  h += '<div class="acciones"><button class="vd big" style="flex:2" onclick="$(\'fotoArt\').click()">📷 ' + (f ? 'Agregar foto nueva' : 'Tomar foto') + '</button><button class="lt big" style="flex:1" onclick="$(\'fotoGal\').click()">Galería</button></div>'
+    + '<div id="fotoHist"></div><div id="fotoMsg" class="muted" style="margin-top:6px"></div>'
+    + '<div class="acciones"><button class="lt" style="flex:1" onclick="cerrarModal()">Cerrar</button></div>';
+  modal(h);
+  zoomEn(document.querySelector("#mCaja .fotoG"));
+  cargarHistFotos(c);
+}
+async function cargarHistFotos(c){
+  var box = $("fotoHist"); if (!box) return;
+  box.innerHTML = '<div class="muted" style="font-size:12px">Cargando el historial de fotos…</div>';
+  try{
+    var L = await api("cFotos", c);
+    box = $("fotoHist"); if (FICHA_C !== c || !box) return;
+    if (!L.length){ box.innerHTML = '<div class="muted" style="font-size:12px">Las fotos quedan en la base de inventario para todos (tablero, conteo y generador), no solo en esta toma.</div>'; return; }
+    box.innerHTML = '<div class="muted" style="font-size:12px;margin:4px 0">Historial de fotos (' + L.length + ') · quedan guardadas en la base de inventario. Toque una para verla.</div><div class="hfotos">'
+      + L.map(function(x, i){ return '<button class="hf' + (x.p ? ' on' : '') + '" data-f="' + esc(x.f) + '" data-cap="' + esc((x.p ? 'Foto principal · ' : 'Otra foto del historial · ') + fh(x.t) + (x.por ? ' · ' + x.por : '') + (x.toma ? ' · toma ' + x.toma : '')) + '" onclick="verHistFoto(this)"><img loading="lazy" src="' + fotoUrl(x.f, 160) + '" alt=""><small>' + esc(fh(x.t).slice(0, 10)) + '</small></button>'; }).join("")
+      + '</div><div id="fotoCap" class="muted" style="font-size:12px">' + esc((function(){ var q = L.filter(function(x){ return x.p; })[0] || L[0]; return (q.p ? 'Foto principal · ' : 'Foto · ') + fh(q.t) + (q.por ? ' · ' + q.por : ''); })()) + '</div>';
+  }catch(err){ box.innerHTML = ''; }
+}
+function verHistFoto(btn){
+  var g = document.querySelector("#mCaja .fotoG"), gi = g && g.querySelector("img");
+  if (gi) gi.src = fotoUrl(btn.getAttribute("data-f"), 1600); else if (g){ g.innerHTML = '<img src="' + fotoUrl(btn.getAttribute("data-f"), 1600) + '" alt="">'; g._zm = null; zoomEn(g); }
+  [].forEach.call(document.querySelectorAll(".hfotos .hf"), function(b){ b.classList.toggle("on", b === btn); });
+  var c = $("fotoCap"); if (c) c.textContent = btn.getAttribute("data-cap");
+}
+/* ---------- buscar cualquier artículo de la base para ver o tomar su foto (fuera de una toma) ---------- */
+var BA_L = [];
+async function buscarArticulo(){
+  modal('<h3>📷 Artículos y fotos</h3><div class="muted">Busque cualquier artículo de la base de inventario para ver su foto, su historial de fotos o tomar una nueva.</div>'
+    + '<input id="baQ" placeholder="Código o descripción" autocapitalize="characters" autocomplete="off" oninput="pintarBA()" style="margin-top:8px">'
+    + '<div id="baRes" style="margin-top:8px;max-height:55vh;overflow:auto"><div class="muted">Cargando la base…</div></div>'
+    + '<div class="acciones"><button class="lt" style="flex:1" onclick="cerrarModal()">Cerrar</button></div>');
+  try{ await cargarBase(); }catch(err){ var e = $("baRes"); if (e) e.innerHTML = '<div class="bloque">' + esc(err.message) + '</div>'; return; }
+  pintarBA(); setTimeout(function(){ var i = $("baQ"); if (i) i.focus(); }, 60);
+}
+function pintarBA(){
+  var el = $("baRes"), qi = $("baQ"); if (!el || !qi || !BASE) return;
+  var q = key(qi.value), con = 0; BASE.forEach(function(a){ if (a.f) con++; });
+  if (q.length < 2){ el.innerHTML = '<div class="muted">Escriba al menos 2 letras o números. ' + nEnt(con) + ' de ' + nEnt(BASE.length) + ' artículos ya tienen foto.</div>'; return; }
+  BA_L = [];
+  for (var i = 0; i < BASE.length && BA_L.length < 40; i++){ var a = BASE[i]; if ((key(a.c) + " " + key(a.d)).indexOf(q) >= 0) BA_L.push(a); }
+  el.innerHTML = BA_L.length ? BA_L.map(function(a, i){ return '<div class="lect" style="cursor:pointer;align-items:center" onclick="fichaArt(BA_L[' + i + '].c)">'
+    + (a.f ? '<img class="mini" loading="lazy" src="' + fotoUrl(a.f, 96) + '" alt="">' : '<div class="sinmini">📷</div>')
+    + '<div class="tx"><b>' + esc(a.c) + '</b><div class="sub">' + esc(a.d) + (a.ub ? ' · ' + esc(a.ub) : '') + '</div></div></div>'; }).join("")
+    : '<div class="muted">No hay artículos con ese código o descripción.</div>';
+}
+function huellaFoto(file){   // huella SHA-256 del archivo original: la misma imagen no se guarda dos veces
+  try{ return file.arrayBuffer().then(function(b){ return crypto.subtle.digest("SHA-256", b); })
+    .then(function(d){ return [].map.call(new Uint8Array(d), function(x){ return ("0" + x.toString(16)).slice(-2); }).join(""); }).catch(function(){ return ""; }); }
+  catch(e){ return Promise.resolve(""); }
+}
+/* ---------- zoom de fotos: rueda del ratón, doble clic / doble toque, pellizco con dos dedos, arrastrar, botones y pantalla completa ---------- */
+function zoomEn(box){
+  if (!box) return;
+  if (box._zm){ box._zm.reset(); return; }
+  var img = function(){ return box.querySelector("img"); };
+  if (!img()) return;
+  box.classList.add("zm");
+  var s = 1, x = 0, y = 0, pts = {}, ini = null, movio = false, ultimo = 0;
+  function ap(){ var i = img(); if (i) i.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")"; box.classList.toggle("zm-on", s > 1.01); }
+  function lim(){ var w = box.clientWidth, h = box.clientHeight; x = Math.min(0, Math.max(-w * (s - 1), x)); y = Math.min(0, Math.max(-h * (s - 1), y)); }
+  function zoomA(ns, cx, cy){ ns = Math.max(1, Math.min(8, ns)); x = cx - (cx - x) * ns / s; y = cy - (cy - y) * ns / s; s = ns; if (s === 1){ x = 0; y = 0; } lim(); ap(); }
+  function rel(e){ var r = box.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  function centro(){ return [box.clientWidth / 2, box.clientHeight / 2]; }
+  box.addEventListener("wheel", function(e){ e.preventDefault(); var p = rel(e); zoomA(s * (e.deltaY < 0 ? 1.25 : 0.8), p[0], p[1]); }, {passive:false});
+  box.addEventListener("pointerdown", function(e){
+    if (e.target.closest && e.target.closest(".zm-bt")) return;
+    try{ box.setPointerCapture(e.pointerId); }catch(er){}
+    pts[e.pointerId] = rel(e); ini = null; movio = false;
+  });
+  box.addEventListener("pointermove", function(e){
+    if (!pts[e.pointerId]) return;
+    var p = rel(e), ids = Object.keys(pts);
+    if (ids.length >= 2){
+      pts[e.pointerId] = p; var a = pts[ids[0]], b = pts[ids[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, c = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      if (!ini) ini = {d:d, s:s}; else zoomA(ini.s * d / ini.d, c[0], c[1]); movio = true;
+    } else {
+      var q = pts[e.pointerId], dx = p[0] - q[0], dy = p[1] - q[1];
+      if (Math.abs(dx) + Math.abs(dy) > 3) movio = true;
+      if (s > 1){ x += dx; y += dy; lim(); ap(); }
+      pts[e.pointerId] = p;
+    }
+  });
+  function fin(e){
+    var tenia = !!pts[e.pointerId]; delete pts[e.pointerId]; if (Object.keys(pts).length < 2) ini = null;
+    if (!tenia || movio || e.type !== "pointerup") return;
+    var ahora = Date.now();
+    if (ahora - ultimo < 320){ var p = rel(e); zoomA(s > 1.01 ? 1 : 2.5, p[0], p[1]); ultimo = 0; } else ultimo = ahora;
+  }
+  box.addEventListener("pointerup", fin); box.addEventListener("pointercancel", fin);
+  var bt = document.createElement("div"); bt.className = "zm-bt";
+  [["−", "Alejar", function(){ var c = centro(); zoomA(s / 1.5, c[0], c[1]); }],
+   ["+", "Acercar", function(){ var c = centro(); zoomA(s * 1.5, c[0], c[1]); }],
+   ["⟲", "Tamaño normal", function(){ zoomA(1, 0, 0); }],
+   ["⛶", "Pantalla completa", function(){
+      var fs = document.fullscreenElement || document.webkitFullscreenElement;
+      if (fs){ (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+      var f = box.requestFullscreen || box.webkitRequestFullscreen; if (f) f.call(box);
+   }]].forEach(function(o){ var b = document.createElement("button"); b.type = "button"; b.textContent = o[0]; b.title = o[1]; b.setAttribute("aria-label", o[1]);
+      b.addEventListener("click", function(e){ e.stopPropagation(); o[2](); }); bt.appendChild(b); });
+  var tip = document.createElement("div"); tip.className = "zm-tip"; tip.textContent = "Doble clic, rueda o dos dedos para hacer zoom";
+  box.appendChild(bt); box.appendChild(tip);
+  setTimeout(function(){ tip.classList.add("zm-tip-off"); }, 3500);
+  box.addEventListener("click", function(e){ if (e.target.closest && e.target.closest(".zm-bt")) return; e.stopPropagation(); }, true);
+  document.addEventListener("fullscreenchange", function(){ zoomA(1, 0, 0); });
+  box.addEventListener("load", function(e){ if (e.target && e.target.tagName === "IMG"){ s = 1; x = 0; y = 0; ap(); } }, true);
+  box._zm = { reset: function(){ s = 1; x = 0; y = 0; ap(); } };
+}
+function achicarFoto(file, max, q){
+  return new Promise(function(ok, mal){
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function(){
+      var w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h)), cv = document.createElement("canvas");
+      cv.width = Math.round(w * k); cv.height = Math.round(h * k); cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url); ok(cv.toDataURL("image/jpeg", q));
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); mal(new Error("No se pudo leer la foto.")); };
+    img.src = url;
+  });
+}
+async function subirFotoArt(inp){
+  var file = inp.files && inp.files[0]; inp.value = "";
+  if (!file || !FICHA_C) return;
+  var m = $("fotoMsg"); if (m) m.textContent = "Preparando la foto…";
+  try{
+    var data = await achicarFoto(file, 1280, 0.82);
+    if (m) m.textContent = "Guardando la foto…";
+    var r = await api("cSubirFoto", FICHA_C, data, TOMA ? TOMA.id : "", await huellaFoto(file), await achicarFoto(file, 400, 0.8));
+    [IX[key(FICHA_C)], BIX[key(FICHA_C)]].forEach(function(x){ if (x) x.f = r.f; });
+    aviso("Foto guardada. Ya la ven todos los usuarios.", "bien");
+    fichaArt(FICHA_C);
+    if (PEST === "pLista") pintarLista(); else if (PEST === "pContar") pintarUltimas();
+  }catch(err){
+    if (m) m.textContent = "";
+    var em = String(err && (err.message || err));
+    if (/DUPLICADA/.test(em)) aviso(esc("No se guardó: " + em.replace(/^.*DUPLICADA: /, "")), "mal", 7000); else fallo(err);
+  }
+}
+
+/* ---------- lista de artículos: lo contado contra el sistema ---------- */
+var LISTA_ART = [];
+function pintarLista(){
+  var q = key($("lBus").value), sel = $("lFil"), f = sel.value, cnt = contados(), out = [], tot = 0, hechos = 0,
+      S = {s:0, c:0, falta:0, nFalta:0, mas:0, nMas:0, nOk:0, sinFoto:0};
+  [].forEach.call(sel.options, function(o){ if (["falta", "dif", "mas", "ok"].indexOf(o.value) >= 0) o.hidden = !VE; });
+  if (!VE && ["falta", "dif", "mas", "ok"].indexOf(f) >= 0){ sel.value = ""; f = ""; }
+  ITEMS.forEach(function(it){
+    var c = cnt[key(it.c)], cont = c ? Math.round(c.q * 1000) / 1000 : 0, s = VE ? (Number(it.s) || 0) : null,
+        falta = VE ? Math.max(0, Math.round((s - cont) * 1000) / 1000) : 0, mas = VE ? Math.max(0, Math.round((cont - Math.max(s, 0)) * 1000) / 1000) : 0;
+    if (it.alc){
+      tot++; if (c) hechos++; if (!it.f) S.sinFoto++;
+      if (VE){ S.s += Math.max(s, 0); S.c += cont; S.falta += falta; if (falta > 0) S.nFalta++; S.mas += mas; if (mas > 0) S.nMas++; if (!falta && !mas && (s > 0 || cont)) S.nOk++; }
+    }
+    if (f === "sin" && c) return; if (f === "con" && !c) return; if (f === "rec" && it.ronda < 2) return;
+    if (f === "falta" && !(falta > 0)) return; if (f === "mas" && !(mas > 0)) return; if (f === "dif" && !(falta > 0 || mas > 0)) return;
+    if (f === "ok" && (falta > 0 || mas > 0 || !(s > 0 || cont))) return; if (f === "foto" && it.f) return;
+    if (q && (key(it.c) + " " + key(it.d) + " " + key(it.ub)).indexOf(q) < 0) return;
+    out.push({it:it, c:c, cont:cont, s:s, falta:falta, mas:mas});
+  });
+  if (f === "falta") out.sort(function(a, b){ return b.falta - a.falta; });
+  if (f === "mas") out.sort(function(a, b){ return b.mas - a.mas; });
+  LISTA_ART = out;
+  var pct = tot ? Math.round(hechos * 1000 / tot) / 10 : 0;
+  var h = '<div class="muted"><b>' + nEnt(hechos) + '</b> de <b>' + nEnt(tot) + '</b> artículos ya tienen conteo (' + String(pct).replace(".", ",") + '%).'
+    + (TOMA.ciego && !VE ? ' Conteo ciego: no se muestra el stock del sistema ni lo que falta.' : '') + '</div><div class="barra"><i style="width:' + pct + '%"></i></div>';
+  if (VE) h += '<div class="dk"><div><span>Unidades en el sistema</span><b>' + n0(S.s) + '</b></div><div><span>Unidades contadas</span><b>' + n0(S.c) + '</b></div>'
+    + '<div class="r"><span>Falta por contar · ' + nEnt(S.nFalta) + ' artículos</span><b>' + n0(S.falta) + '</b></div>'
+    + '<div class="z"><span>Contado de más · ' + nEnt(S.nMas) + ' artículos</span><b>' + n0(S.mas) + '</b></div>'
+    + '<div class="v"><span>Artículos que cuadran</span><b>' + nEnt(S.nOk) + '</b></div></div>';
+  h += '<div class="muted" style="font-size:12px">Toque un artículo para ver su foto' + (S.sinFoto ? ' (' + nEnt(S.sinFoto) + ' todavía sin foto)' : '') + ' o tomarla.</div>';
+  h += '<div class="scroll" style="margin-top:8px"><table class="t"><tr><th></th><th>Código</th><th>Descripción</th><th>Ubicación (base)</th><th class="n">Contado</th>'
+    + (VE ? '<th class="n">Sistema</th><th class="n">Diferencia</th><th class="n">Falta por contar</th>' : '') + '</tr>'
+    + out.slice(0, 400).map(function(x, i){
+      var it = x.it, c = x.c, dif = VE ? Math.round((x.cont - x.s) * 1000) / 1000 : 0;
+      return '<tr class="art' + (VE && x.falta > 0 && c ? ' falt' : '') + (VE && x.mas > 0 ? ' sobr' : '') + '"' + (it.ronda > 1 && it.ronda === TOMA.ronda ? ' style="background:#fff8e8"' : '') + ' onclick="fichaArt(LISTA_ART[' + i + '].it.c)">'
+        + '<td>' + (it.f ? '<img class="mini" loading="lazy" src="' + fotoUrl(it.f, 120) + '" alt="">' : '<div class="sinmini">📷</div>') + '</td>'
+        + '<td><b>' + esc(it.c) + '</b>' + (it.ronda > 1 ? ' <span class="chip e-REV">R' + it.ronda + '</span>' : '') + (!it.alc ? ' <span class="chip e-ANULADA">fuera</span>' : '') + '</td><td>' + esc(it.d) + '</td><td>' + esc(it.ub || "") + '</td>'
+        + '<td class="n">' + (c ? n0(c.q) + '<div class="muted" style="font-size:11px">' + esc(Object.keys(c.ub).join(", ")) + '</div>' : '—') + '</td>'
+        + (VE ? '<td class="n">' + n0(x.s) + '</td><td class="n ' + (dif < 0 ? 'difn' : dif > 0 ? 'difp' : 'dif0') + '">' + (dif > 0 ? '+' : '') + n0(dif) + (dif === 0 && (x.s || c) ? ' ✓' : '') + '</td><td class="n">' + (x.falta > 0 ? '<b class="difn">' + n0(x.falta) + '</b>' : '—') + '</td>' : '')
+        + '</tr>';
+    }).join("") + '</table></div>' + (out.length > 400 ? '<div class="muted">Mostrando 400 de ' + nEnt(out.length) + '. Use el buscador o el filtro.</div>' : '');
+  $("lRes").innerHTML = h;
+}
+
+/* ---------- resultados (revisor / aprobador) ---------- */
+function calcular(){
+  var cnt = contados(), R = {filas:[], n:0, ok:0, contados:0, falt:{u:0,co:0,pv:0}, sobr:{u:0,co:0,pv:0}, sinCo:0, sinPv:0, pend:0, rec:0, conDif:0};
+  ITEMS.forEach(function(it){
+    var c = cnt[key(it.c)], cont = c ? Math.round(c.q * 1000) / 1000 : 0, s = Number(it.s) || 0, dif = Math.round((cont - s) * 1000) / 1000;
+    var f = {it:it, c:c, cont:cont, s:s, dif:dif, dco:Math.round(dif * (it.co || 0) * 100) / 100, dpv:Math.round(dif * (it.pv || 0) * 100) / 100,
+      res: dif === 0 ? "OK" : dif < 0 ? (c ? "FALTANTE" : "FALTANTE (no encontrado)") : "SOBRANTE"};
+    R.filas.push(f); R.n++;
+    if (c) R.contados++;
+    if (dif === 0) R.ok++; else R.conDif++;
+    if (dif < 0){ R.falt.u += -dif; R.falt.co += -f.dco; R.falt.pv += -f.dpv; }
+    if (dif > 0){ R.sobr.u += dif; R.sobr.co += f.dco; R.sobr.pv += f.dpv; }
+    if (!it.co && (s || cont)) R.sinCo++;
+    if (!it.pv && (s || cont)) R.sinPv++;
+    if (dif !== 0 && !it.dec) R.pend++;
+    if (it.dec === "RECONTAR") R.rec++;
+  });
+  return R;
+}
+var EDITANDO = false, DECS = {};
+function pintarResultados(){
+  if (!VE) return;
+  var R = calcular(), t = TOMA, lv = validas().length, anu = ORDEN.filter(function(id){ return LECT[id].est === "ANULADA"; }).length;
+  var quien = {}; validas().forEach(function(l){ quien[l.por] = (quien[l.por] || 0) + 1; });
+  var k = function(n, tx, cl){ return '<div class="kpi ' + (cl || "") + '"><div class="n">' + n + '</div><div class="t">' + tx + '</div></div>'; };
+  $("rKpi").innerHTML = (activa() ? '<div class="amar">Conteo en curso: estos números cambian mientras cuentan. Las diferencias son definitivas cuando se cierre el conteo.</div>' : '')
+    + '<div class="kpis">'
+    + k(nEnt(R.contados) + " / " + nEnt(R.n), "artículos con conteo (" + pct(R.n ? R.contados / R.n * 100 : 0) + ")")
+    + k(pct(R.n ? R.ok / R.n * 100 : null), "exactitud: artículos sin diferencia", R.n && R.ok / R.n >= 0.95 ? "bien" : "mal")
+    + k(nEnt(R.conDif), "artículos con diferencia", R.conDif ? "mal" : "bien")
+    + k(m2(R.falt.co), "faltante a costo (" + n0(R.falt.u) + " u.)", R.falt.co ? "mal" : "")
+    + k(m2(R.sobr.co), "sobrante a costo (" + n0(R.sobr.u) + " u.)")
+    + k(m2(R.sobr.co - R.falt.co), "neto a costo")
+    + k(m2(R.falt.pv), "faltante a precio de venta", R.falt.pv ? "mal" : "")
+    + k(m2(R.sobr.pv - R.falt.pv), "neto a precio de venta")
+    + k(nEnt(lv), "lecturas válidas · " + anu + " anuladas")
+    + '</div>'
+    + '<div class="muted">Contaron: ' + (Object.keys(quien).map(function(n){ return esc(n) + " (" + quien[n] + ")"; }).join(", ") || "nadie todavía") + '</div>'
+    + (R.sinCo || R.sinPv ? '<div class="amar"><b>Datos que faltan:</b> ' + (R.sinCo ? R.sinCo + ' artículos sin costo' : '') + (R.sinCo && R.sinPv ? ' y ' : '') + (R.sinPv ? R.sinPv + ' sin precio de venta' : '')
+      + '. Su diferencia se valora en 0. Cárguelos en el generador › Base de artículos › Cargar Excel (columnas Costo unitario y Precio de venta) y luego use <b>Actualizar stock de corte</b>.</div>' : '');
+  // acciones según estado y rol
+  var a = "";
+  if (activa() && (tiene("REVISOR") || tiene("APROBADOR"))) a += '<button class="am" onclick="accion(\'cerrar\')">Cerrar el conteo</button>';
+  if (t.est === "EN REVISIÓN" && tiene("REVISOR")){
+    a += '<button class="vd" onclick="accion(\'revisar\')">Firmar revisión</button>'
+      + (R.rec ? '<button class="am" onclick="accion(\'reconteo\')">Abrir reconteo (' + R.rec + ')</button>' : '')
+      + (R.pend ? '<button class="lt" onclick="todoAjustar()">Marcar ' + R.pend + ' pendientes como AJUSTAR</button>' : '')
+      + '<button class="lt" onclick="accion(\'recorte\')">Actualizar stock de corte</button>';
+  }
+  if ((activa()) && tiene("REVISOR")) a += '<button class="lt" onclick="accion(\'recorte\')">Actualizar stock de corte</button>';
+  if (t.est === "REVISADA" && tiene("APROBADOR")) a += '<button class="vd" onclick="accion(\'aprobar\')">Aprobar</button><button class="am" onclick="accion(\'devolver\')">Devolver a revisión</button>';
+  if (t.est !== "APROBADA" && t.est !== "ANULADA" && tiene("APROBADOR")) a += '<button class="rj" onclick="accion(\'anular\')">Anular toma</button>';
+  a += '<button class="lt" onclick="excelToma()">Excel</button><button class="lt" onclick="acta()">Acta para firmar</button>';
+  $("rAcc").innerHTML = a;
+
+  var f = $("rFil").value, q = key($("rBus").value), edit = t.est === "EN REVISIÓN" && tiene("REVISOR");
+  var filas = R.filas.filter(function(x){
+    if (f === "dif" && x.dif === 0 && x.it.dec !== "RECONTAR") return false;
+    if (f === "pend" && (x.dif === 0 || x.it.dec)) return false;
+    if (f === "falt" && x.dif >= 0) return false;
+    if (f === "sobr" && x.dif <= 0) return false;
+    if (f === "sin" && (x.c || !x.s)) return false;
+    if (f === "fuera" && x.it.alc) return false;
+    if (f === "dato" && (x.it.co && x.it.pv || (!x.s && !x.cont))) return false;
+    if (q && (key(x.it.c) + " " + key(x.it.d)).indexOf(q) < 0) return false;
+    return true;
+  }).sort(function(a, b){ return Math.abs(b.dco || b.dif) - Math.abs(a.dco || a.dif); });
+  EDITANDO = false;
+  $("rTabla").innerHTML = '<div class="muted">' + nEnt(filas.length) + ' artículos' + (filas.length > 300 ? ' (se muestran 300; use el buscador)' : '') + '. Ordenados por valor de la diferencia.</div>'
+    + '<div class="scroll" style="margin-top:6px"><table class="t"><tr><th>Código</th><th>Descripción</th><th class="n">Sistema</th><th class="n">Contado</th><th class="n">Dif.</th><th class="n">Dif. costo</th><th class="n">Dif. venta</th><th>Dónde se contó</th><th>Decisión</th></tr>'
+    + filas.slice(0, 300).map(function(x){
+      var it = x.it, cl = x.dif < 0 ? "falt" : x.dif > 0 ? "sobr" : "";
+      var dec = edit && (x.dif !== 0 || it.dec === "RECONTAR")
+        ? '<select onchange="cambiaDec(\'' + esc(it.c) + '\',this.value)" style="min-width:120px"><option value="">—</option>' + ["AJUSTAR","JUSTIFICADO","RECONTAR"].map(function(d){ return '<option' + (it.dec === d ? " selected" : "") + '>' + d + '</option>'; }).join("") + '</select>'
+          + '<input placeholder="justificación" value="' + esc(it.just || "") + '" onchange="cambiaJust(\'' + esc(it.c) + '\',this.value)" onfocus="EDITANDO=true" style="margin-top:4px;min-width:150px">'
+        : esc(it.dec || "") + (it.just ? '<div class="muted" style="font-size:11px">' + esc(it.just) + '</div>' : '');
+      return '<tr class="' + cl + '"><td><b>' + esc(it.c) + '</b>' + (it.ronda > 1 ? ' <span class="chip e-REV">R' + it.ronda + '</span>' : '') + (!it.alc ? ' <span class="chip e-ANULADA">fuera</span>' : '') + '</td><td>' + esc(it.d) + '<div class="muted" style="font-size:11px">' + esc(x.res) + (it.co ? '' : ' · sin costo') + (it.pv ? '' : ' · sin precio') + '</div></td>'
+        + '<td class="n">' + n0(x.s) + '</td><td class="n">' + n0(x.cont) + '</td><td class="n ' + (x.dif < 0 ? "rojo" : x.dif > 0 ? "verde" : "") + '">' + (x.dif > 0 ? "+" : "") + n0(x.dif) + '</td>'
+        + '<td class="n">' + m2(x.dco) + '</td><td class="n">' + m2(x.dpv) + '</td>'
+        + '<td style="font-size:11.5px">' + (x.c ? Object.keys(x.c.ub).map(function(u){ return esc(u) + ": " + n0(x.c.ub[u]); }).join("<br>") + '<div class="muted" style="font-size:11px">' + esc(Object.keys(x.c.quien).join(", ")) + '</div>' : '—') + '</td>'
+        + '<td>' + dec + '</td></tr>';
+    }).join("") + '</table></div>'
+    + (edit ? '<div class="acciones"><button class="vd" onclick="guardarDecisiones()">Guardar decisiones</button><span class="muted" id="decN"></span></div>' : '');
+  if (edit) contarDecs();
+}
+function cambiaDec(c, v){ var it = IX[key(c)]; DECS[key(c)] = {c:c, d:v, j:(DECS[key(c)] || {}).j != null ? DECS[key(c)].j : (it.just || "")}; EDITANDO = true; contarDecs(); }
+function cambiaJust(c, v){ var it = IX[key(c)]; DECS[key(c)] = {c:c, d:(DECS[key(c)] || {}).d != null ? DECS[key(c)].d : (it.dec || ""), j:v}; EDITANDO = true; contarDecs(); }
+function contarDecs(){ var n = Object.keys(DECS).length, e = $("decN"); if (e) e.textContent = n ? n + " cambios sin guardar" : ""; }
+async function guardarDecisiones(){
+  var l = Object.keys(DECS).map(function(k){ return DECS[k]; });
+  if (!l.length){ aviso("No hay cambios.", ""); return; }
+  try{
+    await api("cDecidir", TOMA.id, l);
+    l.forEach(function(o){ var it = IX[key(o.c)]; it.dec = o.d; it.just = o.j; });
+    DECS = {}; EDITANDO = false; aviso("Decisiones guardadas.", "bien"); pintarResultados();
+  }catch(err){ fallo(err); }
+}
+async function todoAjustar(){
+  var R = calcular(), l = R.filas.filter(function(x){ return x.dif !== 0 && !x.it.dec; }).map(function(x){ return {c:x.it.c, d:"AJUSTAR", j:""}; });
+  if (!l.length) return;
+  if (!confirm("¿Marcar " + l.length + " artículos con diferencia y sin decisión como AJUSTAR?")) return;
+  try{ await api("cDecidir", TOMA.id, l); l.forEach(function(o){ IX[key(o.c)].dec = "AJUSTAR"; }); aviso("Listo.", "bien"); pintarResultados(); }catch(err){ fallo(err); }
+}
+
+async function accion(a){
+  var id = TOMA.id, r;
+  try{
+    if (a === "cerrar"){
+      if (!confirm("¿Cerrar el conteo de " + id + "? Ya nadie podrá contar. Antes, confirme que todos los teléfonos dicen «Todo enviado ✓».")) return;
+      await api("cCerrarConteo", id);
+    } else if (a === "reconteo"){
+      if (!confirm("Se abrirá un reconteo solo de los artículos marcados RECONTAR. ¿Seguir?")) return;
+      r = await api("cReconteo", id); aviso("Reconteo abierto: " + r.n + " artículos.", "bien");
+    } else if (a === "recorte"){
+      if (!confirm("Se toma de nuevo el stock, costo y precio de la base de artículos (cargue antes en el generador el Excel del sistema a la hora del conteo). ¿Seguir?")) return;
+      r = await api("cRecorte", id); aviso(r.cambios + " cambios de stock.", "bien");
+    } else if (a === "revisar" || a === "aprobar"){
+      if (Object.keys(DECS).length && !confirm("Hay decisiones sin guardar. ¿Seguir sin guardarlas?")) return;
+      var com = prompt(a === "revisar" ? "Comentario de la revisión (opcional):" : "Comentario de la aprobación (opcional):", "");
+      if (com == null) return;
+      try{ r = await api(a === "revisar" ? "cRevisar" : "cAprobar", id, com, ""); }
+      catch(err){
+        if (!/^SOD/.test(err.message)) throw err;
+        var ex = prompt(err.message.replace(/^SOD: /, "") + "\n\nJustificación:", "");
+        if (!ex) return;
+        r = await api(a === "revisar" ? "cRevisar" : "cAprobar", id, com, ex);
+      }
+      if (a === "aprobar") aviso("Aprobada. " + r.ajustes + " ajustes generados" + (r.ubicaciones ? " y " + r.ubicaciones + " ubicaciones actualizadas en la base" : "") + ".", "bien", 6000);
+    } else if (a === "devolver"){
+      var c = prompt("¿Por qué se devuelve a revisión?", ""); if (!c) return;
+      await api("cDevolver", id, c);
+    } else if (a === "anular"){
+      var m = prompt("Motivo para ANULAR la toma " + id + " (no se podrá deshacer):", ""); if (!m) return;
+      await api("cAnular", id, m);
+    }
+    DECS = {}; abrirToma(id, true);
+  }catch(err){ fallo(err); }
+}
+
+/* ---------- lecturas ---------- */
+function pintarLecturas(){
+  var q = key($("kBus").value), f = $("kFil").value, puedo = tiene("REVISOR");
+  var l = ORDEN.map(function(id){ return LECT[id]; }).filter(function(x){
+    if (f === "mias" && x.correo !== YO.c) return false;
+    if (f === "av" && !x.nota) return false;
+    if (f === "anu" && x.est !== "ANULADA" && x.est !== "RECHAZADA") return false;
+    if (f === "man" && x.etq) return false;
+    if (q && (key(x.c) + " " + key(x.etq) + " " + key(x.ub) + " " + key(x.por)).indexOf(q) < 0) return false;
+    return true;
+  }).reverse();
+  $("kRes").innerHTML = '<div class="muted">' + nEnt(l.length) + ' lecturas' + (l.length > 400 ? ' (se muestran 400)' : '') + '</div>'
+    + '<div class="scroll" style="margin-top:6px"><table class="t"><tr><th>Hora</th><th>Código</th><th class="n">Cant.</th><th>Ubicación</th><th>Etiqueta</th><th>Contó</th><th>Estado</th><th></th></tr>'
+    + l.slice(0, 400).map(function(x){
+      var mia = x.correo === YO.c, se = (x.est === "VÁLIDA" || x.est === "PEND") && ((mia && activa()) || (puedo && (activa() || TOMA.est === "EN REVISIÓN")));
+      return '<tr' + (x.est === "ANULADA" || x.est === "RECHAZADA" ? ' style="opacity:.55;text-decoration:line-through"' : '') + '><td>' + fh(x.t).slice(0, 16) + '</td><td><b>' + esc(x.c) + '</b>' + (x.ronda > 1 ? ' R' + x.ronda : '') + '</td><td class="n">' + n0(x.q) + '</td><td>' + esc(x.ub) + '</td>'
+        + '<td style="font-size:11px">' + (x.etq ? esc(x.etq) : '<i>sin ID · ' + esc(x.org || "") + '</i>') + '</td><td>' + esc(x.por) + '</td><td style="font-size:11.5px">' + esc(x.est) + (x.nota ? '<div class="muted" style="font-size:11px">' + esc(x.nota) + '</div>' : '') + '</td>'
+        + '<td style="white-space:nowrap">' + (puedeEditar(x) ? '<button class="am sm" onclick="editarLectura(\'' + esc(x.id) + '\')">Editar</button> ' : '') + (se ? '<button class="lt sm" onclick="anular(\'' + esc(x.id) + '\')">Anular</button>' : '') + '</td></tr>';
+    }).join("") + '</table></div>';
+}
+
+/* ---------- bitácora ---------- */
+async function pintarBitacora(){
+  $("bRes").innerHTML = "Cargando…";
+  try{
+    var b = await api("cBitacora", TOMA.id);
+    $("bRes").innerHTML = '<div class="scroll"><table class="t"><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr>'
+      + b.map(function(x){ return '<tr><td style="white-space:nowrap">' + fh(x.f) + '</td><td>' + esc(x.u) + '</td><td>' + esc(x.a) + '</td><td style="white-space:pre-line;font-size:11.5px">' + esc(x.d) + '</td></tr>'; }).join("")
+      + '</table></div>';
+  }catch(err){ $("bRes").innerHTML = '<div class="bloque">' + esc(err.message) + '</div>'; }
+}
+
+/* ---------- Excel ---------- */
+var XL = null;
+function cargarSheetJS(){
+  if (XL) return Promise.resolve(XL);
+  return new Promise(function(ok, mal){
+    var s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload = function(){ XL = window.XLSX; XL ? ok(XL) : mal(new Error("Excel")); };
+    s.onerror = function(){ mal(new Error("No se pudo cargar el generador de Excel (revise internet).")); };
+    document.head.appendChild(s);
+  });
+}
+function bajar(nombre, blob){
+  var url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+}
+function hojaX(X, filas, codCol, anchos){
+  var ws = X.utils.aoa_to_sheet(filas);
+  if (codCol != null) for (var r = 1; r < filas.length; r++){ var ref = X.utils.encode_cell({r:r, c:codCol}); if (ws[ref]){ ws[ref].t = "s"; ws[ref].v = String(ws[ref].v); } }
+  if (anchos) ws["!cols"] = anchos.map(function(w){ return {wch:w}; });
+  return ws;
+}
+async function excelToma(){
+  var X; try{ X = await cargarSheetJS(); }catch(e){ fallo(e); return; }
+  var R = calcular(), t = TOMA, wb = X.utils.book_new();
+  X.utils.book_append_sheet(wb, hojaX(X, [["TOYOTENGO, C.A. · Toma de inventario " + t.id], ["Tipo", t.tipo], ["Descripción", t.desc], ["Estado", t.est],
+    ["Método", t.met], ["Corte del stock", fh(t.corte)], ["Creó", t.creo], ["Cerró el conteo", (t.cerro || "") + " " + fh(t.fcerro)],
+    ["Revisó", (t.rev || "") + " " + fh(t.frev)], ["Aprobó", (t.apr || "") + " " + fh(t.fapr)], [], ["Artículos", R.n], ["Con conteo", R.contados],
+    ["Exactitud (% sin diferencia)", R.n ? Math.round(R.ok / R.n * 1000) / 10 : 0], ["Faltante unidades", R.falt.u], ["Faltante a costo", R.falt.co], ["Faltante a venta", R.falt.pv],
+    ["Sobrante unidades", R.sobr.u], ["Sobrante a costo", R.sobr.co], ["Sobrante a venta", R.sobr.pv], ["Neto a costo", R.sobr.co - R.falt.co], ["Neto a venta", R.sobr.pv - R.falt.pv],
+    [], ["Observaciones", t.obs || ""]], null, [30, 60]), "Resumen");
+  var cab = ["Código", "Descripción", "Ubicación base", "Stock sistema", "Contado", "Diferencia", "Costo unitario", "Dif. a costo", "Precio venta", "Dif. a venta", "Resultado", "Decisión", "Justificación", "Dónde se contó", "Contadores", "Ronda", "En alcance"];
+  var fila = function(x){ return [x.it.c, x.it.d, x.it.ub || "", x.s, x.cont, x.dif, x.it.co || 0, x.dco, x.it.pv || 0, x.dpv, x.res, x.it.dec || "", x.it.just || "",
+    x.c ? Object.keys(x.c.ub).map(function(u){ return u + ": " + x.c.ub[u]; }).join(" | ") : "", x.c ? Object.keys(x.c.quien).join(", ") : "", x.it.ronda, x.it.alc ? "SÍ" : "NO"]; };
+  var an = [18, 44, 14, 10, 10, 10, 11, 11, 11, 11, 18, 12, 30, 30, 24, 6, 8];
+  X.utils.book_append_sheet(wb, hojaX(X, [cab].concat(R.filas.filter(function(x){ return x.dif !== 0; }).map(fila)), 0, an), "Diferencias");
+  X.utils.book_append_sheet(wb, hojaX(X, [cab].concat(R.filas.map(fila)), 0, an), "Todos");
+  X.utils.book_append_sheet(wb, hojaX(X, [["Fecha y hora", "Código", "Cantidad", "Ubicación", "ID etiqueta", "Ronda", "Contador", "Correo", "Origen", "Estado", "Nota"]]
+    .concat(ORDEN.map(function(id){ var l = LECT[id]; return [fh(l.t), l.c, l.q, l.ub, l.etq, l.ronda, l.por, l.correo, l.org, l.est, l.nota]; })), 1, [16, 18, 9, 12, 26, 6, 20, 24, 10, 10, 40]), "Lecturas");
+  bajar("TOYOTENGO_Toma_" + t.id + "_" + hoy() + ".xlsx", new Blob([X.write(wb, {bookType:"xlsx", type:"array"})], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+}
+
+/* ---------- acta para firmar ---------- */
+function acta(){
+  var R = calcular(), t = TOMA, quien = {};
+  validas().forEach(function(l){ quien[l.por] = (quien[l.por] || 0) + 1; });
+  var dif = R.filas.filter(function(x){ return x.dif !== 0; }).sort(function(a, b){ return a.dco - b.dco; });
+  $("acta").innerHTML = '<h2 style="margin:0">TOYOTENGO, C.A. · Acta de toma física de inventario</h2>'
+    + '<p><b>Toma:</b> ' + esc(t.id) + ' · ' + esc(t.tipo) + ' · ' + esc(t.desc) + ' · <b>Estado:</b> ' + esc(t.est) + '<br><b>Método:</b> ' + esc(t.met)
+    + '<br><b>Corte del stock del sistema:</b> ' + fh(t.corte) + ' · <b>Conteo ciego:</b> ' + (t.ciego ? "sí" : "no") + ' · <b>Impresa:</b> ' + fh(ahoraISO()) + '</p>'
+    + '<table class="t"><tr><th>Artículos</th><th>Con conteo</th><th>Exactitud</th><th>Faltante (u / costo / venta)</th><th>Sobrante (u / costo / venta)</th><th>Neto costo</th><th>Neto venta</th></tr><tr>'
+    + '<td>' + nEnt(R.n) + '</td><td>' + nEnt(R.contados) + '</td><td>' + pct(R.n ? R.ok / R.n * 100 : 0) + '</td><td>' + n0(R.falt.u) + ' / ' + m2(R.falt.co) + ' / ' + m2(R.falt.pv) + '</td>'
+    + '<td>' + n0(R.sobr.u) + ' / ' + m2(R.sobr.co) + ' / ' + m2(R.sobr.pv) + '</td><td>' + m2(R.sobr.co - R.falt.co) + '</td><td>' + m2(R.sobr.pv - R.falt.pv) + '</td></tr></table>'
+    + '<h3>Diferencias (' + dif.length + ')</h3><table class="t"><tr><th>Código</th><th>Descripción</th><th class="n">Sistema</th><th class="n">Contado</th><th class="n">Dif.</th><th class="n">Dif. costo</th><th class="n">Dif. venta</th><th>Decisión / justificación</th></tr>'
+    + dif.map(function(x){ return '<tr><td>' + esc(x.it.c) + '</td><td>' + esc(x.it.d) + '</td><td class="n">' + n0(x.s) + '</td><td class="n">' + n0(x.cont) + '</td><td class="n">' + n0(x.dif) + '</td><td class="n">' + m2(x.dco) + '</td><td class="n">' + m2(x.dpv) + '</td><td>' + esc(x.it.dec || "") + (x.it.just ? ": " + esc(x.it.just) : "") + '</td></tr>'; }).join("")
+    + '</table>' + (t.obs ? '<p style="white-space:pre-line"><b>Observaciones:</b> ' + esc(t.obs) + '</p>' : '')
+    + '<table style="width:100%;margin-top:28px;font-size:11px"><tr>'
+    + [["Contaron", Object.keys(quien).map(function(n){ return n + " (" + quien[n] + " lecturas)"; }).join(", ")], ["Cerró el conteo", (t.cerro || "") + " " + fh(t.fcerro)],
+       ["Revisó", (t.rev || "").replace(/\s*<.*>/, "") + " " + fh(t.frev)], ["Aprobó", (t.apr || "").replace(/\s*<.*>/, "") + " " + fh(t.fapr)]]
+      .map(function(f){ return '<td style="vertical-align:bottom;padding:0 8px"><div style="border-top:1px solid #000;padding-top:4px"><b>' + f[0] + '</b><br>' + esc(f[1]) + '</div></td>'; }).join("")
+    + '</tr></table>';
+  window.print();
+}
+
+/* ---------- ajustes ---------- */
+var AJ = [];
+async function verAjustes(){
+  mostrar("vAjustes"); $("aRes").innerHTML = "Cargando…";
+  try{ AJ = await api("cAjustes"); pintarAjustes(); }catch(err){ $("aRes").innerHTML = '<div class="bloque">' + esc(err.message) + '</div>'; }
+}
+function pintarAjustes(){
+  var l = AJ.filter(function(a){ return $("aFil").value !== "pend" || !a.apl; }).reverse(), tc = 0, tv = 0;
+  l.forEach(function(a){ tc += Number(a.vco) || 0; tv += Number(a.vpv) || 0; });
+  $("aRes").innerHTML = '<div class="muted">' + l.length + ' ajustes · neto a costo ' + m2(tc) + ' · neto a venta ' + m2(tv) + '</div>'
+    + (l.length ? '<div class="acciones"><button onclick="bajarAjustes()">Descargar Excel para el sistema</button>' + (tiene("APROBADOR") ? '<button class="lt" onclick="aplicados()">Marcar estos como aplicados</button>' : '') + '</div>' : '')
+    + '<div class="scroll" style="margin-top:8px"><table class="t"><tr><th>Toma</th><th>Código</th><th>Descripción</th><th class="n">Ajuste</th><th class="n">A costo</th><th>Tipo</th><th>Aplicado</th></tr>'
+    + l.map(function(a){ return '<tr><td>' + esc(a.toma) + '<div class="muted" style="font-size:11px">' + fh(a.f) + '</div></td><td><b>' + esc(a.c) + '</b></td><td>' + esc(a.d) + '</td><td class="n ' + (a.aj < 0 ? "rojo" : "verde") + '">' + (a.aj > 0 ? "+" : "") + n0(a.aj) + '</td><td class="n">' + m2(a.vco) + '</td><td>' + esc(a.tipo) + '</td><td>' + (a.apl ? fh(a.apl) + '<div class="muted" style="font-size:11px">' + esc(a.aplPor) + '</div>' : '—') + '</td></tr>'; }).join("")
+    + '</table></div>';
+}
+async function bajarAjustes(){
+  var X; try{ X = await cargarSheetJS(); }catch(e){ fallo(e); return; }
+  var l = AJ.filter(function(a){ return $("aFil").value !== "pend" || !a.apl; });
+  var wb = X.utils.book_new();
+  X.utils.book_append_sheet(wb, hojaX(X, [["Código", "Descripción", "Ajuste (unidades)", "Tipo", "Costo unitario", "Ajuste a costo", "Precio de venta", "Ajuste a venta", "Toma", "Fecha aprobación", "Stock sistema", "Contado", "Ubicaciones", "Observación", "Revisó", "Aprobó"]]
+    .concat(l.map(function(a){ return [a.c, a.d, a.aj, a.tipo, a.co, a.vco, a.pv, a.vpv, a.toma, fh(a.f), a.s, a.cont, a.ub, a.obs, a.rev, a.apr]; })), 0, [18, 44, 10, 10, 10, 11, 10, 11, 8, 16, 10, 10, 18, 30, 26, 26]), "Ajustes");
+  bajar("TOYOTENGO_Ajustes_inventario_" + hoy() + ".xlsx", new Blob([X.write(wb, {bookType:"xlsx", type:"array"})], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+}
+async function aplicados(){
+  var l = AJ.filter(function(a){ return !a.apl && ($("aFil").value !== "pend" || !a.apl); });
+  if (!l.length || !confirm("¿Confirmar que estos " + l.length + " ajustes ya se cargaron en el sistema administrativo?")) return;
+  try{ await api("cMarcarAplicados", l.map(function(a){ return a.fila; })); aviso("Marcados.", "bien"); verAjustes(); }catch(err){ fallo(err); }
+}
+
+/* ---------- usuarios ---------- */
+var USU = [];
+async function verUsuarios(){
+  mostrar("vUsuarios");
+  $("uRoles").innerHTML = ["CONTADOR","REVISOR","APROBADOR","ADMIN"].map(function(r){ return '<label style="font-weight:normal;margin:0;flex:0 0 auto"><input type="checkbox" value="' + r + '" style="width:auto"> ' + r + '</label>'; }).join("");
+  editarUsuario(null);
+  $("uRes").innerHTML = "Cargando…";
+  try{
+    USU = await api("cUsuarios");
+    $("uRes").innerHTML = '<table class="t"><tr><th>Nombre y apellido</th><th>Correo</th><th>Roles</th><th>Estado</th><th></th></tr>'
+      + USU.map(function(u, i){ return '<tr><td>' + esc(u.n) + '</td><td>' + esc(u.c) + '</td><td>' + esc(u.roles.join(", ")) + '</td><td>' + (u.activo ? "Activo" : "Inactivo") + (u.pin ? "" : " · sin PIN") + '</td><td><button class="lt sm" onclick="editarUsuario(' + i + ')">Editar</button></td></tr>'; }).join("") + '</table>';
+  }catch(err){ $("uRes").innerHTML = '<div class="bloque">' + esc(err.message) + '</div>'; }
+}
+function editarUsuario(i){
+  var u = i == null ? {nom:"", ape:"", c:"", roles:["CONTADOR"], activo:true} : USU[i];
+  $("uTit").textContent = i == null ? "Agregar usuario" : "Editar usuario";
+  $("uNom").value = u.nom || ""; $("uApe").value = u.ape || ""; $("uCor").value = u.c; $("uCor").disabled = i != null; $("uAct").checked = u.activo; $("uPin").checked = false;
+  [].forEach.call($("uRoles").querySelectorAll("input"), function(x){ x.checked = u.roles.indexOf(x.value) >= 0; });
+}
+async function guardarUsuario(){
+  var o = {nom:$("uNom").value, ape:$("uApe").value, c:$("uCor").value, activo:$("uAct").checked, borrarPin:$("uPin").checked,
+    roles:[].filter.call($("uRoles").querySelectorAll("input"), function(x){ return x.checked; }).map(function(x){ return x.value; })};
+  try{ await api("cGuardarUsuario", o); aviso("Guardado. Para entrar, la persona usa su correo y crea su PIN.", "bien", 5000); verUsuarios(); }catch(err){ fallo(err); }
+}
+
+/* ---------- etiquetas QR de ubicación ---------- */
+function serieUbic(){
+  var p = $("uPre").value.trim().toUpperCase(), d = parseInt($("uDe").value, 10), h = parseInt($("uHa").value, 10);
+  if (!(d >= 0 && h >= d && h - d <= 300)){ aviso("Indique desde y hasta (máximo 300).", "mal"); return; }
+  var l = [], w = String(h).length < 2 ? 2 : String(h).length;
+  for (var i = d; i <= h; i++) l.push(p + ("0000" + i).slice(-w));
+  $("uLista").value = ($("uLista").value.trim() ? $("uLista").value.trim() + "\n" : "") + l.join("\n");
+}
+function imprimirUbic(){
+  var l = $("uLista").value.split(/\n+/).map(function(s){ return s.replace(/\s+/g, " ").trim().toUpperCase(); }).filter(String);
+  if (!l.length){ aviso("Escriba al menos una ubicación.", "mal"); return; }
+  var a = $("acta");
+  a.innerHTML = '<div class="qrs">' + l.map(function(u, i){ return '<div class="q"><div id="qu' + i + '" style="display:inline-block"></div><b>' + esc(u) + '</b><div style="font-size:8pt">TOYOTENGO · UBICACIÓN</div></div>'; }).join("") + '</div>';
+  l.forEach(function(u, i){
+    new QRCode($("qu" + i), {text:"TOYOTENGO|UBIC:" + u, width:260, height:260, colorDark:"#000000", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M});
+    var im = $("qu" + i).querySelector("img"); if (im) im.remove();
+    var cv = $("qu" + i).querySelector("canvas"); if (cv){ cv.style.width = "38mm"; cv.style.height = "38mm"; cv.style.display = "block"; }
+  });
+  setTimeout(function(){ window.print(); }, 150);
+}
+
+/* ---------- cámara ---------- */
+var CAM = {on:false, stream:null, det:null, timer:null, err:"", ocupado:false};
+var JSQR_URLS = ["https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js", "https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"];
+function cargarJsQR(){
+  if (window.jsQR) return Promise.resolve();
+  return new Promise(function(ok, mal){
+    var i = 0;
+    (function prueba(){
+      if (i >= JSQR_URLS.length){ mal(new Error("No se pudo cargar el lector de QR (revise internet).")); return; }
+      var s = document.createElement("script"); s.src = JSQR_URLS[i++];
+      s.onload = function(){ window.jsQR ? ok() : prueba(); }; s.onerror = prueba;
+      document.head.appendChild(s);
+    })();
+  });
+}
+async function preparaDetector(){
+  if (CAM.det) return;
+  try{
+    if ("BarcodeDetector" in window){
+      var f = await BarcodeDetector.getSupportedFormats();
+      if (f.indexOf("qr_code") >= 0){ CAM.det = new BarcodeDetector({formats:["qr_code"]}); return; }
+    }
+  }catch(e){}
+  await cargarJsQR(); CAM.det = "jsqr";
+}
+async function detectar(fuente, w, h){
+  if (CAM.det && CAM.det !== "jsqr"){
+    var r = await CAM.det.detect(fuente); return r.length ? r[0].rawValue : null;
+  }
+  var cv = $("lienzo"), esc2 = Math.min(1, 900 / Math.max(w, h)), W = Math.round(w * esc2), H = Math.round(h * esc2);
+  cv.width = W; cv.height = H;
+  var ctx = cv.getContext("2d", {willReadFrequently:true}); ctx.drawImage(fuente, 0, 0, W, H);
+  var d = ctx.getImageData(0, 0, W, H), q = window.jsQR(d.data, W, H, {inversionAttempts:"attemptBoth"});
+  return q ? q.data : null;
+}
+function alternarCamara(){ CAM.on ? apagarCamara() : encenderCamara(); }
+async function encenderCamara(){
+  if (!UB){ pedirUbic(); aviso("Primero la ubicación.", "mal"); return; }
+  CAM.err = "";
+  try{
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("sin cámara");
+    await preparaDetector();
+    CAM.stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}, width:{ideal:1280}, height:{ideal:720}}, audio:false});
+  }catch(err){
+    CAM.err = EN_GOOGLE
+      ? "<b>Aquí la cámara en vivo no está permitida</b> (Google no la deja usar dentro de sus páginas). Use <b>Foto</b> (una foto por etiqueta), un lector de códigos USB/Bluetooth, o abra la versión con cámara en vivo" + (CAMURL ? ": <a href=\"" + esc(CAMURL) + "\" target=\"_blank\">abrir aquí</a>." : " (pídale el enlace al administrador).")
+      : "No se pudo abrir la cámara: " + esc(err.message || err) + ". Revise que el navegador tenga permiso de cámara para esta página.";
+    $("camAyuda").innerHTML = '<div class="amar">' + CAM.err + '</div>';
+    return;
+  }
+  var v = $("video"); v.srcObject = CAM.stream; v.setAttribute("playsinline", ""); await v.play().catch(function(){});
+  CAM.on = true; $("camBox").style.display = "block"; $("bCam").textContent = "Apagar cámara"; $("bCam").className = "rj big";
+  $("camAyuda").innerHTML = "";
+  if (window.WakeLock || navigator.wakeLock){ try{ CAM.wl = await navigator.wakeLock.request("screen"); }catch(e){} }
+  CAM.timer = setInterval(cuadro, 140);
+}
+function apagarCamara(){
+  if (CAM.timer) clearInterval(CAM.timer); CAM.timer = null;
+  if (CAM.stream) CAM.stream.getTracks().forEach(function(t){ t.stop(); }); CAM.stream = null;
+  try{ CAM.wl && CAM.wl.release(); }catch(e){} CAM.wl = null;
+  CAM.on = false;
+  if ($("camBox")){ $("camBox").style.display = "none"; $("bCam").textContent = "📷 Encender cámara"; $("bCam").className = "vd big"; }
+}
+async function cuadro(){
+  if (CAM.ocupado || !CAM.on || $("modal").style.display === "flex") return;
+  var v = $("video"); if (!v.videoWidth) return;
+  CAM.ocupado = true;
+  try{
+    var txt = await detectar(v, v.videoWidth, v.videoHeight), ahora = Date.now();
+    if (txt){
+      // la misma etiqueta sigue frente a la cámara: no se cuenta otra vez
+      if (txt === ULT.txt && ahora - ULT.t < 1800){ ULT.t = ahora; }
+      else { ULT = {txt:txt, t:ahora}; $("camMsg").textContent = "Leído"; entradaTexto(txt, "CÁMARA"); }
+    } else if (ahora - ULT.t > 600) $("camMsg").textContent = "Apunte al QR de la etiqueta · " + UB;
+  }catch(e){}
+  CAM.ocupado = false;
+}
+async function leerFoto(inp){
+  var f = inp.files && inp.files[0]; inp.value = "";
+  if (!f) return;
+  if (!UB){ pedirUbic(); return; }
+  try{
+    await preparaDetector();
+    var img = await createImageBitmap(f);
+    var txt = await detectar(img, img.width, img.height);
+    if (!txt){ pitar(false); aviso("No se encontró un QR en la foto. Acérquese más y con buena luz.", "mal", 4500); return; }
+    entradaTexto(txt, "FOTO");
+  }catch(err){ fallo(err); }
+}
+
+/* ---------- eliminar tomas (solo ADMIN) ---------- */
+function eliminarTomas(){
+  if (!tiene("ADMIN")) return;
+  var l = (TOMAS || []).slice();
+  if (!l.length){ aviso("No hay tomas para eliminar.", "mal"); return; }
+  modal('<h3>🗑 Eliminar tomas</h3><div class="muted">Solo administradores. Se borran la toma, sus lecturas y sus ajustes no aplicados, aquí y en el tablero. Queda registrado en la Bitácora con su nombre y el motivo. <b>No se puede deshacer.</b></div>'
+    + '<label style="font-weight:normal;margin-top:10px"><input type="checkbox" id="eTodas" style="width:auto" onchange="document.querySelectorAll(\'.eChk\').forEach(function(c){ c.checked = $(\'eTodas\').checked; }); contarElim()"> <b>Seleccionar todas</b> (' + l.length + ')</label>'
+    + '<div style="max-height:40vh;overflow:auto;border:1px solid #d5dbe1;border-radius:8px;padding:4px 8px;margin-top:6px">'
+    + l.map(function(t){ return '<label style="font-weight:normal;display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" class="eChk" value="' + esc(t.id) + '" style="width:auto" onchange="contarElim()"> <b>' + esc(t.id) + '</b> ' + chip(t.est) + ' <span class="muted" style="font-size:12.5px">' + esc(t.tipo) + ' · ' + esc(t.desc || "") + '</span></label>'; }).join("")
+    + '</div>'
+    + '<label>Motivo (obligatorio)</label><input id="eMot" placeholder="Ej.: tomas de prueba">'
+    + '<label>Para confirmar escriba <b>ELIMINAR</b></label><input id="eConf" autocapitalize="characters" oninput="contarElim()">'
+    + '<div class="acciones"><button class="rj" id="eBtn" disabled onclick="confirmarElim()">Eliminar</button><button class="lt" onclick="cerrarModal()">Cancelar</button></div>');
+}
+function elegidasElim(){ return [].slice.call(document.querySelectorAll(".eChk")).filter(function(c){ return c.checked; }).map(function(c){ return c.value; }); }
+function contarElim(){
+  var n = elegidasElim().length, b = $("eBtn");
+  b.textContent = n ? "Eliminar " + n + (n === 1 ? " toma" : " tomas") : "Eliminar";
+  b.disabled = !n || String($("eConf").value).trim().toUpperCase() !== "ELIMINAR";
+}
+async function confirmarElim(){
+  var ids = elegidasElim(), m = String($("eMot").value).trim();
+  if (m.length < 5){ aviso("Escriba el motivo (mínimo 5 letras).", "mal"); return; }
+  $("eBtn").disabled = true; $("eBtn").textContent = "Eliminando…";
+  try{
+    var r = await api("cEliminarTomas", ids, m);
+    cerrarModal();
+    aviso("Eliminadas: " + (r.eliminadas.join(", ") || "ninguna") + (r.omitidas.length ? "<br>No se eliminaron: " + esc(r.omitidas.join(" · ")) : ""), r.omitidas.length ? "mal" : "bien", 7000);
+    inicio();
+  }catch(err){ fallo(err); contarElim(); }
+}
+
+/* ---------- arranque ---------- */
+window.addEventListener("online", enviar);
+document.addEventListener("visibilitychange", function(){ if (!document.hidden){ enviar(); sondear(); } else if (CAM.on) apagarCamara(); });
+window.addEventListener("beforeunload", function(e){ if (COLA.length){ e.preventDefault(); e.returnValue = ""; } });
+(function(){
+  pintarYo();
+  $("eCor").value = LS.get("cnt_correo", "");
+  if (CLAVE) $("eClave").value = CLAVE;
+  if (TOK && YO) inicio(); else mostrar("vEntrar", true);
+  if (!TOK) $("eNomFila").classList.remove("oculto");
+})();
+</script>
+</body></html>

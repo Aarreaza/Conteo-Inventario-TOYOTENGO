@@ -2154,7 +2154,7 @@ const SUPABASE_KEY = "sb_publishable_a_nbJo4md9mxIjnplJwFoQ_8I46UHZ4";
 const EMPRESA = "TOYOTENGO";
 const MODULO = "tablero";
 // App de conteo (Google Apps Script del generador de etiquetas)
-const CONTEO_API = "https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12iL6Luk1na_SZUJtQ1WbaBM88r55Gl_KAuayMM3Fvyh0rAql/exec";
+const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/inventario";
 // =================================================
 
 (() => {
@@ -4162,7 +4162,7 @@ function zoomEn(box){
       im.addEventListener('click', (e) => { e.stopPropagation(); ver(f, codigo, desc); }); td.appendChild(im);
     }
     // ---- subir fotos desde el tablero: quedan en la misma base de fotos (Drive + hoja Fotos + servidor central) ----
-    const GAS = 'https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12iL6Luk1na_SZUJtQ1WbaBM88r55Gl_KAuayMM3Fvyh0rAql/exec';
+    const GAS = 'https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/inventario';
     const editor = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'REGULARIZA');
     async function gas(fn, args) {
       if (!editor()) throw new Error('Esto requiere el perfil Administrador o Responsable.');
