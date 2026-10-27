@@ -146,7 +146,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .u-pf{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:10px;padding:.8rem .9rem}
 .u-pf p{margin:.45rem 0 0;font-size:.85rem;color:var(--color-fg-muted)}
 .u-tag{display:inline-block;font-size:.75rem;font-weight:600;padding:.15rem .55rem;border-radius:999px}
-.u-tag.lec{background:#e8eef7;color:#24466f}.u-tag.reg{background:#fff3dc;color:#8a5a00}.u-tag.adm{background:#fdecee;color:#b0001a}
+.u-tag.lec{background:#e8eef7;color:#24466f}.u-tag.reg{background:#fff3dc;color:#8a5a00}.u-tag.adm{background:#fdecee;color:#b0001a}.u-tag.car{background:#e6f4ec;color:#1f6b45}
 .u-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.75rem;align-items:end}
 .u-in{display:flex;gap:.4rem}.u-in input{flex:1;min-width:0;font-family:ui-monospace,Menlo,Consolas,monospace}
 .u-cred{margin-top:.75rem;border:1px dashed var(--color-border-line);border-radius:10px;padding:.8rem .9rem;display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center}
@@ -724,7 +724,8 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
     <div class="u-perfiles">
       <div class="u-pf"><span class="u-tag lec">Lector</span><p>Consulta el tablero, los conteos y la lista de compra. Descarga Excel.</p></div>
       <div class="u-pf"><span class="u-tag reg">Responsable</span><p>Todo lo del lector y además regulariza: descarga sus temas en <b>Por regularizar</b> y sube lo corregido.</p></div>
-      <div class="u-pf"><span class="u-tag adm">Administrador</span><p>Todo lo anterior y además carga datos, gestiona usuarios, claves y perfiles, y ve la Bitácora.</p></div>
+      <div class="u-pf"><span class="u-tag car">Responsable de carga</span><p>Todo lo del responsable y además sube información al tablero en <b>Cargar datos</b>: inventario, precios y ventas de Profit.</p></div>
+      <div class="u-pf"><span class="u-tag adm">Administrador</span><p>Todo lo anterior y además gestiona usuarios, claves y perfiles, y ve la Bitácora.</p></div>
     </div>
     <div class="tt-card" id="u-crear">
       <h3>Crear usuario</h3>
@@ -732,7 +733,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         <div class="sh-f"><label for="i-nombre">Nombre y apellido</label><input id="i-nombre" autocomplete="off"></div>
         <div class="sh-f"><label for="i-correo">Correo</label><input id="i-correo" type="email" inputmode="email" autocomplete="off"></div>
         <div class="sh-f"><label for="i-area">Área</label><select id="i-area"><option>Junta directiva</option><option>Administración</option><option>Finanzas</option><option>Compras</option><option>Almacén</option><option>Ventas</option><option>Taller</option><option>Otra</option></select></div>
-        <div class="sh-f"><label for="i-rol">Perfil de permisos</label><select id="i-rol"><option value="LECTOR">Lector</option><option value="REGULARIZA">Responsable</option><option value="ADMIN">Administrador</option></select></div>
+        <div class="sh-f"><label for="i-rol">Perfil de permisos</label><select id="i-rol"><option value="LECTOR">Lector</option><option value="REGULARIZA">Responsable</option><option value="CARGA">Responsable de carga</option><option value="ADMIN">Administrador</option></select></div>
         <div class="sh-f u-clave"><label for="i-clave">Clave</label><div class="u-in"><input id="i-clave" type="text" autocomplete="new-password" spellcheck="false" placeholder="8+ letras y números"><button type="button" class="sh-btn sm lt" id="i-generar">Generar</button></div></div>
         <button class="sh-btn" id="i-crear">Crear usuario</button>
       </div>
@@ -2364,20 +2365,21 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     let rol = perfil.admin_global ? 'ADMIN' : null;
     if (!rol) {
       const p = ok(await sb.from('permisos').select('rol').eq('user_id', uid).eq('empresa_id', EMPRESA).eq('modulo_id', MODULO));
-      rol = p.some((x) => x.rol === 'ADMIN') ? 'ADMIN' : p.some((x) => x.rol === 'REGULARIZA') ? 'REGULARIZA' : p.length ? 'LECTOR' : null;
+      rol = p.some((x) => x.rol === 'ADMIN') ? 'ADMIN' : p.some((x) => x.rol === 'CARGA') ? 'CARGA' : p.some((x) => x.rol === 'REGULARIZA') ? 'REGULARIZA' : p.length ? 'LECTOR' : null;
     }
     if (!rol) { await salir('Su cuenta está activa pero no tiene permiso para el tablero. Pídaselo al administrador.', 'err'); return false; }
     YO = { id: uid, correo: perfil.correo, nombre: perfil.nombre || perfil.correo, rol, global: perfil.admin_global };
     sb.from('perfiles').update({ ultimo_acceso: new Date().toISOString() }).eq('user_id', uid).then(() => {}, () => {});
     $('sh-user').textContent = YO.nombre;
-    $('sh-rol').textContent = YO.rol === 'ADMIN' ? 'Administrador' : YO.rol === 'REGULARIZA' ? 'Responsable' : 'Lector';
+    $('sh-rol').textContent = YO.rol === 'ADMIN' ? 'Administrador' : YO.rol === 'CARGA' ? 'Responsable de carga' : YO.rol === 'REGULARIZA' ? 'Responsable' : 'Lector';
     $('sh-ini').textContent = (String(YO.nombre).replace(/@.*/, '').split(/[\s.]+/).filter(Boolean).slice(0, 2).map((x) => x[0]).join('') || '·').toUpperCase();
-    document.querySelectorAll('.sh-admin').forEach((b) => { b.hidden = YO.rol !== 'ADMIN'; });
+    document.querySelectorAll('.sh-admin').forEach((b) => { b.hidden = !(YO.rol === 'ADMIN' || YO.rol === 'CARGA'); });
+    ['n-usuarios', 'n-bitacora'].forEach((i) => { $(i).hidden = YO.rol !== 'ADMIN'; });
     ver('v-tablero');
     try {
       SERVER = await leerDatos();
       dash._set(soloDatos(SERVER));
-      if (!SERVER.articulos.length && YO.rol === 'ADMIN') { ver('v-cargar'); msg($('c-msg'), 'La base está vacía. Cargue los archivos para empezar.'); }
+      if (!SERVER.articulos.length && (YO.rol === 'ADMIN' || YO.rol === 'CARGA')) { ver('v-cargar'); msg($('c-msg'), 'La base está vacía. Cargue los archivos para empezar.'); }
     } catch (e) { dash._error(e.message); }
     if (YO.rol === 'ADMIN') contarPendientes();
     return true;
@@ -2394,14 +2396,14 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     return pf.map((u) => {
       const r = pe.filter((x) => x.user_id === u.user_id).map((x) => x.rol);
       return { id: u.user_id, nombre: u.nombre || '(sin nombre)', correo: u.correo, area: u.area || '', estado: u.estado, global: u.admin_global,
-        rol: u.admin_global || r.includes('ADMIN') ? 'ADMIN' : r.includes('REGULARIZA') ? 'REGULARIZA' : r.includes('LECTOR') ? 'LECTOR' : '', ultimoAcceso: u.ultimo_acceso };
+        rol: u.admin_global || r.includes('ADMIN') ? 'ADMIN' : r.includes('CARGA') ? 'CARGA' : r.includes('REGULARIZA') ? 'REGULARIZA' : r.includes('LECTOR') ? 'LECTOR' : '', ultimoAcceso: u.ultimo_acceso };
     });
   }
   async function contarPendientes() {
     try { USU = await leerUsuarios(); const n = USU.filter((u) => u.estado === 'PENDIENTE').length; ['n-pend', 'n-pend2'].forEach((i) => { $(i).hidden = !n; $(i).textContent = n; }); } catch (e) {}
   }
   // ---------- usuarios y permisos (el administrador crea usuarios con clave y perfil) ----------
-  const PERFIL = { ADMIN: 'Administrador', REGULARIZA: 'Responsable', LECTOR: 'Lector' };
+  const PERFIL = { ADMIN: 'Administrador', CARGA: 'Responsable de carga', REGULARIZA: 'Responsable', LECTOR: 'Lector' };
   let ADM = [];
   async function cargarUsuarios(mantener) {
     if (!mantener) msg($('u-msg'), 'Cargando…');
@@ -2785,7 +2787,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         const l = filas(g); const r = l.filter((x) => x.s && x.s.resuelto).length, c = l.filter((x) => x.s).length;
         el.textContent = c ? r + ' resueltos · ' + c + ' con seguimiento' : '';
       });
-      const card = $('seg-card'); if (card) card.hidden = !(YO && (YO.rol === 'ADMIN' || YO.rol === 'REGULARIZA') && SERVER && SERVER.corte);
+      const card = $('seg-card'); if (card) card.hidden = !(YO && (YO.rol === 'ADMIN' || YO.rol === 'CARGA' || YO.rol === 'REGULARIZA') && SERVER && SERVER.corte);
       const pend = SERVER ? SERVER.hallazgos.filter((h) => !h.resuelto).length : 0;
       $('n-reg').hidden = !pend; $('n-reg').textContent = pend;
       document.querySelectorAll('.tt-goreg').forEach((b) => { b.hidden = !SERVER || !SERVER.corte; if (!b.dataset.wired) { b.dataset.wired = '1'; b.addEventListener('click', () => ver('v-regularizar')); } });
@@ -2965,7 +2967,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       try {
         const rows = cam.map((r) => ({ ...r.nuevo, archivo: PEND.archivo, actualizado_por: YO.correo, actualizado_en: new Date().toISOString() }));
         for (let i = 0; i < rows.length; i += 300) ok(await sb.from('seguimiento').upsert(rows.slice(i, i + 300), { onConflict: 'corte_id,clave' }));
-        for (const r of (YO.rol === 'ADMIN' ? cam.filter((c) => c.clave.startsWith('H-')) : [])) {
+        for (const r of ((YO.rol === 'ADMIN' || YO.rol === 'CARGA') ? cam.filter((c) => c.clave.startsWith('H-')) : [])) {
           ok(await sb.from('hallazgos').update({ responsable: r.nuevo.responsable, resuelto: r.nuevo.resuelto, resuelto_en: r.nuevo.fecha, comentario: [r.nuevo.accion_tomada, r.nuevo.comentario].filter(Boolean).join(' · ') || null }).eq('id', Number(r.clave.slice(2))));
         }
         const resN = cam.filter((r) => r.nuevo.resuelto).length;
@@ -3347,7 +3349,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const n = Number(s); return isFinite(n) ? n : null; };
     const activa = (e) => !e || /^(active|activ|publicad)/i.test(String(e).trim());
     const pausada = (e) => /^(paused|pausad|inactiv|under_review|revisi)/i.test(String(e || '').trim());
-    const puede = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'REGULARIZA');
+    const puede = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'CARGA' || YO.rol === 'REGULARIZA');
     const aj = () => ({ com: (pn(LS.get('com', '13')) || 0) / 100, min: (pn(LS.get('min', '25')) || 0) / 100, tasa: pn(LS.get('tasa', '')) || 0 });
     const aUsd = (p, mon, tasa) => (p == null ? null : /VES|VEF|BS/i.test(mon || '') ? (tasa > 0 ? p / tasa : null) : p);
     const EXPL = {
@@ -4178,7 +4180,7 @@ function zoomEn(box){
     }
     // ---- subir fotos desde el tablero: quedan en la misma base de fotos (Drive + hoja Fotos + servidor central) ----
     const GAS = 'https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/inventario';
-    const editor = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'REGULARIZA');
+    const editor = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'CARGA' || YO.rol === 'REGULARIZA');
     async function gas(fn, args) {
       if (!editor()) throw new Error('Esto requiere el perfil Administrador o Responsable.');
       const { data: { session } } = await sb.auth.getSession(); if (!session) throw new Error('Su sesión venció: vuelva a entrar.');
