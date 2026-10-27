@@ -155,6 +155,8 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .u-head h3{margin:0}
 .u-who b{display:block}.u-who small{color:var(--color-fg-muted)}
 .u-acc{display:flex;flex-wrap:wrap;gap:.35rem}
+.sh-btn.u-del{color:#c8102e;border-color:rgba(200,16,46,.45)}.sh-btn.u-del:hover{background:rgba(200,16,46,.08)}
+.u-nota{margin:.5rem 0 0;font-size:.82rem;color:var(--color-fg-muted)}
 .u-pw{display:flex;gap:.35rem;margin-top:.4rem}.u-pw input{font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;padding:.3rem .5rem;border:1px solid var(--color-border-line);border-radius:6px;background:var(--color-bg);color:var(--color-fg);min-width:0;width:11rem}
 .sh-badge{display:inline-block;min-width:1.2em;padding:0 .35em;margin-left:.3em;border-radius:999px;background:var(--brand-red);color:#fff;box-shadow:0 0 0 1.5px #fff;font-size:.72rem;text-align:center}
 .sh-main{padding-block:1.25rem 3rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1400px;margin-inline:auto}
@@ -741,6 +743,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="u-head"><h3>Usuarios</h3><input class="tt-in" id="u-bus" type="search" placeholder="Buscar por nombre o correo"></div>
       <div class="tt-scroll"><table class="tt-t" id="u-tabla"><thead><tr><th>Usuario</th><th class="tt-hide-n">Área</th><th>Perfil</th><th>Estado</th><th class="tt-hide-n">Último ingreso</th><th>Acciones</th></tr></thead><tbody></tbody></table></div>
       <div class="sh-msg" id="u-msg" role="status"></div>
+      <p class="u-nota">Las claves se guardan cifradas: nadie puede verlas, ni siquiera el administrador. Si alguien olvida la suya, use <b>Cambiar clave</b> y entréguele la nueva.</p>
     </div>
   </section>
 
@@ -2457,6 +2460,18 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           catch (e) { msg($('u-msg'), e.message, 'err'); g.disabled = false; }
         });
         box.append(inp, g, cx); cA.appendChild(box); inp.focus(); inp.select();
+      });
+      btn('Eliminar', 'lt u-del', async (x) => {
+        const quien = (u.nombre || '(sin nombre)') + ' <' + u.correo + '>';
+        const r = prompt('Eliminar a ' + quien + '.\n\nPerderá el acceso al tablero de forma definitiva (lo que hizo queda en la Bitácora).\nPara confirmar, escriba su correo:');
+        if (r == null) return;
+        if (r.trim().toLowerCase() !== String(u.correo).toLowerCase()) return msg($('u-msg'), 'No se eliminó: el correo escrito no coincide.', 'err');
+        x.disabled = true; msg($('u-msg'), 'Eliminando…');
+        try {
+          const rr = await sb.rpc('admin_eliminar_usuario', { p_user: u.user_id });
+          if (rr.error && /admin_eliminar_usuario|function/i.test(rr.error.message) && !/No se puede|No puede/.test(rr.error.message)) throw new Error('Falta ejecutar en Supabase el archivo 20_eliminar_usuario.sql.');
+          ok(rr); msg($('u-msg'), 'Usuario eliminado: ' + u.correo + '.', 'ok'); await cargarUsuarios(true); contarPendientes();
+        } catch (e) { msg($('u-msg'), e.message, 'err'); x.disabled = false; }
       });
       tb.appendChild(tr);
     });
