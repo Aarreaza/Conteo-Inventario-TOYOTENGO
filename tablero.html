@@ -465,6 +465,24 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .alm-c .neg{color:var(--color-bad);font-weight:600}
 .alm-det{margin-top:1rem}.alm-det summary{cursor:pointer;font-size:.85rem;color:var(--color-fg-muted)}
 
+.alm-c,.alm-ec .t,.alm-bar>div{cursor:pointer}
+.alm-c{transition:box-shadow .15s,transform .15s}
+.alm-c:hover,.alm-ec .t:hover{box-shadow:0 4px 14px rgba(0,0,0,.1);transform:translateY(-1px)}
+.alm-c.sel,.alm-ec .t.sel{outline:2px solid var(--c,var(--tt-ink,#2b2f36));outline-offset:2px}
+.alm-c .ver{margin-top:.35rem;font-size:.8rem;font-weight:600;color:var(--color-fg-muted)}
+.alm-c:hover .ver{color:var(--color-fg)}
+.alm-pan{margin-top:1rem;border:1px solid var(--color-border-line);border-top:4px solid var(--c,var(--tt-ink,#2b2f36));border-radius:10px;padding:1rem;display:flex;flex-direction:column;gap:.75rem;background:var(--color-panel)}
+.alm-pan-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.75rem;align-items:flex-start}
+.alm-pan-h h4{margin:0 0 .2rem;font-size:1.05rem}
+.alm-pan-b{display:flex;gap:.5rem;flex-wrap:wrap}
+.alm-seg{display:flex;flex-wrap:wrap;gap:.4rem}
+.alm-seg button{border:1px solid var(--color-border-line);background:var(--color-bg);border-radius:99px;padding:.3rem .75rem;font-size:.82rem;cursor:pointer;color:var(--color-fg)}
+.alm-seg button b{font-variant-numeric:tabular-nums;margin-left:.3rem}
+.alm-seg button.on{background:var(--tt-ink,#2b2f36);color:#fff;border-color:transparent}
+.alm-seg button.bad b{color:var(--color-bad)}.alm-seg button.on.bad b{color:#ffb4ab}
+.alm-fil{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}.alm-fil input{flex:1 1 16rem;max-width:28rem}
+#t-almd th{cursor:pointer;white-space:nowrap}#t-almd td.neg{color:var(--color-bad);font-weight:600}
+
 </style>
 </head>
 <body>
@@ -882,6 +900,15 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         <div class="alm-ec" id="alm-ec"></div>
         <div class="alm-bar" id="alm-bar" role="img"></div>
         <div class="alm-grid" id="alm-grid"></div>
+        <div class="alm-pan" id="alm-pan" hidden>
+          <div class="alm-pan-h">
+            <div><h4 id="alm-pan-t"></h4><span class="note" id="alm-pan-s"></span></div>
+            <div class="alm-pan-b"><button class="tt-btn" id="alm-xls">⬇ Descargar Excel segmentado</button><button class="tt-btn" id="alm-cerrar" aria-label="Cerrar">✕ Cerrar</button></div>
+          </div>
+          <div class="alm-seg" id="alm-seg" role="tablist"></div>
+          <div class="alm-fil"><input type="search" class="tt-in" id="alm-q" placeholder="Buscar código o descripción…"><span class="note" id="alm-n"></span></div>
+          <div class="tt-scroll" style="max-height:28rem"><table class="tt-t" id="t-almd"><thead></thead><tbody></tbody></table></div>
+        </div>
         <details class="alm-det"><summary>Ver tabla detallada</summary>
         <div class="tt-scroll" style="max-height:none">
           <table class="tt-t" id="t-alm">
@@ -1550,6 +1577,108 @@ window.TT = (() => {
     comprometido_u: fmt.num, costo_prom: fmt.usd2, sin_costo: fmt.int, hallazgos_total: fmt.int, hallazgos_alta: fmt.int,
     hallazgos_media: fmt.int, resueltos: fmt.int,
   };
+  // ---------- detalle por almacén: artículos que lo componen + Excel segmentado para regularizar ----------
+  const ALMV = {
+    principal: { nom: 'Almacén Principal', c: 'var(--s1)', s: (r) => r.st_principal, v: (r) => r.v_principal },
+    tienda: { nom: 'Almacén Tienda', c: 'var(--s2)', s: (r) => r.st_tienda, v: (r) => r.v_tienda },
+    consignacion: { nom: 'Consignación', c: 'var(--s3)', s: (r) => r.st_consignacion, v: (r) => r.v_consignacion },
+    transito: { nom: 'Tránsito', c: 'var(--s4)', s: (r) => r.transito, v: (r) => r.valor_transito },
+    vender: { nom: 'Para vender (Principal + Tienda + Consignación)', c: 'var(--tt-ink,#2b2f36)', s: (r) => r.stock, v: (r) => r.valor, det: ['principal', 'tienda', 'consignacion'] },
+    total: { nom: 'Inventario total (los 4 almacenes)', c: 'var(--tt-ink,#2b2f36)', s: (r) => (Number(r.stock) || 0) + (Number(r.transito) || 0), v: (r) => (Number(r.valor) || 0) + (Number(r.valor_transito) || 0), det: ['principal', 'tienda', 'consignacion', 'transito'] },
+  };
+  const ALM_SEG = [
+    ['todos', 'Todos', () => true],
+    ['stock', 'Con stock', (x) => x.stock > 0],
+    ['neg', 'Stock negativo', (x) => x.stock < 0 || (x.det || []).some((d) => d.s < 0), 'bad'],
+    ['sc', 'Stock sin costo', (x) => x.stock > 0 && !(x.valor > 0), 'bad'],
+    ['c1', 'Costo ≤ US$ 1', (x) => x.stock > 0 && x.costo > 0 && x.costo <= 1, 'bad'],
+    ['cd', 'Costo distinto entre almacenes', (x) => /COSTO DISTINTO/.test(x.hallazgo), 'bad'],
+    ['hz', 'Con algún hallazgo', (x) => x.hallazgo && x.hallazgo !== 'OK', 'bad'],
+  ];
+  let almSel = null, almSeg = 'todos', almSort = { f: 'valor', d: -1 };
+  const almFilas = (k) => {
+    const V = ALMV[k], A = (dash.data('articulos').data) || [], n = (x) => Number(x) || 0;
+    return A.map((r) => {
+      const st = n(V.s(r)), va = Math.round(n(V.v(r)) * 100) / 100;
+      const det = (V.det || []).map((d) => ({ k: d, s: n(ALMV[d].s(r)) }));
+      return { codigo: r.codigo, descripcion: r.descripcion, familia: r.familia, linea: r.linea, stock: st, costo: st ? Math.round(va / st * 100) / 100 : (r.costo || 0), valor: va, det, hallazgo: r.hallazgo || 'OK' };
+    }).filter((x) => x.stock !== 0 || x.valor !== 0 || x.det.some((d) => d.s !== 0));
+  };
+  const almAbrir = (k) => { almSel = almSel === k ? null : k; almSeg = 'todos'; const q = document.getElementById('alm-q'); if (q) q.value = ''; almPintar(); if (almSel) document.getElementById('alm-pan').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  function almPintar() {
+    const pan = document.getElementById('alm-pan'); if (!pan) return;
+    document.querySelectorAll('#card-alm [data-alm]').forEach((e) => e.classList.toggle('sel', e.dataset.alm === almSel));
+    pan.hidden = !almSel; if (!almSel) return;
+    const V = ALMV[almSel], F = almFilas(almSel);
+    pan.style.setProperty('--c', V.c);
+    document.getElementById('alm-pan-t').textContent = V.nom;
+    document.getElementById('alm-pan-s').textContent = fmt.int(F.length) + ' códigos · ' + fmt.num(F.reduce((t, x) => t + x.stock, 0)) + ' uds. · ' + fmt.usd0(F.reduce((t, x) => t + x.valor, 0)) + ' a costo';
+    const seg = document.getElementById('alm-seg'); seg.replaceChildren();
+    ALM_SEG.forEach(([id, lab, f, cls]) => {
+      const c = F.filter(f).length; if (id !== 'todos' && id !== 'stock' && !c) return;
+      const b = document.createElement('button'); b.type = 'button'; b.className = (almSeg === id ? 'on ' : '') + (cls || ''); b.textContent = lab; const bb = document.createElement('b'); bb.textContent = fmt.int(c); b.appendChild(bb);
+      b.addEventListener('click', () => { almSeg = id; almPintar(); }); seg.appendChild(b);
+    });
+    const q = (document.getElementById('alm-q').value || '').trim().toLowerCase();
+    const fs = (ALM_SEG.find((x) => x[0] === almSeg) || ALM_SEG[0])[2];
+    let R = F.filter(fs).filter((x) => !q || (x.codigo + ' ' + x.descripcion).toLowerCase().includes(q));
+    R.sort((a, b) => { const x = a[almSort.f], y = b[almSort.f]; return (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'es')) * almSort.d; });
+    const cols = [['codigo', 'Código'], ['descripcion', 'Descripción'], ['familia', 'Familia'], ...(V.det || []).map((d) => ['d_' + d, ALMV[d].nom.replace('Almacén ', '')]), ['stock', V.det ? 'Stock' : 'Stock'], ['costo', 'Costo unit.'], ['valor', 'Valor'], ['hallazgo', 'Hallazgo']];
+    const t = document.getElementById('t-almd'), th = t.tHead, tb = t.tBodies[0];
+    th.replaceChildren(); const trh = document.createElement('tr');
+    cols.forEach(([f, l]) => { const h = document.createElement('th'); if (!/^(codigo|descripcion|familia|hallazgo)$/.test(f)) h.className = 'n'; h.textContent = l + (almSort.f === f ? (almSort.d > 0 ? ' ▲' : ' ▼') : ''); if (!f.startsWith('d_')) h.addEventListener('click', () => { almSort = { f, d: almSort.f === f ? -almSort.d : (f === 'valor' || f === 'stock' ? -1 : 1) }; almPintar(); }); trh.appendChild(h); });
+    th.appendChild(trh); tb.replaceChildren();
+    const LIM = 400;
+    R.slice(0, LIM).forEach((x) => {
+      const tr = document.createElement('tr');
+      cols.forEach(([f]) => {
+        const td = document.createElement('td');
+        if (f === 'hallazgo') { if (x.hallazgo !== 'OK') chip(td, x.hallazgo, /NEGATIVO|SIN COSTO/.test(x.hallazgo) ? 'bad' : 'warn'); else td.textContent = 'OK'; }
+        else if (f.startsWith('d_')) { const d = x.det.find((y) => 'd_' + y.k === f); td.className = 'n' + (d && d.s < 0 ? ' neg' : ''); td.textContent = d && d.s ? fmt.num(d.s) : ''; }
+        else if (f === 'stock') { td.className = 'n' + (x.stock < 0 ? ' neg' : ''); td.textContent = fmt.num(x.stock); }
+        else if (f === 'costo') { td.className = 'n'; td.textContent = x.costo ? fmt.usd2(x.costo) : '—'; }
+        else if (f === 'valor') { td.className = 'n'; td.textContent = fmt.usd2(x.valor); }
+        else { td.textContent = x[f] || ''; if (f === 'codigo') td.className = 'code'; }
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    document.getElementById('alm-n').textContent = fmt.int(R.length) + ' artículos' + (R.length > LIM ? ' · se muestran los primeros ' + LIM + '; el Excel trae todos' : '');
+  }
+  function almExcel() {
+    if (!almSel || !window.XLSX) return;
+    const V = ALMV[almSel], F = almFilas(almSel), X = window.XLSX, wb = X.utils.book_new();
+    const meta = (document.querySelector('.tt-meta') || {}).textContent || '';
+    const fecha = (meta.match(/\d{2}-\d{2}-\d{4}/) || [''])[0];
+    const base = (x) => ({ 'Código': x.codigo, 'Descripción': x.descripcion, 'Familia': x.familia, 'Marca': x.linea,
+      ...Object.fromEntries((V.det || []).map((d) => [ALMV[d].nom.replace('Almacén ', ''), (x.det.find((y) => y.k === d) || {}).s || 0])),
+      'Stock': x.stock, 'Costo unitario US$': x.costo || 0, 'Valor US$': x.valor, 'Hallazgo': x.hallazgo === 'OK' ? '' : x.hallazgo });
+    const reg = (x) => ({ ...base(x), 'Stock contado': '', 'Costo correcto US$': '', 'Acción tomada': '', 'Responsable': '', 'Fecha': '', 'Resuelto (Sí/No)': '' });
+    const hoja = (nombre, filas, conReg) => {
+      const rows = filas.map(conReg ? reg : base);
+      const ws = X.utils.json_to_sheet(rows.length ? rows : [{ 'Código': 'Sin artículos en este grupo' }]);
+      const keys = Object.keys(rows[0] || { a: 1 });
+      ws['!cols'] = keys.map((k) => ({ wch: k === 'Descripción' ? 48 : k === 'Hallazgo' ? 40 : k === 'Acción tomada' ? 30 : Math.max(10, k.length + 2) }));
+      if (rows.length) ws['!autofilter'] = { ref: X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: keys.length - 1 } }) };
+      X.utils.book_append_sheet(wb, ws, nombre.slice(0, 31));
+    };
+    const grupos = ALM_SEG.filter(([id]) => id !== 'todos' && id !== 'stock').map(([id, lab, f]) => [id, lab, F.filter(f)]);
+    const res = [['Toyotengo · Inventario por almacén'], ['Detalle', V.nom], ['Corte', fecha], ['Generado', new Date().toLocaleString('es-VE')], [],
+      ['Indicador', 'Códigos', 'Unidades', 'Valor US$'],
+      ['Total del detalle', F.length, F.reduce((t, x) => t + x.stock, 0), Math.round(F.reduce((t, x) => t + x.valor, 0) * 100) / 100],
+      ['Con stock', F.filter((x) => x.stock > 0).length, F.filter((x) => x.stock > 0).reduce((t, x) => t + x.stock, 0), Math.round(F.filter((x) => x.stock > 0).reduce((t, x) => t + x.valor, 0) * 100) / 100],
+      ...grupos.map(([, lab, L]) => [lab, L.length, L.reduce((t, x) => t + x.stock, 0), Math.round(L.reduce((t, x) => t + x.valor, 0) * 100) / 100]), [],
+      ['Cómo regularizar: en cada hoja de hallazgos llene "Stock contado" o "Costo correcto", la acción tomada, el responsable y la fecha. Luego corrija en Profit y vuelva a subir los reportes al tablero.']];
+    const wr = X.utils.aoa_to_sheet(res); wr['!cols'] = [{ wch: 34 }, { wch: 34 }, { wch: 12 }, { wch: 14 }]; X.utils.book_append_sheet(wb, wr, 'Resumen');
+    hoja('Inventario', F.slice().sort((a, b) => b.valor - a.valor), false);
+    grupos.forEach(([id, lab, L]) => { if (L.length && id !== 'hz') hoja(lab.replace('≤', 'hasta').replace(/[\\/?*[\]:]/g, ''), L, true); });
+    const nom = { principal: 'Principal', tienda: 'Tienda', consignacion: 'Consignacion', transito: 'Transito', vender: 'Para_vender', total: 'Total' }[almSel];
+    X.writeFile(wb, 'Toyotengo_Inventario_' + nom + (fecha ? '_' + fecha : '') + '.xlsx');
+  }
+  document.getElementById('alm-cerrar').addEventListener('click', () => { almSel = null; almPintar(); });
+  document.getElementById('alm-xls').addEventListener('click', almExcel);
+  document.getElementById('alm-q').addEventListener('input', () => almPintar());
+
   const topState = { sort: 'valor', dir: -1 }, famState = { sort: 'valor', dir: -1 };
   const hzState = { sort: 'id', dir: 1 };
   const hzQ = document.getElementById('hz-q'), hzP = document.getElementById('hz-p');
@@ -1577,10 +1706,10 @@ window.TT = (() => {
         const A = dash.data('articulos').data || [], nn = (x) => Number(x) || 0;
         const fila = (nom, fs, fv) => ({ nom, cod: A.filter((r) => nn(fs(r)) > 0).length, uds: A.reduce((t, r) => t + nn(fs(r)), 0), val: A.reduce((t, r) => t + nn(fv(r)), 0), neg: A.filter((r) => nn(fs(r)) < 0).length });
         const W = [
-          { ...fila('Almacén Principal', (r) => r.st_principal, (r) => r.v_principal), c: 'var(--s1)', tag: 'para vender' },
-          { ...fila('Almacén Tienda', (r) => r.st_tienda, (r) => r.v_tienda), c: 'var(--s2)', tag: 'para vender' },
-          { ...fila('Consignación', (r) => r.st_consignacion, (r) => r.v_consignacion), c: 'var(--s3)', tag: 'para vender' },
-          { ...fila('Tránsito', (r) => r.transito, (r) => r.valor_transito), c: 'var(--s4)', tag: 'aún no se vende', tr: true },
+          { ...fila('Almacén Principal', (r) => r.st_principal, (r) => r.v_principal), c: 'var(--s1)', tag: 'para vender', k: 'principal' },
+          { ...fila('Almacén Tienda', (r) => r.st_tienda, (r) => r.v_tienda), c: 'var(--s2)', tag: 'para vender', k: 'tienda' },
+          { ...fila('Consignación', (r) => r.st_consignacion, (r) => r.v_consignacion), c: 'var(--s3)', tag: 'para vender', k: 'consignacion' },
+          { ...fila('Tránsito', (r) => r.transito, (r) => r.valor_transito), c: 'var(--s4)', tag: 'aún no se vende', tr: true, k: 'transito' },
         ];
         const V = fila('Para vender (Principal + Tienda + Consignación)', (r) => r.stock, (r) => r.valor), Tr = W[3];
         const Tot = { nom: 'Inventario total', cod: A.filter((r) => nn(r.stock) + nn(r.transito) > 0).length, uds: V.uds + Tr.uds, val: V.val + Tr.val, neg: A.filter((r) => [r.st_principal, r.st_tienda, r.st_consignacion, r.transito].some((x) => nn(x) < 0)).length };
@@ -1589,13 +1718,15 @@ window.TT = (() => {
         // ecuación: para vender + tránsito = total
         const ec = document.getElementById('alm-ec'); ec.replaceChildren();
         const caja = (t, v, s, cls) => { const d = mk('div', 't' + (cls ? ' ' + cls : '')); d.append(mk('small', null, t), mk('b', null, v), mk('span', null, s)); return d; };
+        const ck = (el, k) => { el.dataset.alm = k; el.title = 'Clic para ver los artículos y descargar el Excel'; el.addEventListener('click', () => almAbrir(k)); return el; };
         ec.append(caja('Para vender', fmt.usd0(V.val), fmt.pct(pc(V.val)) + ' · ' + fmt.num(V.uds) + ' uds. · ' + fmt.int(V.cod) + ' códigos'), mk('div', 'op', '+'),
           caja('En tránsito', fmt.usd0(Tr.val), fmt.pct(pc(Tr.val)) + ' · ' + fmt.num(Tr.uds) + ' uds. · ' + fmt.int(Tr.cod) + ' códigos'), mk('div', 'op', '='),
           caja('Inventario total a costo', fmt.usd0(Tot.val), fmt.num(Tot.uds) + ' uds. · ' + fmt.int(Tot.cod) + ' códigos con existencia', 'tot'));
+        [...ec.querySelectorAll('.t')].forEach((el, i) => ck(el, ['vender', 'transito', 'total'][i]));
         // barra de composición
         const bar = document.getElementById('alm-bar'); bar.replaceChildren();
         bar.setAttribute('aria-label', W.map((w) => w.nom + ' ' + fmt.pct(pc(w.val))).join(', '));
-        W.forEach((w) => { if (w.val <= 0) return; const d = mk('div', w.tr ? 'tr' : '', pc(w.val) >= 0.07 ? w.nom.replace('Almacén ', '') + ' ' + fmt.pct(pc(w.val)) : ''); d.style.flex = String(w.val); d.style.background = w.c; d.title = w.nom + ': ' + fmt.usd0(w.val) + ' (' + fmt.pct(pc(w.val)) + ')'; bar.appendChild(d); });
+        W.forEach((w) => { if (w.val <= 0) return; const d = mk('div', w.tr ? 'tr' : '', pc(w.val) >= 0.07 ? w.nom.replace('Almacén ', '') + ' ' + fmt.pct(pc(w.val)) : ''); d.style.flex = String(w.val); d.style.background = w.c; d.title = w.nom + ': ' + fmt.usd0(w.val) + ' (' + fmt.pct(pc(w.val)) + ') · clic para ver el detalle'; d.addEventListener('click', () => almAbrir(w.k)); bar.appendChild(d); });
         requestAnimationFrame(() => [...bar.children].forEach((d) => { if (d.scrollWidth > d.clientWidth + 1) d.textContent = ''; }));
         // una tarjeta por almacén
         const gr = document.getElementById('alm-grid'); gr.replaceChildren();
@@ -1605,8 +1736,9 @@ window.TT = (() => {
           const bpc = mk('div', 'pc'); const i = mk('i'); i.style.width = (pc(w.val) * 100).toFixed(1) + '%'; bpc.appendChild(i);
           const dl = mk('dl'); [['Del total', fmt.pct(pc(w.val))], ['Unidades', fmt.num(w.uds)], ['Códigos con stock', fmt.int(w.cod)], ['Costo promedio', w.uds > 0 ? fmt.usd2(w.val / w.uds) : '—']].forEach(([k, v]) => dl.append(mk('dt', null, k), mk('dd', null, v)));
           dl.append(mk('dt', null, 'Stock negativo'), mk('dd', w.neg ? 'neg' : null, w.neg ? fmt.int(w.neg) + ' códigos ⚠' : 'ninguno'));
-          c.append(h, mk('div', 'v', fmt.usd0(w.val)), bpc, dl); gr.appendChild(c);
+          c.append(h, mk('div', 'v', fmt.usd0(w.val)), bpc, dl, mk('div', 'ver', 'Ver artículos y Excel →')); ck(c, w.k); gr.appendChild(c);
         });
+        almPintar();
         // tabla detallada
         const tb = document.querySelector('#t-alm tbody'); tb.replaceChildren();
         [W[0], W[1], W[2], { ...V, b: 1 }, Tr, { ...Tot, b: 1 }].forEach((x) => {
@@ -2931,7 +3063,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const base = soloDatos(SERVER || {});
     LOTE.forEach((x) => { if (x.tipo !== 'alm') base[x.tipo] = x.filas; });
     const U = unirAlmacenes();
-    if (U) { base.articulos = U.art; base.hallazgos = U.hz; const c = $('c-corte').value || 'vista previa'; base.historico = [...base.historico.filter((h) => h.corte !== c), { corte: c, valor_total: U.tot.valor_total, articulos_con_stock: U.tot.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
+    if (U) { base.articulos = U.art; base.hallazgos = U.hz; const c = $('c-corte').value || 'vista previa'; const mt = document.querySelector('.tt-meta'); if (mt && /^\d{4}-/.test(c)) mt.textContent = 'Vista previa del corte al ' + c.split('-').reverse().join('-') + ': reportes de inventario a costo de Profit por almacén · cifras en USD a costo'; base.historico = [...base.historico.filter((h) => h.corte !== c), { corte: c, valor_total: U.tot.valor_total, articulos_con_stock: U.tot.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
     else if (LOTE.some((x) => x.tipo === 'articulos')) { const r = resumenDe(LOTE.find((x) => x.tipo === 'articulos')); base.historico = [...base.historico.filter((h) => h.corte !== r.corte), { corte: r.corte || 'vista previa', valor_total: r.valor_total, articulos_con_stock: r.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
     return base;
   };
