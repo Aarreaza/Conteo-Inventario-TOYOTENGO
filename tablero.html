@@ -444,6 +444,27 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
 @media (prefers-reduced-motion:no-preference){.tt-grow{animation:ttg var(--cds-dur-slow) var(--cds-ease-out)}@keyframes ttg{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}}
 
+.alm-ec{display:flex;flex-wrap:wrap;align-items:stretch;gap:.5rem;margin:.25rem 0 1rem}
+.alm-ec .t{flex:1 1 11rem;padding:.7rem .9rem;border-radius:10px;background:var(--color-bg-subtle,rgba(0,0,0,.03));border:1px solid var(--color-border-line)}
+.alm-ec .t small{display:block;font-size:.78rem;color:var(--color-fg-muted)}
+.alm-ec .t b{display:block;font-family:var(--font-anthropic-serif);font-weight:400;font-size:1.55rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.alm-ec .t span{font-size:.8rem;color:var(--color-fg-muted)}
+.alm-ec .op{align-self:center;font-size:1.4rem;color:var(--color-fg-muted);padding:0 .1rem}
+.alm-ec .t.tot{border:2px solid var(--tt-ink,#2b2f36)}
+.alm-bar{display:flex;height:2.4rem;border-radius:8px;overflow:hidden;margin-bottom:.4rem;background:var(--color-border-line)}
+.alm-bar>div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;min-width:3px;cursor:default}
+.alm-bar>div.tr{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.28) 0 6px,transparent 6px 12px)}
+.alm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:.75rem;margin-top:1rem}
+.alm-c{border:1px solid var(--color-border-line);border-left:5px solid var(--c);border-radius:10px;padding:.8rem 1rem;display:flex;flex-direction:column;gap:.3rem;background:var(--color-panel)}
+.alm-c h4{margin:0;font-size:.95rem;font-weight:600;display:flex;justify-content:space-between;gap:.5rem;align-items:center}
+.alm-c h4 em{font-style:normal;font-size:.72rem;font-weight:600;padding:.1rem .45rem;border-radius:99px;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--color-fg)}
+.alm-c .v{font-family:var(--font-anthropic-serif);font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1.15}
+.alm-c .pc{height:6px;border-radius:3px;background:var(--color-border-line);overflow:hidden}.alm-c .pc i{display:block;height:100%;background:var(--c)}
+.alm-c dl{display:grid;grid-template-columns:1fr auto;gap:.15rem .75rem;margin:.3rem 0 0;font-size:.82rem}
+.alm-c dt{color:var(--color-fg-muted)}.alm-c dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.alm-c .neg{color:var(--color-bad);font-weight:600}
+.alm-det{margin-top:1rem}.alm-det summary{cursor:pointer;font-size:.85rem;color:var(--color-fg-muted)}
+
 </style>
 </head>
 <body>
@@ -848,22 +869,26 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <section id="resumen" class="tt-page">
     <div style="display:flex;flex-direction:column;gap:var(--cds-gap-md)">
       <div class="tt-tiles" id="kpi-tiles">
-        <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_inventario">—</span><span class="s">para vender <span data-source="kpis" data-field="valor_total">—</span> (Principal + Tienda + Consignación) · en tránsito <span data-source="kpis" data-field="valor_transito">—</span></span></div>
+        <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_inventario">—</span><span class="s">para vender <span data-source="kpis" data-field="valor_total">—</span> · en tránsito <span data-source="kpis" data-field="valor_transito">—</span></span></div>
         <div class="tt-tile"><span class="k">Valor a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">ganancia potencial <span data-source="kpis_precio" data-field="margen_usd">—</span> (<span data-source="kpis_precio" data-field="margen_pct">—</span>) · solo el <span data-source="kpis_precio" data-field="cobertura">—</span> del inventario tiene precio</span></div>
         <div class="tt-tile"><span class="k">Artículos con existencia</span><span class="v dash-skeleton" data-source="kpis" data-field="con_stock">—</span><span class="s">de <span data-source="kpis" data-field="articulos_total">—</span> códigos en el maestro</span></div>
         <div class="tt-tile"><span class="k">Unidades para vender</span><span class="v dash-skeleton" data-source="kpis" data-field="unidades">—</span><span class="s">costo promedio por unidad <span data-source="kpis" data-field="costo_prom">—</span></span></div>
-        <div class="tt-tile"><span class="k">Mercancía en tránsito</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_transito">—</span><span class="s"><span data-source="kpis" data-field="unidades_transito">—</span> unidades en <span data-source="kpis" data-field="art_transito">—</span> códigos · todavía no se puede vender, suma al valor total</span></div>
+        <div class="tt-tile"><span class="k">Mercancía en tránsito</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_transito">—</span><span class="s"><span data-source="kpis" data-field="unidades_transito">—</span> unidades en <span data-source="kpis" data-field="art_transito">—</span> códigos · aún no se vende</span></div>
         <div class="tt-tile"><span class="k">Hallazgos por resolver</span><span class="v dash-skeleton" data-source="kpis" data-field="hallazgos_alta">—</span><span class="s">de prioridad alta · <span data-source="kpis" data-field="hallazgos_total">—</span> en total</span><button class="tt-btn tt-goreg" hidden>Ir a regularizar →</button></div>
       </div>
       <div class="tt-card" id="card-alm" hidden>
-        <h3>Inventario por almacén</h3>
-        <p class="note">Según los 4 reportes de inventario a costo de Profit. Para vender = Principal + Tienda + Consignación; el tránsito todavía no se puede vender pero suma al valor total.</p>
+        <div class="tt-cardhead"><h3>¿Dónde está el inventario?</h3></div>
+        <p class="note">Composición del valor a costo por almacén, según los reportes de Profit. Lo que está en Principal, Tienda y Consignación se puede vender; el tránsito todavía no, pero suma al total.</p>
+        <div class="alm-ec" id="alm-ec"></div>
+        <div class="alm-bar" id="alm-bar" role="img"></div>
+        <div class="alm-grid" id="alm-grid"></div>
+        <details class="alm-det"><summary>Ver tabla detallada</summary>
         <div class="tt-scroll" style="max-height:none">
           <table class="tt-t" id="t-alm">
             <thead><tr><th>Almacén</th><th class="n">Códigos con stock</th><th class="n">Unidades</th><th class="n">Valor a costo</th><th class="n">% del total</th><th class="n">Negativos</th></tr></thead>
             <tbody></tbody>
           </table>
-        </div>
+        </div></details>
       </div>
       <div class="tt-card tt-alerta" id="card-repo" hidden>
         <div class="tt-cardhead"><h3>⚠ Alerta de reposición</h3><button class="tt-btn tt-dlrep" hidden>Descargar lista de compras (Excel)</button></div>
@@ -1550,14 +1575,43 @@ window.TT = (() => {
       const ca = document.getElementById('card-alm'); ca.hidden = !r0.hay_alm;
       if (r0.hay_alm) {
         const A = dash.data('articulos').data || [], nn = (x) => Number(x) || 0;
-        const fila = (nom, fs, fv, cls) => ({ nom, cls, cod: A.filter((r) => nn(fs(r)) > 0).length, uds: A.reduce((t, r) => t + Math.max(nn(fs(r)), 0) + Math.min(nn(fs(r)), 0), 0), val: A.reduce((t, r) => t + nn(fv(r)), 0), neg: A.filter((r) => nn(fs(r)) < 0).length });
-        const P = fila('Almacén Principal', (r) => r.st_principal, (r) => r.v_principal), Ti = fila('Almacén Tienda', (r) => r.st_tienda, (r) => r.v_tienda), C = fila('Consignación', (r) => r.st_consignacion, (r) => r.v_consignacion);
-        const V = fila('Para vender (Principal + Tienda + Consignación)', (r) => r.stock, (r) => r.valor, 'sub'), Tr = fila('Tránsito', (r) => r.transito, (r) => r.valor_transito);
-        const Tot = { nom: 'Inventario total', cls: 'tot', cod: A.filter((r) => nn(r.stock) + nn(r.transito) > 0).length, uds: V.uds + Tr.uds, val: V.val + Tr.val, neg: A.filter((r) => [r.st_principal, r.st_tienda, r.st_consignacion, r.transito].some((x) => nn(x) < 0)).length };
+        const fila = (nom, fs, fv) => ({ nom, cod: A.filter((r) => nn(fs(r)) > 0).length, uds: A.reduce((t, r) => t + nn(fs(r)), 0), val: A.reduce((t, r) => t + nn(fv(r)), 0), neg: A.filter((r) => nn(fs(r)) < 0).length });
+        const W = [
+          { ...fila('Almacén Principal', (r) => r.st_principal, (r) => r.v_principal), c: 'var(--s1)', tag: 'para vender' },
+          { ...fila('Almacén Tienda', (r) => r.st_tienda, (r) => r.v_tienda), c: 'var(--s2)', tag: 'para vender' },
+          { ...fila('Consignación', (r) => r.st_consignacion, (r) => r.v_consignacion), c: 'var(--s3)', tag: 'para vender' },
+          { ...fila('Tránsito', (r) => r.transito, (r) => r.valor_transito), c: 'var(--s4)', tag: 'aún no se vende', tr: true },
+        ];
+        const V = fila('Para vender (Principal + Tienda + Consignación)', (r) => r.stock, (r) => r.valor), Tr = W[3];
+        const Tot = { nom: 'Inventario total', cod: A.filter((r) => nn(r.stock) + nn(r.transito) > 0).length, uds: V.uds + Tr.uds, val: V.val + Tr.val, neg: A.filter((r) => [r.st_principal, r.st_tienda, r.st_consignacion, r.transito].some((x) => nn(x) < 0)).length };
+        const pc = (v) => (Tot.val ? v / Tot.val : 0);
+        const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+        // ecuación: para vender + tránsito = total
+        const ec = document.getElementById('alm-ec'); ec.replaceChildren();
+        const caja = (t, v, s, cls) => { const d = mk('div', 't' + (cls ? ' ' + cls : '')); d.append(mk('small', null, t), mk('b', null, v), mk('span', null, s)); return d; };
+        ec.append(caja('Para vender', fmt.usd0(V.val), fmt.pct(pc(V.val)) + ' · ' + fmt.num(V.uds) + ' uds. · ' + fmt.int(V.cod) + ' códigos'), mk('div', 'op', '+'),
+          caja('En tránsito', fmt.usd0(Tr.val), fmt.pct(pc(Tr.val)) + ' · ' + fmt.num(Tr.uds) + ' uds. · ' + fmt.int(Tr.cod) + ' códigos'), mk('div', 'op', '='),
+          caja('Inventario total a costo', fmt.usd0(Tot.val), fmt.num(Tot.uds) + ' uds. · ' + fmt.int(Tot.cod) + ' códigos con existencia', 'tot'));
+        // barra de composición
+        const bar = document.getElementById('alm-bar'); bar.replaceChildren();
+        bar.setAttribute('aria-label', W.map((w) => w.nom + ' ' + fmt.pct(pc(w.val))).join(', '));
+        W.forEach((w) => { if (w.val <= 0) return; const d = mk('div', w.tr ? 'tr' : '', pc(w.val) >= 0.07 ? w.nom.replace('Almacén ', '') + ' ' + fmt.pct(pc(w.val)) : ''); d.style.flex = String(w.val); d.style.background = w.c; d.title = w.nom + ': ' + fmt.usd0(w.val) + ' (' + fmt.pct(pc(w.val)) + ')'; bar.appendChild(d); });
+        requestAnimationFrame(() => [...bar.children].forEach((d) => { if (d.scrollWidth > d.clientWidth + 1) d.textContent = ''; }));
+        // una tarjeta por almacén
+        const gr = document.getElementById('alm-grid'); gr.replaceChildren();
+        W.forEach((w) => {
+          const c = mk('div', 'alm-c'); c.style.setProperty('--c', w.c);
+          const h = mk('h4', null, w.nom); h.appendChild(mk('em', null, w.tag));
+          const bpc = mk('div', 'pc'); const i = mk('i'); i.style.width = (pc(w.val) * 100).toFixed(1) + '%'; bpc.appendChild(i);
+          const dl = mk('dl'); [['Del total', fmt.pct(pc(w.val))], ['Unidades', fmt.num(w.uds)], ['Códigos con stock', fmt.int(w.cod)], ['Costo promedio', w.uds > 0 ? fmt.usd2(w.val / w.uds) : '—']].forEach(([k, v]) => dl.append(mk('dt', null, k), mk('dd', null, v)));
+          dl.append(mk('dt', null, 'Stock negativo'), mk('dd', w.neg ? 'neg' : null, w.neg ? fmt.int(w.neg) + ' códigos ⚠' : 'ninguno'));
+          c.append(h, mk('div', 'v', fmt.usd0(w.val)), bpc, dl); gr.appendChild(c);
+        });
+        // tabla detallada
         const tb = document.querySelector('#t-alm tbody'); tb.replaceChildren();
-        [P, Ti, C, V, Tr, Tot].forEach((x) => {
-          const trr = document.createElement('tr'); if (x.cls) trr.style.fontWeight = '600';
-          [[x.nom, ''], [fmt.int(x.cod), 'n'], [fmt.num(x.uds), 'n'], [fmt.usd0(x.val), 'n'], [fmt.pct(Tot.val ? x.val / Tot.val : 0), 'n'], [x.neg ? fmt.int(x.neg) : '—', 'n']].forEach(([t, c]) => { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; trr.appendChild(td); });
+        [W[0], W[1], W[2], { ...V, b: 1 }, Tr, { ...Tot, b: 1 }].forEach((x) => {
+          const trr = document.createElement('tr'); if (x.b) trr.style.fontWeight = '600';
+          [[x.nom, ''], [fmt.int(x.cod), 'n'], [fmt.num(x.uds), 'n'], [fmt.usd0(x.val), 'n'], [fmt.pct(pc(x.val)), 'n'], [x.neg ? fmt.int(x.neg) : '—', 'n']].forEach(([t, cl]) => { const td = document.createElement('td'); td.textContent = t; if (cl) td.className = cl; trr.appendChild(td); });
           tb.appendChild(trr);
         });
       }
