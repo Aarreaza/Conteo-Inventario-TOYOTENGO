@@ -315,6 +315,17 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 
 .mlx-arch{margin:.75rem 0}.mlx-arch h4{margin:0 0 .3rem}.mla-pasos{padding-left:1.2rem;margin:.5rem 0}.mla-pasos li{margin:.6rem 0;line-height:1.45}.mla-b{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.4rem;align-items:center}.mla-n{display:flex;align-items:center;gap:.35rem;font-size:.85rem}.mla-n input{width:5rem}
 
+.sh-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.6rem}
+.sh-slot{display:flex;flex-direction:column;gap:.2rem;padding:.75rem .85rem;border:1.5px dashed var(--color-border-line);border-radius:10px;cursor:pointer;background:var(--color-panel);transition:border-color .15s,background .15s}
+.sh-slot:hover,.sh-slot.over{border-color:var(--color-bad)}
+.sh-slot b{font-size:.95rem}.sh-slot small{opacity:.7;font-size:.75rem}
+.sh-slot .st{font-size:.8rem;margin-top:.25rem;word-break:break-all;opacity:.8}
+.sh-slot.ok{border-style:solid;border-color:var(--color-ok);background:color-mix(in srgb,var(--color-ok) 8%,transparent)}
+.sh-slot.ok .st{opacity:1;color:var(--color-ok);font-weight:600}
+.sh-slot.pr{border-color:color-mix(in srgb,var(--color-bad) 45%,transparent)}
+.sh-file.warn{border-left:3px solid var(--color-warn)}.sh-file.tot{font-weight:500;background:color-mix(in srgb,currentColor 5%,transparent)}
+.sh-file select{margin-left:.5rem}
+
 /* ---- tablero ---- */
 
 .tt-wrap{display:flex;flex-direction:column;gap:var(--cds-gap-lg);font-family:var(--font-anthropic-sans)}
@@ -711,10 +722,17 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <!-- CARGAR -->
   <section class="sh-view" id="v-cargar" hidden>
     <h2 class="sh-h2">Cargar datos</h2>
-    <p class="sh-sub">Suba el Excel de conciliación (hojas "Conciliación" y "Hallazgos") y la lista de precios de venta (.xls o .xlsx). El tablero reconoce cada archivo por sus columnas. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
+    <p class="sh-sub">Mientras no exista la conexión con Profit, el inventario se carga con los <b>4 reportes de inventario a costo</b> que entrega Profit, uno por almacén (.xls), y aparte la <b>lista de precios de venta</b>. Use una casilla por archivo, o arrastre todos juntos al recuadro: el tablero reconoce el almacén por el nombre del archivo (PRINCIPAL, TIENDA, TRANSITO, CONSIGNACION). Stock para vender = Principal + Tienda + Consignación; el tránsito se muestra aparte y suma al valor total. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:900px">
+      <div class="sh-slots" id="c-slots">
+        <label class="sh-slot" data-alm="principal"><b>Almacén Principal</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot" data-alm="tienda"><b>Almacén Tienda</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot" data-alm="consignacion"><b>Consignación</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot" data-alm="transito"><b>Tránsito</b><small>Se muestra aparte · suma al total</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot pr" data-alm="precios"><b>Precios de venta</b><small>Lista de precios · Profit</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
+      </div>
       <div class="sh-drop" id="c-drop">
-        <p style="margin:0 0 .5rem">Arrastre los archivos aquí o</p>
+        <p style="margin:0 0 .5rem">O arrastre aquí todos los archivos juntos, o</p>
         <input type="file" id="c-file" accept=".xls,.xlsx" multiple>
       </div>
       <div class="sh-row">
@@ -810,12 +828,22 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <section id="resumen" class="tt-page">
     <div style="display:flex;flex-direction:column;gap:var(--cds-gap-md)">
       <div class="tt-tiles" id="kpi-tiles">
-        <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_total">—</span><span class="s">suma de stock × costo unitario</span></div>
+        <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_inventario">—</span><span class="s">para vender <span data-source="kpis" data-field="valor_total">—</span> (Principal + Tienda + Consignación) · en tránsito <span data-source="kpis" data-field="valor_transito">—</span></span></div>
         <div class="tt-tile"><span class="k">Valor a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">ganancia potencial <span data-source="kpis_precio" data-field="margen_usd">—</span> (<span data-source="kpis_precio" data-field="margen_pct">—</span>) · solo el <span data-source="kpis_precio" data-field="cobertura">—</span> del inventario tiene precio</span></div>
         <div class="tt-tile"><span class="k">Artículos con existencia</span><span class="v dash-skeleton" data-source="kpis" data-field="con_stock">—</span><span class="s">de <span data-source="kpis" data-field="articulos_total">—</span> códigos en el maestro</span></div>
-        <div class="tt-tile"><span class="k">Unidades en almacén</span><span class="v dash-skeleton" data-source="kpis" data-field="unidades">—</span><span class="s">costo promedio por unidad <span data-source="kpis" data-field="costo_prom">—</span></span></div>
-        <div class="tt-tile"><span class="k">Comprometido con clientes</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_comprometido">—</span><span class="s"><span data-source="kpis" data-field="pct_comprometido">—</span> del valor · libre para venta <span data-source="kpis" data-field="valor_disponible">—</span></span></div>
+        <div class="tt-tile"><span class="k">Unidades para vender</span><span class="v dash-skeleton" data-source="kpis" data-field="unidades">—</span><span class="s">costo promedio por unidad <span data-source="kpis" data-field="costo_prom">—</span></span></div>
+        <div class="tt-tile"><span class="k">Mercancía en tránsito</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_transito">—</span><span class="s"><span data-source="kpis" data-field="unidades_transito">—</span> unidades en <span data-source="kpis" data-field="art_transito">—</span> códigos · todavía no se puede vender, suma al valor total</span></div>
         <div class="tt-tile"><span class="k">Hallazgos por resolver</span><span class="v dash-skeleton" data-source="kpis" data-field="hallazgos_alta">—</span><span class="s">de prioridad alta · <span data-source="kpis" data-field="hallazgos_total">—</span> en total</span><button class="tt-btn tt-goreg" hidden>Ir a regularizar →</button></div>
+      </div>
+      <div class="tt-card" id="card-alm" hidden>
+        <h3>Inventario por almacén</h3>
+        <p class="note">Según los 4 reportes de inventario a costo de Profit. Para vender = Principal + Tienda + Consignación; el tránsito todavía no se puede vender pero suma al valor total.</p>
+        <div class="tt-scroll" style="max-height:none">
+          <table class="tt-t" id="t-alm">
+            <thead><tr><th>Almacén</th><th class="n">Códigos con stock</th><th class="n">Unidades</th><th class="n">Valor a costo</th><th class="n">% del total</th><th class="n">Negativos</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
       <div class="tt-card tt-alerta" id="card-repo" hidden>
         <div class="tt-cardhead"><h3>⚠ Alerta de reposición</h3><button class="tt-btn tt-dlrep" hidden>Descargar lista de compras (Excel)</button></div>
@@ -1034,9 +1062,8 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
             <th data-field="codigo"><button>Código</button></th>
             <th data-field="descripcion"><button>Descripción</button></th>
             <th data-field="familia" class="tt-hide-n"><button>Familia</button></th>
-            <th data-field="stock" class="n"><button>Stock</button></th>
-            <th data-field="comprometido" class="n tt-hide-n"><button>Compr.</button></th>
-            <th data-field="disponible" class="n tt-hide-n"><button>Disp.</button></th>
+            <th data-field="stock" class="n" title="Para vender: Principal + Tienda + Consignación"><button>Stock</button></th>
+            <th data-field="por_llegar" class="n tt-hide-n" title="Mercancía en tránsito"><button>Tránsito</button></th>
             <th data-field="costo" class="n tt-hide-n"><button>Costo</button></th>
             <th data-field="valor" class="n"><button>Valor</button></th>
             <th data-field="precio" data-source="margen_art" class="n tt-hide-n"><button>Precio</button></th>
@@ -1248,6 +1275,7 @@ dash.calc('kpis', {
     const neg = articulos.filter((r) => r.estado === 'Negativo');
     const valor_total = sum(articulos, 'valor');
     const valor_comprometido = sum(articulos, 'valor_comprometido');
+    const valor_transito = sum(articulos, 'valor_transito'), tr = articulos.filter((r) => n(r.transito) !== 0);
     const unidades = sum(con, 'stock');
     const alta = hallazgos.filter((h) => h.prioridad === '1-ALTA').length;
     const fams = {};
@@ -1258,6 +1286,7 @@ dash.calc('kpis', {
     for (let i = 0; i < vals.length; i++) { acc += vals[i]; if (acc >= 0.8 * vtot) { k80 = i + 1; break; } }
     return [{
       valor_total, valor_comprometido, valor_disponible: valor_total - valor_comprometido,
+      valor_transito, valor_inventario: valor_total + valor_transito, unidades_transito: sum(tr, 'transito'), art_transito: tr.filter((r) => n(r.transito) > 0).length, hay_alm: articulos.some((r) => r.alm),
       pct_comprometido: valor_total ? valor_comprometido / valor_total : 0,
       articulos_total: articulos.length, con_stock: con.length, negativos: neg.length,
       valor_negativo: sum(neg, 'valor'), unidades, comprometido_u: sum(con, 'comprometido'),
@@ -1471,7 +1500,7 @@ window.TT = (() => {
 (() => {
   const { fmt, fail, hbar, table, chip, tip, measure } = window.TT;
   const K = {
-    valor_total: fmt.usd0, valor_comprometido: fmt.usd0, valor_disponible: fmt.usd0, valor_negativo: fmt.usd0,
+    valor_total: fmt.usd0, valor_inventario: fmt.usd0, valor_transito: fmt.usd0, unidades_transito: fmt.num, art_transito: fmt.int, valor_comprometido: fmt.usd0, valor_disponible: fmt.usd0, valor_negativo: fmt.usd0,
     pct_comprometido: fmt.pct, articulos_total: fmt.int, con_stock: fmt.int, negativos: fmt.int, unidades: fmt.num,
     comprometido_u: fmt.num, costo_prom: fmt.usd2, sin_costo: fmt.int, hallazgos_total: fmt.int, hallazgos_alta: fmt.int,
     hallazgos_media: fmt.int, resueltos: fmt.int,
@@ -1487,11 +1516,32 @@ window.TT = (() => {
       el.classList.remove('dash-skeleton');
       const r = k.data[0]; const f = el.dataset.field;
       if (el.id === 'takeaway') {
-        el.textContent = `El inventario vale ${fmt.usd0(r.valor_total)} a costo en ${fmt.int(r.con_stock)} artículos con existencia. ` +
+        el.textContent = (r.hay_alm ? `El inventario vale ${fmt.usd0(r.valor_inventario)} a costo: ${fmt.usd0(r.valor_total)} para vender en ${fmt.int(r.con_stock)} artículos con existencia (Principal + Tienda + Consignación) y ${fmt.usd0(r.valor_transito)} en tránsito. `
+          : `El inventario vale ${fmt.usd0(r.valor_total)} a costo en ${fmt.int(r.con_stock)} artículos con existencia. `) +
           `${fmt.int(r.articulos_80)} artículos (${fmt.pct(r.articulos_80_pct)}) concentran el 80 % del valor y la familia con más dinero es ${r.familia_top} (${fmt.pct(r.familia_top_pct)}). ` +
           `Hay ${fmt.int(r.hallazgos_alta)} hallazgos de prioridad alta que conviene resolver en la próxima toma física.`;
       } else el.textContent = K[f] ? K[f](r[f]) : r[f];
     });
+
+    // por almacén + tarjeta comprometido (solo si hay datos de comprometido)
+    if (k.status === 'ok') {
+      const r0 = k.data[0];
+      const cu = document.getElementById('card-uso'); if (cu) cu.hidden = !(r0.valor_comprometido > 0);
+      const ca = document.getElementById('card-alm'); ca.hidden = !r0.hay_alm;
+      if (r0.hay_alm) {
+        const A = dash.data('articulos').data || [], nn = (x) => Number(x) || 0;
+        const fila = (nom, fs, fv, cls) => ({ nom, cls, cod: A.filter((r) => nn(fs(r)) > 0).length, uds: A.reduce((t, r) => t + Math.max(nn(fs(r)), 0) + Math.min(nn(fs(r)), 0), 0), val: A.reduce((t, r) => t + nn(fv(r)), 0), neg: A.filter((r) => nn(fs(r)) < 0).length });
+        const P = fila('Almacén Principal', (r) => r.st_principal, (r) => r.v_principal), Ti = fila('Almacén Tienda', (r) => r.st_tienda, (r) => r.v_tienda), C = fila('Consignación', (r) => r.st_consignacion, (r) => r.v_consignacion);
+        const V = fila('Para vender (Principal + Tienda + Consignación)', (r) => r.stock, (r) => r.valor, 'sub'), Tr = fila('Tránsito', (r) => r.transito, (r) => r.valor_transito);
+        const Tot = { nom: 'Inventario total', cls: 'tot', cod: A.filter((r) => nn(r.stock) + nn(r.transito) > 0).length, uds: V.uds + Tr.uds, val: V.val + Tr.val, neg: A.filter((r) => [r.st_principal, r.st_tienda, r.st_consignacion, r.transito].some((x) => nn(x) < 0)).length };
+        const tb = document.querySelector('#t-alm tbody'); tb.replaceChildren();
+        [P, Ti, C, V, Tr, Tot].forEach((x) => {
+          const trr = document.createElement('tr'); if (x.cls) trr.style.fontWeight = '600';
+          [[x.nom, ''], [fmt.int(x.cod), 'n'], [fmt.num(x.uds), 'n'], [fmt.usd0(x.val), 'n'], [fmt.pct(Tot.val ? x.val / Tot.val : 0), 'n'], [x.neg ? fmt.int(x.neg) : '—', 'n']].forEach(([t, c]) => { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; trr.appendChild(td); });
+          tb.appendChild(trr);
+        });
+      }
+    }
 
     // familia bars
     const pf = dash.data('por_familia');
@@ -1655,7 +1705,7 @@ window.TT = (() => {
     const rows = a.data.map((r) => ({ ...r, precio: M[r.fila] ? M[r.fila].precio : null, margen: M[r.fila] ? M[r.fila].margen : null })).filter((r) => (!sf.value || r.familia === sf.value) && (!sl.value || r.linea === sl.value) && (!se.value || r.estado === se.value)
       && (!t || (r.codigo + ' ' + r.descripcion).toLowerCase().includes(t)));
     const n = table(document.getElementById('t-art'), rows, {
-      foto: { render: (td, r) => window.TT_FOTO && window.TT_FOTO.celda(td, r.codigo, r.descripcion, draw) }, codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num }, comprometido: { num: true, fmt: fmt.num }, disponible: { num: true, fmt: fmt.num },
+      foto: { render: (td, r) => window.TT_FOTO && window.TT_FOTO.celda(td, r.codigo, r.descripcion, draw) }, codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num }, comprometido: { num: true, fmt: fmt.num }, disponible: { num: true, fmt: fmt.num }, por_llegar: { num: true, fmt: (v) => (v ? fmt.num(v) : '') },
       costo: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) }, valor: { num: true, fmt: fmt.usd2 },
       precio: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) }, margen: { num: true, fmt: (v) => (v == null ? '—' : fmt.pct(v)) },
       hallazgo: { render: (td, r) => chip(td, r.hallazgo, r.hallazgo === 'OK' ? 'ok' : (/NEGATIVO|DUPLICADO|VALOR SIN/.test(r.hallazgo) ? 'bad' : 'warn')) },
@@ -2339,6 +2389,21 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   // ---------- datos ----------
   const num = (v) => (v == null ? 0 : Number(v) || 0);
   const r2 = (v) => Math.round(num(v) * 100) / 100;
+  // Una línea del corte (como está en la base) → artículo del tablero.
+  // Con los 4 reportes por almacén: stock = Principal + Tienda + Consignación (para vender); el tránsito va aparte.
+  function artDeLinea(l) {
+    const st = l.stock_valor != null ? num(l.stock_valor) : num(l.stock_stocks);
+    const co = l.costo == null ? null : Math.round(num(l.costo) * 10000) / 10000;
+    const alm = l.stock_principal != null || l.stock_tienda != null || l.stock_transito != null || l.stock_consignacion != null;
+    const a = { fila: l.fila, codigo: String(l.codigo), descripcion: l.descripcion || '', familia: l.familia || 'Otros', linea: l.marca || 'Sin modelo en descripción',
+      estado: st < 0 ? 'Negativo' : st > 0 ? 'Con stock' : 'Sin stock', stock: st, comprometido: num(l.comprometido), disponible: alm ? st : num(l.disponible), por_llegar: alm ? num(l.stock_transito) : num(l.por_llegar),
+      costo: co, valor: r2(l.valor_calculado), valor_comprometido: r2(num(l.comprometido) * (co || 0)),
+      en_rep_stocks: l.en_rep_stocks === false ? 'NO' : 'SÍ', en_rep_valor: l.en_rep_valor === false ? 'NO' : 'SÍ', hallazgo: l.hallazgo || 'OK' };
+    if (alm) Object.assign(a, { alm: true, transito: num(l.stock_transito), valor_transito: r2(l.valor_transito),
+      st_principal: num(l.stock_principal), st_tienda: num(l.stock_tienda), st_consignacion: num(l.stock_consignacion),
+      v_principal: r2(l.valor_principal), v_tienda: r2(l.valor_tienda), v_consignacion: r2(l.valor_consignacion) });
+    return a;
+  }
   async function leerDatos() {
     const ult = ok(await sb.from('v_ultimo_corte').select('*').eq('empresa_id', EMPRESA).limit(1));
     const corte = ult[0] || null;
@@ -2355,14 +2420,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const SEG = {}; (seg || []).forEach((x) => { SEG[x.clave] = x; });
     const out = {
       corte, lista, seg: SEG, segOk: seg !== null,
-      articulos: lineas.map((l) => {
-        const st = l.stock_valor != null ? num(l.stock_valor) : num(l.stock_stocks);
-        const co = l.costo == null ? null : Math.round(num(l.costo) * 10000) / 10000;
-        return { fila: l.fila, codigo: String(l.codigo), descripcion: l.descripcion || '', familia: l.familia || 'Otros', linea: l.marca || 'Sin modelo en descripción',
-          estado: st < 0 ? 'Negativo' : st > 0 ? 'Con stock' : 'Sin stock', stock: st, comprometido: num(l.comprometido), disponible: num(l.disponible), por_llegar: num(l.por_llegar),
-          costo: co, valor: r2(l.valor_calculado), valor_comprometido: r2(num(l.comprometido) * (co || 0)),
-          en_rep_stocks: l.en_rep_stocks ? 'SÍ' : 'NO', en_rep_valor: l.en_rep_valor ? 'SÍ' : 'NO', hallazgo: l.hallazgo || 'OK' };
-      }),
+      articulos: lineas.map(artDeLinea),
       hallazgos: hz.map((h, i) => { const sg = SEG['H-' + h.id]; return { id: i + 1, db_id: h.id, prioridad: h.prioridad, tipo: h.tipo, codigo: String(h.codigo), descripcion: h.descripcion || '', stock: num(h.stock), valor: r2(h.valor),
         detalle: h.detalle || '', accion: h.accion || '', responsable: (sg ? sg.responsable : h.responsable) || '', resuelto: (sg ? sg.resuelto : h.resuelto) ? 'Sí' : '', fecha: (sg ? sg.fecha : h.resuelto_en) || '' }; }),
       precios: pr.map((p, i) => ({ linea_lista: i + 1, codigo: String(p.codigo), descripcion: p.descripcion || '', modelo: p.modelo || '', precio_1: num(p.precio_1), precio_2: num(p.precio_2) })),
@@ -2627,27 +2685,99 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     return null;
   }
 
+  // ---------- los 4 reportes de inventario de Profit (uno por almacén) ----------
+  const ALM = [['principal', 'Almacén Principal'], ['tienda', 'Almacén Tienda'], ['transito', 'Tránsito'], ['consignacion', 'Consignación']];
+  const ALMN = Object.fromEntries(ALM);
+  const VENDE = ['principal', 'tienda', 'consignacion'];   // lo que se puede vender
+  const almDeNombre = (n) => { const x = quitarAcentos(n); return /consig/.test(x) ? 'consignacion' : /transit/.test(x) ? 'transito' : /tienda/.test(x) ? 'tienda' : /principal|ppal/.test(x) ? 'principal' : null; };
+  function leerAlmacen(wb) {
+    for (const n of wb.SheetNames) {
+      const t = filasConCabecera(wb.Sheets[n], ['articulo', 'descripcion', 'stock actual', 'costo', 'valor total']);
+      if (!t) continue;
+      const j = (k) => t.cab.indexOf(k); const M = {}; let total = null, dup = 0;
+      t.filas.forEach((r) => {
+        const cod = String(r[j('articulo')] ?? '').trim();
+        const it = r.findIndex((v) => /^total\s*:?$/i.test(String(v).trim()));
+        if (it >= 0) { const ns = r.slice(it + 1).filter((v) => v !== '' && !isNaN(N(v))).map(N); if (ns.length >= 2) total = { unidades: ns[0], valor: ns[1] }; return; }
+        if (!cod) return;
+        const f = { codigo: cod, descripcion: String(r[j('descripcion')] || '').trim(), stock: N(r[j('stock actual')]), costo: N(r[j('costo')]), valor: N(r[j('valor total')]) };
+        if (M[cod]) { dup++; M[cod].stock += f.stock; M[cod].valor += f.valor; if (!M[cod].costo) M[cod].costo = f.costo; } else M[cod] = f;
+      });
+      const filas = Object.values(M);
+      return { filas, total, dup, unidades: filas.reduce((a, f) => a + f.stock, 0), valor: filas.reduce((a, f) => a + f.valor, 0) };
+    }
+    return null;
+  }
+  const r4 = (v) => Math.round(v * 10000) / 10000;
+  // Une los reportes por código: líneas listas para la base + hallazgos automáticos + totales
+  function unirAlmacenes() {
+    const xs = LOTE.filter((l) => l.tipo === 'alm' && l.alm);
+    if (!xs.length) return null;
+    const A = {};
+    xs.forEach((x) => x.filas.forEach((f) => {
+      const a = A[f.codigo] || (A[f.codigo] = { codigo: f.codigo, descripcion: f.descripcion, s: { principal: 0, tienda: 0, transito: 0, consignacion: 0 }, v: { principal: 0, tienda: 0, transito: 0, consignacion: 0 }, c: {} });
+      a.s[x.alm] += f.stock; a.v[x.alm] += f.valor; if (f.costo) a.c[x.alm] = f.costo; if (!a.descripcion) a.descripcion = f.descripcion;
+    }));
+    const lineas = [], hz = [];
+    const H = (prioridad, tipo, a, stock, valor, detalle, accion) => hz.push({ id: hz.length + 1, prioridad, tipo, codigo: a.codigo, descripcion: a.descripcion, stock: Math.round(stock * 1000) / 1000, valor: Math.round(valor * 100) / 100, detalle, accion, responsable: '', resuelto: '', fecha: '' });
+    Object.values(A).sort((p, q) => p.codigo.localeCompare(q.codigo, 'es')).forEach((a) => {
+      const sv = VENDE.reduce((t, k) => t + a.s[k], 0), vv = VENDE.reduce((t, k) => t + a.v[k], 0);
+      const cs = Object.values(a.c).filter((c) => c > 0);
+      const costo = sv > 0 && vv > 0 ? vv / sv : a.s.transito > 0 && a.v.transito > 0 ? a.v.transito / a.s.transito : cs.length ? Math.max(...cs) : null;
+      const marcas = [];
+      ALM.forEach(([k, nom]) => { if (a.s[k] < 0) { marcas.push('STOCK NEGATIVO (' + nom + ')'); H('1-ALTA', 'Stock negativo', a, a.s[k], a.v[k], nom + ': ' + String(a.s[k]).replace('.', ',') + ' uds. en Profit', 'Contar físicamente y ajustar en Profit el almacén ' + nom); } });
+      const conStock = ALM.filter(([k]) => a.s[k] > 0);
+      if (conStock.length && !cs.length) { marcas.push('VALOR SIN COSTO'); H('1-ALTA', 'Stock sin costo', a, sv + Math.max(a.s.transito, 0), 0, 'Tiene existencia (' + conStock.map(([k, n]) => n + ' ' + String(a.s[k]).replace('.', ',')).join(' · ') + ') pero el costo es 0: no suma al valor del inventario', 'Cargar el costo del artículo en Profit'); }
+      else if (costo != null && costo > 0 && costo <= 1 && sv > 0) { marcas.push('COSTO ≤ US$ 1'); H('2-MEDIA', 'Costo sospechoso', a, sv, vv, 'Costo unitario US$ ' + costo.toFixed(2).replace('.', ',') + ' con ' + String(sv).replace('.', ',') + ' uds. para vender', 'Verificar el costo en Profit'); }
+      if (cs.length > 1 && Math.max(...cs) > Math.min(...cs) * 1.05 + 0.01) { marcas.push('COSTO DISTINTO ENTRE ALMACENES'); H('2-MEDIA', 'Costo distinto entre almacenes', a, sv, vv, Object.entries(a.c).map(([k, c]) => ALMN[k] + ' US$ ' + c.toFixed(2).replace('.', ',')).join(' · '), 'Revisar el costo del artículo en cada almacén de Profit'); }
+      lineas.push({ fila: lineas.length + 1, codigo: a.codigo, descripcion: a.descripcion, familia: familia(a.descripcion), marca: linea(a.descripcion),
+        en_rep_stocks: true, en_rep_valor: true, stock_stocks: sv + a.s.transito, stock_valor: sv, comprometido: 0, disponible: sv, por_llegar: a.s.transito, por_despachar: 0,
+        costo: costo == null ? null : r4(costo), valor_sistema: Math.round((vv + a.v.transito) * 100) / 100, valor_calculado: Math.round(vv * 100) / 100, hallazgo: marcas.join(' · ') || 'OK',
+        stock_principal: a.s.principal, stock_tienda: a.s.tienda, stock_transito: a.s.transito, stock_consignacion: a.s.consignacion,
+        valor_principal: Math.round(a.v.principal * 100) / 100, valor_tienda: Math.round(a.v.tienda * 100) / 100, valor_transito: Math.round(a.v.transito * 100) / 100, valor_consignacion: Math.round(a.v.consignacion * 100) / 100 });
+    });
+    const T = (f) => lineas.reduce((t, l) => t + (f(l) || 0), 0);
+    const tot = { codigos: lineas.length, unidades_venta: T((l) => l.stock_valor), valor_venta: T((l) => l.valor_calculado), unidades_transito: T((l) => l.stock_transito), valor_transito: T((l) => l.valor_transito) };
+    tot.valor_total = Math.round((tot.valor_venta + tot.valor_transito) * 100) / 100; tot.unidades = tot.unidades_venta + tot.unidades_transito;
+    tot.con_stock = lineas.filter((l) => l.stock_valor > 0).length;
+    const archivos = xs.map((x) => ({ almacen: x.alm, nombre: ALMN[x.alm], archivo: x.archivo, codigos: x.filas.length, unidades: x.unidades, valor: Math.round(x.valor * 100) / 100, total_profit: x.total }));
+    return { lineas, hz, tot, archivos, faltan: ALM.filter(([k]) => !xs.some((x) => x.alm === k)).map(([, n]) => n), art: lineas.map(artDeLinea) };
+  }
+
   let LOTE = [];
   const fmtU = (v) => 'US$ ' + d3.format(',.0f')(v).replace(/,/g, '.');
-  async function recibir(files) {
+  const fmtNum = (v) => (Math.round(v * 100) / 100).toLocaleString('es-VE');
+  async function recibir(files, forzado) {
     msg($('c-msg'), 'Leyendo archivos…');
+    let error = false;
     for (const f of files) {
       try {
         const wb = XLSX.read(await f.arrayBuffer(), { type: 'array', cellDates: true });
-        const c = leerConciliacion(wb);
-        if (c && c.art.length) {
-          LOTE = LOTE.filter((x) => x.tipo !== 'articulos' && x.tipo !== 'hallazgos');
-          LOTE.push({ tipo: 'articulos', archivo: f.name, filas: c.art });
-          if (c.hz) LOTE.push({ tipo: 'hallazgos', archivo: f.name, filas: c.hz });
-          continue;
+        if (forzado !== 'precios') {
+          const r = leerAlmacen(wb);
+          if (r && r.filas.length) {
+            const alm = forzado || almDeNombre(f.name);
+            if (alm) LOTE = LOTE.filter((x) => !(x.tipo === 'alm' && x.alm === alm));
+            LOTE = LOTE.filter((x) => x.tipo !== 'articulos' && x.tipo !== 'hallazgos');
+            LOTE.push({ tipo: 'alm', alm, archivo: f.name, ...r });
+            continue;
+          }
+          const c = leerConciliacion(wb);
+          if (c && c.art.length) {
+            LOTE = LOTE.filter((x) => x.tipo !== 'articulos' && x.tipo !== 'hallazgos' && x.tipo !== 'alm');
+            LOTE.push({ tipo: 'articulos', archivo: f.name, filas: c.art });
+            if (c.hz) LOTE.push({ tipo: 'hallazgos', archivo: f.name, filas: c.hz });
+            continue;
+          }
         }
         const p = leerPrecios(wb);
         if (p && p.length) { LOTE = LOTE.filter((x) => x.tipo !== 'precios'); LOTE.push({ tipo: 'precios', archivo: f.name, filas: p }); continue; }
-        msg($('c-msg'), f.name + ': no reconozco este archivo. Debe tener la hoja "Conciliación" o las columnas Código, Descripción y Precio 1.', 'err');
-      } catch (e) { msg($('c-msg'), f.name + ': ' + e.message, 'err'); }
+        error = true;
+        msg($('c-msg'), f.name + ': no reconozco este archivo. ' + (forzado === 'precios' ? 'La lista de precios debe tener las columnas Código, Descripción y Precio 1.' : 'El reporte de inventario de Profit debe tener las columnas Artículo, Descripción, Stock Actual, Costo y Valor Total.'), 'err');
+      } catch (e) { error = true; msg($('c-msg'), f.name + ': ' + e.message, 'err'); }
     }
     pintarLote();
-    if (LOTE.length) msg($('c-msg'), 'Revise el resumen y elija "Ver en el tablero" o "Guardar para todos".');
+    if (LOTE.length && !error) msg($('c-msg'), LOTE.some((x) => x.tipo === 'alm' && !x.alm) ? 'Indique a qué almacén corresponde cada archivo marcado.' : 'Revise el resumen y elija "Ver en el tablero" o "Guardar para todos".');
   }
   function resumenDe(x) {
     if (x.tipo === 'articulos') {
@@ -2659,16 +2789,47 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   }
   function pintarLote() {
     const L = $('c-lista'); L.replaceChildren();
-    const nombres = { articulos: 'Inventario conciliado', hallazgos: 'Hallazgos', precios: 'Lista de precios' };
-    LOTE.forEach((x) => {
-      const d = document.createElement('div'); d.className = 'sh-file';
-      const b = document.createElement('b'); b.textContent = nombres[x.tipo]; d.appendChild(b);
-      const s = document.createElement('span'); const r = resumenDe(x);
-      s.textContent = x.archivo + ' · ' + x.filas.length.toLocaleString('es-VE') + ' filas' + (x.tipo === 'articulos' ? ' · valor ' + fmtU(r.valor_total) + ' · ' + r.con_stock + ' con stock' : x.tipo === 'precios' ? ' · ' + r.con_precio + ' con precio' : ' · ' + r.alta + ' de prioridad alta');
-      d.appendChild(s); L.appendChild(d);
+    const nombres = { articulos: 'Inventario conciliado', hallazgos: 'Hallazgos', precios: 'Lista de precios de venta' };
+    const linea_ = (titulo, texto, cls) => { const d = document.createElement('div'); d.className = 'sh-file' + (cls ? ' ' + cls : ''); const b = document.createElement('b'); b.textContent = titulo; const s = document.createElement('span'); s.textContent = texto; d.append(b, s); L.appendChild(d); return d; };
+    const orden = (x) => (x.tipo === 'alm' ? (x.alm ? ALM.findIndex(([k]) => k === x.alm) : 9) : x.tipo === 'precios' ? 20 : 10);
+    [...LOTE].sort((a, b) => orden(a) - orden(b)).forEach((x) => {
+      if (x.tipo === 'alm') {
+        const cuadra = !x.total ? null : Math.abs(x.total.valor - x.valor) < 1 && Math.abs(x.total.unidades - x.unidades) < 0.01;
+        const d = linea_(x.alm ? ALMN[x.alm] : '¿Qué almacén es?', x.archivo + ' · ' + x.filas.length.toLocaleString('es-VE') + ' códigos · ' + fmtNum(x.unidades) + ' uds. · ' + fmtU(x.valor) +
+          (cuadra === true ? ' · ✔ cuadra con el total de Profit' : cuadra === false ? ' · ⚠ no cuadra con el total del reporte (' + fmtNum(x.total.unidades) + ' uds. · ' + fmtU(x.total.valor) + ')' : '') + (x.dup ? ' · ' + x.dup + ' códigos repetidos sumados' : ''), cuadra === false || !x.alm ? 'warn' : '');
+        if (!x.alm) {
+          const sel = document.createElement('select'); sel.className = 'sh-in';
+          sel.append(new Option('Elegir almacén…', ''), ...ALM.map(([k, n]) => new Option(n, k)));
+          sel.addEventListener('change', () => { if (!sel.value) return; LOTE = LOTE.filter((y) => y === x || !(y.tipo === 'alm' && y.alm === sel.value)); x.alm = sel.value; pintarLote(); msg($('c-msg'), 'Revise el resumen y elija "Ver en el tablero" o "Guardar para todos".'); });
+          d.appendChild(sel);
+        }
+        return;
+      }
+      const r = resumenDe(x);
+      linea_(nombres[x.tipo], x.archivo + ' · ' + x.filas.length.toLocaleString('es-VE') + ' filas' + (x.tipo === 'articulos' ? ' · valor ' + fmtU(r.valor_total) + ' · ' + r.con_stock + ' con stock' : x.tipo === 'precios' ? ' · ' + r.con_precio + ' con precio' : ' · ' + r.alta + ' de prioridad alta'));
     });
-    $('c-ver').disabled = $('c-guardar').disabled = !LOTE.length;
+    const U = unirAlmacenes();
+    if (U) {
+      const t = U.tot;
+      linea_('Inventario consolidado', fmtNum(t.codigos) + ' códigos · para vender (Principal + Tienda + Consignación) ' + fmtNum(t.unidades_venta) + ' uds. · ' + fmtU(t.valor_venta) +
+        ' · en tránsito ' + fmtNum(t.unidades_transito) + ' uds. · ' + fmtU(t.valor_transito) + ' · valor total ' + fmtU(t.valor_total) +
+        ' · ' + U.hz.filter((h) => h.prioridad === '1-ALTA').length + ' hallazgos de prioridad alta' + (U.faltan.length ? ' · falta: ' + U.faltan.join(', ') : ''), 'tot' + (U.faltan.length ? ' warn' : ''));
+    }
+    // estado de cada casilla
+    document.querySelectorAll('#c-slots .sh-slot').forEach((c) => {
+      const k = c.dataset.alm, x = k === 'precios' ? LOTE.find((l) => l.tipo === 'precios') : LOTE.find((l) => l.tipo === 'alm' && l.alm === k);
+      c.classList.toggle('ok', !!x); c.querySelector('.st').textContent = x ? '✔ ' + x.archivo : 'Sin archivo · clic para elegir';
+    });
+    const pend = LOTE.some((x) => x.tipo === 'alm' && !x.alm);
+    $('c-ver').disabled = $('c-guardar').disabled = !LOTE.length || pend;
   }
+  document.querySelectorAll('#c-slots .sh-slot').forEach((c) => {
+    const inp = c.querySelector('input');
+    inp.addEventListener('change', (e) => { recibir([...e.target.files], c.dataset.alm); e.target.value = ''; });
+    ['dragenter', 'dragover'].forEach((t) => c.addEventListener(t, (e) => { e.preventDefault(); c.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach((t) => c.addEventListener(t, (e) => { e.preventDefault(); c.classList.remove('over'); }));
+    c.addEventListener('drop', (e) => recibir([...e.dataTransfer.files].slice(0, 1), c.dataset.alm));
+  });
   $('c-file').addEventListener('change', (e) => { recibir([...e.target.files]); e.target.value = ''; });
   const drop = $('c-drop');
   ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
@@ -2678,8 +2839,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
 
   const combinado = () => {
     const base = soloDatos(SERVER || {});
-    LOTE.forEach((x) => { base[x.tipo] = x.filas; });
-    if (LOTE.some((x) => x.tipo === 'articulos')) { const r = resumenDe(LOTE.find((x) => x.tipo === 'articulos')); base.historico = [...base.historico.filter((h) => h.corte !== r.corte), { corte: r.corte || 'vista previa', valor_total: r.valor_total, articulos_con_stock: r.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
+    LOTE.forEach((x) => { if (x.tipo !== 'alm') base[x.tipo] = x.filas; });
+    const U = unirAlmacenes();
+    if (U) { base.articulos = U.art; base.hallazgos = U.hz; const c = $('c-corte').value || 'vista previa'; base.historico = [...base.historico.filter((h) => h.corte !== c), { corte: c, valor_total: U.tot.valor_total, articulos_con_stock: U.tot.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
+    else if (LOTE.some((x) => x.tipo === 'articulos')) { const r = resumenDe(LOTE.find((x) => x.tipo === 'articulos')); base.historico = [...base.historico.filter((h) => h.corte !== r.corte), { corte: r.corte || 'vista previa', valor_total: r.valor_total, articulos_con_stock: r.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
     return base;
   };
   $('c-ver').addEventListener('click', () => { PREVIEW = true; dash._set(combinado()); $('t-preview').hidden = false; ver('v-tablero'); });
@@ -2718,6 +2881,28 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       throw new Error('No se pudo guardar el corte (' + e.message + '). Se deshizo la carga.');
     }
   }
+  async function guardarAlmacenes(U, fecha) {
+    const ya = ok(await sb.from('cortes').select('id').eq('empresa_id', EMPRESA).eq('fecha_corte', fecha));
+    if (ya.length) {
+      if (!window.confirm('Ya existe un corte con fecha ' + fecha + '. ¿Desea reemplazarlo con estos reportes?')) throw new Error('Carga cancelada. No se cambió nada.');
+      ok(await sb.from('cortes').delete().eq('id', ya[0].id));
+    }
+    const corte = ok(await sb.from('cortes').insert({
+      empresa_id: EMPRESA, fecha_corte: fecha, origen: 'ALMACENES', archivos: U.archivos,
+      archivo_valor: U.archivos.map((x) => x.archivo).join(' + ').slice(0, 500),
+      valor_sistema: Math.round(U.archivos.reduce((t, x) => t + (x.total_profit ? x.total_profit.valor : x.valor), 0) * 100) / 100,
+      valor_calculado: U.tot.valor_total, unidades: U.tot.unidades, cargado_por: YO.correo,
+      notas: 'Para vender (Principal + Tienda + Consignación): ' + fmtU(U.tot.valor_venta) + ' · En tránsito: ' + fmtU(U.tot.valor_transito),
+    }).select('id').single());
+    try {
+      await enBloques('corte_lineas', U.lineas.map((l) => ({ corte_id: corte.id, ...l })), 'Guardando artículos');
+      if (U.hz.length) await enBloques('hallazgos', U.hz.map((h) => ({ corte_id: corte.id, prioridad: h.prioridad, tipo: h.tipo, codigo: h.codigo, descripcion: h.descripcion,
+        stock: h.stock, valor: h.valor, detalle: h.detalle, accion: h.accion, responsable: null, resuelto: false, resuelto_en: null })), 'Guardando hallazgos');
+    } catch (e) {
+      await sb.from('cortes').delete().eq('id', corte.id);
+      throw new Error('No se pudo guardar el corte (' + e.message + '). Se deshizo la carga.');
+    }
+  }
   async function guardarPrecios(x, fecha) {
     const ya = ok(await sb.from('listas_precios').select('id').eq('empresa_id', EMPRESA).eq('fecha', fecha));
     for (const l of ya) ok(await sb.from('listas_precios').delete().eq('id', l.id));
@@ -2734,7 +2919,12 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const bs = [$('c-guardar'), $('t-guardar')]; bs.forEach((b) => { b.disabled = true; });
     try {
       const a = LOTE.find((l) => l.tipo === 'articulos'), h = LOTE.find((l) => l.tipo === 'hallazgos'), p = LOTE.find((l) => l.tipo === 'precios');
-      if (a) { a.filas.archivo = a.archivo; await guardarCorte(a.filas, h && h.filas, fecha); bitacora('CARGA CONCILIACIÓN', a.archivo + ' · corte ' + fecha + ' · ' + a.filas.length + ' filas'); }
+      const U = unirAlmacenes();
+      if (U) {
+        if (U.faltan.length && !window.confirm('Falta el reporte de: ' + U.faltan.join(', ') + '.\nSi guarda así, ese almacén quedará en cero en este corte. ¿Desea guardar de todas formas?')) throw new Error('Carga cancelada. Agregue el reporte que falta.');
+        await guardarAlmacenes(U, fecha);
+        bitacora('CARGA INVENTARIO POR ALMACÉN', 'corte ' + fecha + ' · ' + U.archivos.map((x) => x.nombre + ' (' + x.archivo + ')').join(', ') + ' · ' + U.lineas.length + ' códigos · total ' + fmtU(U.tot.valor_total));
+      } else if (a) { a.filas.archivo = a.archivo; await guardarCorte(a.filas, h && h.filas, fecha); bitacora('CARGA CONCILIACIÓN', a.archivo + ' · corte ' + fecha + ' · ' + a.filas.length + ' filas'); }
       if (p) { await guardarPrecios(p, fecha); bitacora('CARGA PRECIOS', p.archivo + ' · ' + p.filas.length + ' filas'); }
       LOTE = []; PREVIEW = null; pintarLote(); $('t-preview').hidden = true;
       msg($('c-msg'), 'Datos guardados. Todos los usuarios verán la nueva versión.', 'ok');
@@ -2745,10 +2935,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   async function pintarCargas() {
     const tb = $('c-hist').querySelector('tbody'); tb.replaceChildren();
     try {
-      const c = ok(await sb.from('cortes').select('fecha_corte, archivo_valor, cargado_en, cargado_por, corte_lineas(count)').eq('empresa_id', EMPRESA).order('cargado_en', { ascending: false }).limit(50));
+      const c = ok(await sb.from('cortes').select('fecha_corte, origen, archivo_valor, cargado_en, cargado_por, corte_lineas(count)').eq('empresa_id', EMPRESA).order('cargado_en', { ascending: false }).limit(50));
       const l = ok(await sb.from('listas_precios').select('fecha, archivo, cargado_en, cargado_por, precios(count)').eq('empresa_id', EMPRESA).order('cargado_en', { ascending: false }).limit(50));
       const filas = [
-        ...c.map((r) => ({ f: r.cargado_en, t: 'Conciliación · corte ' + r.fecha_corte, a: r.archivo_valor, n: (r.corte_lineas[0] || {}).count, p: r.cargado_por })),
+        ...c.map((r) => ({ f: r.cargado_en, t: (r.origen === 'ALMACENES' ? 'Inventario por almacén' : 'Conciliación') + ' · corte ' + r.fecha_corte, a: r.archivo_valor, n: (r.corte_lineas[0] || {}).count, p: r.cargado_por })),
         ...l.map((r) => ({ f: r.cargado_en, t: 'Precios · ' + r.fecha, a: r.archivo, n: (r.precios[0] || {}).count, p: r.cargado_por })),
       ].sort((a, b) => String(b.f).localeCompare(String(a.f)));
       filas.forEach((r) => {
@@ -5010,8 +5200,13 @@ function zoomEn(box){
       const rot = dd('rot_articulos').find((r) => nrm(r.codigo) === nrm(a.codigo)), rep = dd('reposicion').find((r) => nrm(r.codigo) === nrm(a.codigo));
       const K = mk('div', 'fa-k'); box.appendChild(K);
       const kp = (t, v, s, cls) => { const d = mk('div', 'fa-kc ' + (cls || '')); d.append(mk('span', null, t), mk('b', null, v)); if (s) d.appendChild(mk('small', null, s)); K.appendChild(d); };
-      kp('Stock', T.fmt.num(a.stock), 'disponible ' + T.fmt.num(a.disponible) + ' · comprometido ' + T.fmt.num(a.comprometido), a.stock > 0 ? 'ok' : 'bad');
-      kp('Por llegar', T.fmt.num(a.por_llegar || 0), '');
+      if (a.alm) {
+        kp('Stock para vender', T.fmt.num(a.stock), 'Principal ' + T.fmt.num(a.st_principal) + ' · Tienda ' + T.fmt.num(a.st_tienda) + ' · Consignación ' + T.fmt.num(a.st_consignacion), a.stock > 0 ? 'ok' : 'bad');
+        kp('En tránsito', T.fmt.num(a.transito || 0), a.valor_transito ? 'valor ' + T.fmt.usd0(a.valor_transito) : '', a.transito < 0 ? 'bad' : '');
+      } else {
+        kp('Stock', T.fmt.num(a.stock), 'disponible ' + T.fmt.num(a.disponible) + ' · comprometido ' + T.fmt.num(a.comprometido), a.stock > 0 ? 'ok' : 'bad');
+        kp('Por llegar', T.fmt.num(a.por_llegar || 0), '');
+      }
       kp('Costo unitario', a.costo == null ? '—' : T.fmt.usd2(a.costo), 'valor ' + T.fmt.usd0(a.valor || 0));
       const precio = mg.precio != null ? mg.precio : pr ? pr.precio_1 : null;
       kp('Precio de venta', precio == null ? '—' : T.fmt.usd2(precio), pr && pr.precio_2 ? 'precio 2: ' + T.fmt.usd2(pr.precio_2) : '', '');
@@ -5060,7 +5255,7 @@ function zoomEn(box){
     }
     function bajarFicha(a) {
       if (!window.XLSX) return; const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{ Código: a.codigo, Descripción: a.descripcion, Familia: a.familia, Marca: a.linea, Estado: a.estado, Stock: a.stock, Disponible: a.disponible, Comprometido: a.comprometido, 'Por llegar': a.por_llegar, 'Costo US$': a.costo, 'Valor US$': a.valor, Hallazgo: a.hallazgo }]), 'Artículo');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{ Código: a.codigo, Descripción: a.descripcion, Familia: a.familia, Marca: a.linea, Estado: a.estado, Stock: a.stock, ...(a.alm ? { Principal: a.st_principal, Tienda: a.st_tienda, Consignación: a.st_consignacion, Tránsito: a.transito } : { Disponible: a.disponible, Comprometido: a.comprometido, 'Por llegar': a.por_llegar }), 'Costo US$': a.costo, 'Valor US$': a.valor, Hallazgo: a.hallazgo }]), 'Artículo');
       const V = ((SERVER && SERVER.ventas) || []).filter((v) => nrm(v.codigo) === nrm(a.codigo)); if (V.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(V.map((v) => ({ Fecha: v.fecha, Factura: v.factura, Cliente: v.cliente, Vendedor: v.vendedor, Cantidad: v.cantidad, 'Total US$': v.total }))), 'Ventas');
       XLSX.writeFile(wb, 'Ficha_' + String(a.codigo).replace(/[^\w-]/g, '_') + '.xlsx');
     }
