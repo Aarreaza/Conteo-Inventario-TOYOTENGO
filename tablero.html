@@ -326,6 +326,23 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .sh-file.warn{border-left:3px solid var(--color-warn)}.sh-file.tot{font-weight:500;background:color-mix(in srgb,currentColor 5%,transparent)}
 .sh-file select{margin-left:.5rem}
 
+.sh-elegir{margin-top:.5rem;align-self:flex-start;padding:.3rem .7rem;border-radius:6px;font-size:.8rem;font-weight:600;border:1px solid var(--color-border-line);background:var(--color-bg)}
+.sh-slot:hover .sh-elegir{border-color:var(--color-bad);color:var(--color-bad)}
+.sh-slot.ok .sh-elegir{font-weight:500;opacity:.8}
+.sh-subir{position:sticky;bottom:.75rem;z-index:5;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem 1rem;padding:.85rem 1rem;border-radius:10px;border:1.5px solid var(--color-border-line);background:var(--color-panel);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.sh-subir.listo{border-color:var(--color-ok)}
+.sh-subir-t{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.sh-subir-t span{font-size:.82rem;color:var(--color-fg-muted)}
+.sh-subir-b{display:flex;gap:.5rem;flex-wrap:wrap}
+.sh-btn-subir{font-size:1rem;padding:.65rem 1.4rem}
+.sh-subir.listo .sh-btn-subir:not(:disabled){animation:sh-pulso 1.6s ease-in-out 3}
+@keyframes sh-pulso{50%{transform:scale(1.05)}}
+#c-msg:not(:empty){padding:.75rem 1rem;border-radius:8px;font-size:.92rem;border:1px solid var(--color-border-line);background:var(--color-panel)}
+#c-msg.ok:not(:empty){border-color:var(--color-ok);background:color-mix(in srgb,var(--color-ok) 10%,transparent);font-weight:600}
+#c-msg.err:not(:empty){border-color:var(--color-bad);background:color-mix(in srgb,var(--color-bad) 9%,transparent);font-weight:600}
+#sh-aviso{position:fixed;left:50%;top:1rem;transform:translateX(-50%);z-index:9999;max-width:min(680px,calc(100vw - 2rem));padding:.9rem 1.2rem;border-radius:10px;font-weight:600;font-size:.95rem;box-shadow:0 10px 30px rgba(0,0,0,.25);cursor:pointer;color:#fff}
+#sh-aviso.ok{background:#1f7a45}#sh-aviso.err{background:#b3261e}
+
 /* ---- tablero ---- */
 
 .tt-wrap{display:flex;flex-direction:column;gap:var(--cds-gap-lg);font-family:var(--font-anthropic-sans)}
@@ -725,25 +742,28 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
     <p class="sh-sub">Mientras no exista la conexión con Profit, el inventario se carga con los <b>4 reportes de inventario a costo</b> que entrega Profit, uno por almacén (.xls), y aparte la <b>lista de precios de venta</b>. Use una casilla por archivo, o arrastre todos juntos al recuadro: el tablero reconoce el almacén por el nombre del archivo (PRINCIPAL, TIENDA, TRANSITO, CONSIGNACION). Stock para vender = Principal + Tienda + Consignación; el tránsito se muestra aparte y suma al valor total. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:900px">
       <div class="sh-slots" id="c-slots">
-        <label class="sh-slot" data-alm="principal"><b>Almacén Principal</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
-        <label class="sh-slot" data-alm="tienda"><b>Almacén Tienda</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
-        <label class="sh-slot" data-alm="consignacion"><b>Consignación</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
-        <label class="sh-slot" data-alm="transito"><b>Tránsito</b><small>Se muestra aparte · suma al total</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
-        <label class="sh-slot pr" data-alm="precios"><b>Precios de venta</b><small>Lista de precios · Profit</small><span class="st">Sin archivo · clic para elegir</span><input type="file" accept=".xls,.xlsx" hidden></label>
-      </div>
-      <div class="sh-drop" id="c-drop">
-        <p style="margin:0 0 .5rem">O arrastre aquí todos los archivos juntos, o</p>
-        <input type="file" id="c-file" accept=".xls,.xlsx" multiple>
+        <label class="sh-slot" data-alm="principal"><b>Almacén Principal</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot" data-alm="tienda"><b>Almacén Tienda</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot" data-alm="consignacion"><b>Consignación</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot" data-alm="transito"><b>Tránsito</b><small>Se muestra aparte · suma al total</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot pr" data-alm="precios"><b>Precios de venta</b><small>Lista de precios · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
       </div>
       <div class="sh-row">
         <div class="sh-f"><label for="c-corte">Fecha de corte del inventario</label><input type="date" id="c-corte"></div>
       </div>
-      <div class="sh-files" id="c-lista"></div>
-      <div class="sh-row">
-        <button class="sh-btn lt" id="c-ver" disabled>Ver en el tablero antes de guardar</button>
-        <button class="sh-btn" id="c-guardar" disabled>Guardar para todos</button>
+      <div class="sh-subir" id="c-barra">
+        <div class="sh-subir-t"><b id="c-estado">Paso 1: elija los archivos en las casillas de arriba</b><span id="c-estado2">Faltan los 4 reportes de inventario y la lista de precios</span></div>
+        <div class="sh-subir-b">
+          <button class="sh-btn lt" id="c-ver" disabled>Ver antes de subir</button>
+          <button class="sh-btn sh-btn-subir" id="c-guardar" disabled>⬆ Subir al tablero</button>
+        </div>
       </div>
       <div class="sh-msg" id="c-msg" role="status"></div>
+      <div class="sh-files" id="c-lista"></div>
+      <div class="sh-drop" id="c-drop">
+        <p style="margin:0 0 .5rem">O arrastre aquí todos los archivos juntos, o</p>
+        <input type="file" id="c-file" accept=".xls,.xlsx" multiple>
+      </div>
       <div class="tt-card">
         <h3>Últimas cargas</h3>
         <div class="tt-scroll" style="max-height:20rem"><table class="tt-t" id="c-hist"><thead><tr><th><button>Fecha</button></th><th><button>Base</button></th><th><button>Archivo</button></th><th class="n"><button>Filas</button></th><th><button>Cargó</button></th></tr></thead><tbody></tbody></table></div>
@@ -2435,6 +2455,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   const soloDatos = (d) => {
     const t = document.getElementById('tab-ventas'); if (t) t.hidden = !(d.ventas && d.ventas.length);
     setTimeout(() => window.TT_SEG && window.TT_SEG.pintar(), 0);
+    const mt = document.querySelector('.tt-meta');
+    if (mt && d.corte) { const f = String(d.corte.fecha_corte).slice(0, 10).split('-').reverse().join('-'); mt.textContent = 'Corte al ' + f + ': ' + ((d.articulos || []).some((x) => x.alm) ? 'reportes de inventario a costo de Profit por almacén (Principal, Tienda, Consignación y Tránsito)' : 'reporte de Valor de Inventario de Profit conciliado contra el reporte de Stocks') + ' · cifras en USD a costo'; }
     return { articulos: d.articulos || [], hallazgos: d.hallazgos || [], precios: d.precios || [], historico: d.historico || [], ventas: d.ventas || [] };
   };
 
@@ -2773,11 +2795,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         const p = leerPrecios(wb);
         if (p && p.length) { LOTE = LOTE.filter((x) => x.tipo !== 'precios'); LOTE.push({ tipo: 'precios', archivo: f.name, filas: p }); continue; }
         error = true;
-        msg($('c-msg'), f.name + ': no reconozco este archivo. ' + (forzado === 'precios' ? 'La lista de precios debe tener las columnas Código, Descripción y Precio 1.' : 'El reporte de inventario de Profit debe tener las columnas Artículo, Descripción, Stock Actual, Costo y Valor Total.'), 'err');
-      } catch (e) { error = true; msg($('c-msg'), f.name + ': ' + e.message, 'err'); }
+        msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo, vuelva a elegirlo. ' + (forzado === 'precios' ? 'La lista de precios debe tener las columnas Código, Descripción y Precio 1.' : 'El reporte de inventario de Profit debe tener las columnas Artículo, Descripción, Stock Actual, Costo y Valor Total.'), 'err');
+      } catch (e) { error = true; msg($('c-msg'), '✖ ' + f.name + ': no se pudo leer (' + e.message + '). Vuelva a elegir el archivo.', 'err'); }
     }
     pintarLote();
-    if (LOTE.length && !error) msg($('c-msg'), LOTE.some((x) => x.tipo === 'alm' && !x.alm) ? 'Indique a qué almacén corresponde cada archivo marcado.' : 'Revise el resumen y elija "Ver en el tablero" o "Guardar para todos".');
+    if (LOTE.length && !error) msg($('c-msg'), LOTE.some((x) => x.tipo === 'alm' && !x.alm) ? 'Indique a qué almacén corresponde cada archivo marcado.' : 'Archivos leídos. Revise el resumen y pulse "⬆ Subir al tablero".');
   }
   function resumenDe(x) {
     if (x.tipo === 'articulos') {
@@ -2800,7 +2822,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         if (!x.alm) {
           const sel = document.createElement('select'); sel.className = 'sh-in';
           sel.append(new Option('Elegir almacén…', ''), ...ALM.map(([k, n]) => new Option(n, k)));
-          sel.addEventListener('change', () => { if (!sel.value) return; LOTE = LOTE.filter((y) => y === x || !(y.tipo === 'alm' && y.alm === sel.value)); x.alm = sel.value; pintarLote(); msg($('c-msg'), 'Revise el resumen y elija "Ver en el tablero" o "Guardar para todos".'); });
+          sel.addEventListener('change', () => { if (!sel.value) return; LOTE = LOTE.filter((y) => y === x || !(y.tipo === 'alm' && y.alm === sel.value)); x.alm = sel.value; pintarLote(); msg($('c-msg'), 'Archivos leídos. Revise el resumen y pulse "⬆ Subir al tablero".'); });
           d.appendChild(sel);
         }
         return;
@@ -2818,10 +2840,24 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     // estado de cada casilla
     document.querySelectorAll('#c-slots .sh-slot').forEach((c) => {
       const k = c.dataset.alm, x = k === 'precios' ? LOTE.find((l) => l.tipo === 'precios') : LOTE.find((l) => l.tipo === 'alm' && l.alm === k);
-      c.classList.toggle('ok', !!x); c.querySelector('.st').textContent = x ? '✔ ' + x.archivo : 'Sin archivo · clic para elegir';
+      c.classList.toggle('ok', !!x); c.querySelector('.st').textContent = x ? '✔ ' + x.archivo : 'Sin archivo'; c.querySelector('.sh-elegir').textContent = x ? '🔄 Cambiar archivo' : '📂 Elegir archivo';
     });
     const pend = LOTE.some((x) => x.tipo === 'alm' && !x.alm);
     $('c-ver').disabled = $('c-guardar').disabled = !LOTE.length || pend;
+    // barra de subir: qué falta y qué sigue
+    const faltanA = ALM.filter(([k]) => !LOTE.some((x) => x.tipo === 'alm' && x.alm === k)).map(([, n]) => n);
+    const hayP = LOTE.some((x) => x.tipo === 'precios'), hayA = LOTE.some((x) => x.tipo === 'alm' || x.tipo === 'articulos');
+    const est = $('c-estado'), est2 = $('c-estado2'), barra = $('c-barra');
+    if (est) {
+      barra.classList.toggle('listo', !!LOTE.length && !pend);
+      if (!LOTE.length) { est.textContent = 'Paso 1: elija los archivos en las casillas de arriba'; est2.textContent = 'Faltan los 4 reportes de inventario y la lista de precios'; }
+      else if (pend) { est.textContent = 'Indique el almacén de cada archivo marcado en amarillo'; est2.textContent = 'No se reconoció el almacén por el nombre del archivo'; }
+      else {
+        est.textContent = 'Paso 2: pulse "⬆ Subir al tablero" para guardar';
+        const f = [...(hayA && faltanA.length ? ['falta inventario de ' + faltanA.join(', ')] : []), ...(!hayA ? ['no se sube inventario'] : []), ...(!hayP ? ['no se sube lista de precios'] : [])];
+        est2.textContent = f.length ? 'Atención: ' + f.join(' · ') : '✔ Están los 4 reportes de inventario y la lista de precios';
+      }
+    }
   }
   document.querySelectorAll('#c-slots .sh-slot').forEach((c) => {
     const inp = c.querySelector('input');
@@ -2913,24 +2949,40 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     try { await enBloques('precios', filas, 'Guardando precios'); }
     catch (e) { await sb.from('listas_precios').delete().eq('id', lista.id); throw new Error('No se pudo guardar la lista de precios (' + e.message + '). Se deshizo la carga.'); }
   }
+  // aviso visible en cualquier pantalla (éxito o error al subir)
+  function avisoCarga(t, k) {
+    let d = document.getElementById('sh-aviso');
+    if (!d) { d = document.createElement('div'); d.id = 'sh-aviso'; d.setAttribute('role', 'alert'); document.body.appendChild(d); d.addEventListener('click', () => { d.hidden = true; }); }
+    d.className = k; d.textContent = t; d.hidden = false; clearTimeout(d._t);
+    d._t = setTimeout(() => { d.hidden = true; }, k === 'ok' ? 9000 : 20000);
+  }
   async function guardar() {
     const fecha = $('c-corte').value;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) { ver('v-cargar'); return msg($('c-msg'), 'Indique la fecha de corte.', 'err'); }
     const bs = [$('c-guardar'), $('t-guardar')]; bs.forEach((b) => { b.disabled = true; });
+    const txt = $('c-guardar').textContent; $('c-guardar').textContent = 'Subiendo…';
+    let hecho = [];
     try {
       const a = LOTE.find((l) => l.tipo === 'articulos'), h = LOTE.find((l) => l.tipo === 'hallazgos'), p = LOTE.find((l) => l.tipo === 'precios');
       const U = unirAlmacenes();
       if (U) {
         if (U.faltan.length && !window.confirm('Falta el reporte de: ' + U.faltan.join(', ') + '.\nSi guarda así, ese almacén quedará en cero en este corte. ¿Desea guardar de todas formas?')) throw new Error('Carga cancelada. Agregue el reporte que falta.');
         await guardarAlmacenes(U, fecha);
+        hecho.push('inventario al ' + fecha.split('-').reverse().join('/') + ' (' + U.archivos.length + ' almacenes · ' + U.lineas.length.toLocaleString('es-VE') + ' códigos · valor total ' + fmtU(U.tot.valor_total) + ')');
         bitacora('CARGA INVENTARIO POR ALMACÉN', 'corte ' + fecha + ' · ' + U.archivos.map((x) => x.nombre + ' (' + x.archivo + ')').join(', ') + ' · ' + U.lineas.length + ' códigos · total ' + fmtU(U.tot.valor_total));
       } else if (a) { a.filas.archivo = a.archivo; await guardarCorte(a.filas, h && h.filas, fecha); bitacora('CARGA CONCILIACIÓN', a.archivo + ' · corte ' + fecha + ' · ' + a.filas.length + ' filas'); }
-      if (p) { await guardarPrecios(p, fecha); bitacora('CARGA PRECIOS', p.archivo + ' · ' + p.filas.length + ' filas'); }
+      if (p) { await guardarPrecios(p, fecha); hecho.push('lista de precios (' + p.filas.length.toLocaleString('es-VE') + ' artículos)'); bitacora('CARGA PRECIOS', p.archivo + ' · ' + p.filas.length + ' filas'); }
       LOTE = []; PREVIEW = null; pintarLote(); $('t-preview').hidden = true;
-      msg($('c-msg'), 'Datos guardados. Todos los usuarios verán la nueva versión.', 'ok');
+      const ok_ = '✔ Datos subidos con éxito: ' + (hecho.join(' y ') || 'conciliación') + '. Todos los usuarios ya ven la nueva versión.';
+      msg($('c-msg'), ok_, 'ok'); avisoCarga(ok_, 'ok');
       SERVER = await leerDatos(); dash._set(soloDatos(SERVER)); ver('v-tablero');
-    } catch (e) { ver('v-cargar'); msg($('c-msg'), e.message, 'err'); }
-    bs.forEach((b) => { b.disabled = false; });
+    } catch (e) {
+      ver('v-cargar');
+      const parcial = hecho.length ? ' (sí se guardó: ' + hecho.join(' y ') + ')' : '';
+      const t = /cancelad/i.test(e.message) ? '⚠ ' + e.message : '✖ No se pudo subir: ' + e.message + parcial + '. Revise el archivo indicado y vuelva a pulsar "Subir al tablero".';
+      msg($('c-msg'), t, 'err'); avisoCarga(t, 'err');
+    }
+    $('c-guardar').textContent = txt; pintarLote(); $('t-guardar').disabled = false;
   }
   async function pintarCargas() {
     const tb = $('c-hist').querySelector('tbody'); tb.replaceChildren();
