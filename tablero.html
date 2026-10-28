@@ -289,6 +289,30 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .fv-zm{width:fit-content;max-width:100%;margin:0 auto;line-height:0;border-radius:12px}.fv-zm img{border-radius:0}.fi-zb{width:fit-content;max-width:100%;line-height:0;border-radius:10px}
 .ft-sin{width:34px;height:34px;border:1.5px dashed #b8c4d2;border-radius:7px;background:#f7f9fb;font-size:14px;opacity:.55;cursor:pointer;padding:0;line-height:1}.ft-sin:hover{opacity:1;border-color:#17304f}
 
+/* ---- Mercado Libre: conexión directa ---- */
+.ml-cx{margin:0 0 1rem}
+.mlx-h{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap}.mlx-h h3{margin:0;font-size:1.05rem;display:flex;align-items:center;gap:.5rem}
+.mlx-dot{width:.7rem;height:.7rem;border-radius:50%;background:#c9ced6;display:inline-block}.mlx-dot.on{background:#1f9d55;box-shadow:0 0 0 4px rgba(31,157,85,.15)}
+.mlx-acc{display:flex;gap:.4rem;flex-wrap:wrap}.sh-btn.mlx-amarillo{background:#ffe600;color:#2d3277;border-color:#e6cf00;font-weight:700}
+.mlx-st{margin:.5rem 0;color:var(--color-fg-muted);font-size:.9rem}.mlx-warn{color:#b0001a;font-size:.88rem;margin:.3rem 0}.mlx-ok{color:#1f7a4d;font-size:.9rem;margin:.4rem 0}
+.mlx-pasos{background:var(--color-bg-subtle,#f6f7f9);border-radius:8px;padding:.75rem 1rem;font-size:.88rem;margin:.5rem 0}.mlx-pasos ol{margin:.4rem 0 0;padding-left:1.2rem}.mlx-pasos li{margin:.25rem 0}.mlx-pasos code{word-break:break-all}
+.mlx-cfg{margin:.75rem 0}.mlx-cfg h4{margin:0 0 .5rem}
+.mlx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.6rem .9rem;margin:.5rem 0}.mlx-grid label{display:flex;flex-direction:column;gap:.25rem;font-size:.82rem;color:var(--color-fg-muted)}
+.mlx-grid .mlx-w{grid-column:1/-1}.mlx-grid .mlx-ck{flex-direction:row;align-items:center;gap:.45rem;color:var(--color-fg)}
+.mlx-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.6rem;margin:.75rem 0}
+.mlx-k{border:1px solid var(--color-border-line);border-radius:10px;padding:.6rem .75rem;display:flex;flex-direction:column;gap:.15rem;background:var(--color-bg)}
+.mlx-k .k{font-size:.75rem;color:var(--color-fg-muted)}.mlx-k b{font-size:1.15rem}.mlx-k .s{font-size:.75rem;color:var(--color-fg-muted)}
+.mlx-k.ok{border-left:4px solid #1f9d55}.mlx-k.warn{border-left:4px solid #e0a100}.mlx-k.bad{border-left:4px solid #c8102e}
+.mlx-opo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.75rem;margin-bottom:.75rem}.mlx-l h5{margin:.2rem 0}.mlx-l .tt-note{margin:.1rem 0 .4rem}
+.mlx-t{font-size:.84rem}.mlx-t td,.mlx-t th{padding:.35rem .5rem}.mlx-id{color:var(--color-fg-muted)}.mlx-t tr.mlx-err td{color:#b0001a}
+.mlx-tabs{display:flex;gap:.3rem;flex-wrap:wrap;border-bottom:1px solid var(--color-border-line);margin-top:.5rem}
+.mlx-tab{border:0;background:none;padding:.55rem .8rem;font:inherit;font-size:.88rem;color:var(--color-fg-muted);border-bottom:3px solid transparent;cursor:pointer}.mlx-tab.on{color:var(--color-fg);border-bottom-color:#2d3277;font-weight:600}
+.mlx-body{padding:.75rem 0}.mlx-body>.sh-btn{margin-top:.6rem}.mlx-q{max-width:320px;margin:.25rem 0 .5rem}.mlx-sc{max-height:420px;overflow:auto}
+.mlx-art{border:1px solid var(--color-border-line);border-radius:10px;padding:.75rem;margin:.6rem 0}.mlx-art.falta{border-color:#e0a100}
+.mlx-art-h{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.mlx-ap{margin-left:auto;display:flex;align-items:center;gap:.35rem;font-weight:600}
+.mlx-fotos{display:flex;gap:.4rem;margin:.4rem 0;overflow-x:auto}.mlx-fotos img{width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid var(--color-border-line)}
+.mlx-q1{border-bottom:1px solid var(--color-border-line);padding:.6rem 0}.mlx-q1 textarea{width:100%;margin:.35rem 0}.mlx-qt{margin:.3rem 0;font-size:.95rem}.mlx-qh small{color:var(--color-fg-muted)}
+
 /* ---- tablero ---- */
 
 .tt-wrap{display:flex;flex-direction:column;gap:var(--cds-gap-lg);font-family:var(--font-anthropic-sans)}
@@ -545,6 +569,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       </div>
       <div class="sh-row" style="gap:.5rem;flex-wrap:wrap;margin-top:.75rem"><button class="sh-btn" type="submit">Guardar</button><button class="sh-btn lt" type="button" id="mld-pagado">✔ Marcar todo como pagado</button><button class="sh-btn lt" type="button" id="mld-cancel">Cancelar</button></div>
     </form>
+    <div class="tt-card ml-cx" id="ml-cx" aria-live="polite"></div>
     <div class="ml-alertas" id="ml-alertas"></div>
     <div class="tt-card ml-vend" id="ml-vend">
       <div class="ml-vhead">
@@ -2209,6 +2234,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     if (v === 'v-regularizar' && window.TT_SEG) window.TT_SEG.lista();
     if (v === 'v-compras' && window.TT_LC) window.TT_LC.pintar();
     if (v === 'v-ml' && window.TT_ML) window.TT_ML.pintar();
+    if (v === 'v-ml' && window.TT_MLX) window.TT_MLX.abrir();
     if (v === 'v-conteos' && window.TT_CT) window.TT_CT.abrir();
     window.scrollTo(0, 0);
   }
@@ -3337,7 +3363,6 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
 
   // ---------- Mercado Libre: publicaciones, precios y ventas vs inventario ----------
   window.TT_ML = (() => {
-    const CONEXION = 'https://script.google.com/macros/s/AKfycbwLVTUqb1lVFx_sa6B12iL6Luk1na_SZUJtQ1WbaBM88r55Gl_KAuayMM3Fvyh0rAql/exec?p=ml';
     const st = { sort: null, dir: 1, limit: 800 };
     let vista = [], R = null, famLlena = false;
     const LS = { get(k, d) { try { const v = localStorage.getItem('tt-ml-' + k); return v == null || v === '' ? d : v; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem('tt-ml-' + k, v); } catch (e) {} } };
@@ -3942,7 +3967,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     // eventos
     $('ml-subir-b').addEventListener('click', () => $('ml-file').click());
     $('ml-file').addEventListener('change', (e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) subir(f); });
-    $('ml-conectar').addEventListener('click', () => window.open(CONEXION, '_blank', 'noopener'));
+    $('ml-conectar').addEventListener('click', () => { const x = $('ml-cx'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     $('ml-abrir').addEventListener('click', () => bitacora('ABRIR MERCADO LIBRE', ''));
     ['ml-ver', 'ml-fam'].forEach((i) => $(i).addEventListener('change', () => { st.sort = null; pintar(); }));
     $('ml-q').addEventListener('input', tabla);
@@ -3957,6 +3982,263 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     $('ml-bajar-todo').addEventListener('click', bajarTodo);
     dash.onData(() => { if (!SERVER) return; if (!$('v-ml').hidden) pintar(); else contador(); });
     return { pintar, contador, recargar, leerML, _leerHoja: leerHoja, _conciliar: conciliar };
+  })();
+
+  // ---------- Mercado Libre: conexión directa, estadísticas y acciones aprobadas por el usuario ----------
+  window.TT_MLX = (() => {
+    const FN = 'https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/mercadolibre';
+    const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+    const editor = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'CARGA');
+    const responde = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'CARGA' || YO.rol === 'REGULARIZA');
+    const TIPOS = { gold_special: 'Clásica', gold_pro: 'Premium', gold: 'Oro', silver: 'Plata', bronze: 'Bronce', free: 'Gratuita' };
+    let EST = null, tab = 'cambios', CAMB = null, PREP = null, cargando = false;
+    async function llamar(fn, ...args) {
+      const { data } = await sb.auth.getSession(); const tk = data && data.session ? data.session.access_token : '';
+      const r = await fetch(FN, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + tk }, body: JSON.stringify({ fn, args }) });
+      const o = await r.json().catch(() => ({ ok: false, error: 'El servidor de Mercado Libre no respondió (' + r.status + ').' }));
+      if (!o.ok) throw new Error(String(o.error || 'error').replace(/^(SESION|PERMISO): /, ''));
+      return o.v;
+    }
+    const nota = (t, k) => { const m = $('mlx-msg'); m.textContent = t || ''; m.className = 'sh-msg' + (k ? ' ' + k : ''); };
+    const u2 = (x) => (x == null ? '—' : window.TT.fmt.usd2(x));
+    async function abrir() {
+      if (!$('ml-cx')) return;
+      if (cargando) return; cargando = true;
+      try { EST = await llamar('estado'); } catch (e) { EST = { error: e.message }; } finally { cargando = false; }
+      pintar();
+    }
+    function pintar() {
+      const box = $('ml-cx'); if (!box) return; box.replaceChildren();
+      const h = el('div', 'mlx-h'); const t = el('h3'); t.innerHTML = '<span class="mlx-dot ' + (EST && EST.conectado && EST.estado && !/^Error/.test(EST.estado.mensaje || '') ? 'on' : '') + '"></span> Conexión directa con Mercado Libre'; h.appendChild(t);
+      const acc = el('div', 'mlx-acc'); h.appendChild(acc); box.appendChild(h);
+      const linea = el('p', 'mlx-st'); box.appendChild(linea);
+      const btn = (txt, cls, fn) => { const b = el('button', 'sh-btn ' + (cls || ''), txt); b.type = 'button'; b.addEventListener('click', () => fn(b)); acc.appendChild(b); return b; };
+      if (!EST || EST.error) { linea.textContent = EST && EST.error ? 'No se pudo consultar la conexión: ' + EST.error : 'Consultando…'; box.appendChild(mmsg()); return; }
+      const e = EST.estado || {};
+      if (!EST.app) {
+        linea.innerHTML = '<b>Falta un paso para conectar.</b> Mercado Libre exige registrar una "aplicación" con la cuenta de la empresa. Cuando esté lista, el administrador presiona <b>Conectar</b>.';
+      } else if (!EST.conectado) {
+        linea.innerHTML = 'La aplicación está lista. Falta autorizar la cuenta: presione <b>Conectar con Mercado Libre</b>, entre con la cuenta de la empresa y presione <b>Permitir</b>.';
+      } else {
+        linea.textContent = 'Conectado como ' + ((EST.cuenta && EST.cuenta.nick) || e.cuenta || '—') + ' · última lectura ' + fmtF(e.ultima_sync) + (e.ultimo_aviso ? ' · último aviso de ML ' + fmtF(e.ultimo_aviso) : '') + ' · se actualiza sola cada hora y con cada venta o pregunta.';
+        if (e.mensaje) { const m = el('p', 'mlx-warn', e.mensaje); box.appendChild(m); }
+      }
+      if (YO && YO.rol === 'ADMIN' && EST.app) btn(EST.conectado ? 'Reconectar' : 'Conectar con Mercado Libre', EST.conectado ? 'lt' : 'mlx-amarillo', conectar);
+      if (EST.conectado && responde()) btn('Leer ahora', 'lt', leerAhora);
+      if (editor()) btn('Reglas de precio y stock', 'lt', () => { const f = $('mlx-cfg'); f.hidden = !f.hidden; });
+      if (!EST.app && YO && YO.rol === 'ADMIN') { const p = el('div', 'mlx-pasos'); p.innerHTML = '<b>Cómo crear la aplicación (una sola vez):</b><ol><li>Entrar a <a href="https://developers.mercadolibre.com.ve/devcenter" target="_blank" rel="noopener">developers.mercadolibre.com.ve</a> con la cuenta de Mercado Libre de la empresa y crear una aplicación.</li><li>URI de redirección y URL de notificaciones: <code>' + EST.redirect + '</code></li><li>Permisos: lectura y escritura, <b>offline_access</b>; avisos de <b>orders_v2, questions, items</b>.</li><li>Copiar el <b>App ID</b> y la <b>Secret Key</b> a Supabase › Edge Functions › Secrets como <code>ML_APP_ID</code> y <code>ML_SECRET</code>.</li></ol>'; box.appendChild(p); }
+      box.appendChild(formConfig());
+      if (EST.conectado) { box.appendChild(estadisticas()); box.appendChild(pestanas()); }
+      box.appendChild(mmsg());
+      if (EST.conectado) cuerpo();
+    }
+    const mmsg = () => { const m = el('div', 'sh-msg'); m.id = 'mlx-msg'; m.setAttribute('role', 'status'); return m; };
+    async function conectar() {
+      if (EST.conectado && !confirm('¿Volver a autorizar la cuenta de Mercado Libre? Solo hace falta si la conexión dejó de funcionar.')) return;
+      try { const r = await llamar('conectar'); window.open(r.url, '_blank', 'noopener'); nota('Se abrió Mercado Libre en otra pestaña: entre con la cuenta de la empresa y presione Permitir. Luego vuelva aquí y recargue.', 'ok'); }
+      catch (e) { nota(e.message, 'err'); }
+    }
+    async function leerAhora(b) {
+      b.disabled = true; nota('Leyendo Mercado Libre… (puede tardar uno o dos minutos)');
+      try { const r = await llamar('sincronizar'); nota(r.ocupado ? 'Ya se estaba leyendo; espere un momento y recargue.' : 'Listo: ' + r.publicaciones + ' publicaciones, ' + r.ventas + ' líneas de venta, ' + r.preguntas + ' preguntas (' + r.segundos + ' s).', 'ok'); CAMB = null; await window.TT_ML.recargar(); await abrir(); }
+      catch (e) { nota(e.message, 'err'); b.disabled = false; }
+    }
+    // ---- reglas
+    function formConfig() {
+      const c = EST.config || {}, f = el('form', 'tt-card mlx-cfg'); f.id = 'mlx-cfg'; f.hidden = true;
+      f.innerHTML = '<h4>Reglas para publicar y sincronizar</h4><div class="mlx-grid">'
+        + '<label>Recargo sobre el precio de Profit (%)<input class="tt-in" name="recargo" type="number" min="0" max="300" step="0.5"></label>'
+        + '<label>Tipo de publicación<select class="tt-in" name="tipo_publicacion">' + Object.entries(TIPOS).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join('') + '</select></label>'
+        + '<label>Unidades que se reservan (no se ofrecen en ML)<input class="tt-in" name="stock_reserva" type="number" min="0" step="1"></label>'
+        + '<label>Máximo de unidades a mostrar (vacío = todas)<input class="tt-in" name="stock_maximo" type="number" min="1" step="1"></label>'
+        + '<label>Condición<select class="tt-in" name="condicion"><option value="new">Nuevo</option><option value="used">Usado</option></select></label>'
+        + '<label>Garantía<input class="tt-in" name="garantia" maxlength="120" placeholder="Ej.: 30 días"></label>'
+        + '<label class="mlx-w">Texto al final de cada descripción<textarea class="tt-in" name="descripcion_pie" rows="2" maxlength="2000"></textarea></label>'
+        + '<label class="mlx-ck"><input type="checkbox" name="sinc_stock"> Igualar el stock de ML al inventario</label>'
+        + '<label class="mlx-ck"><input type="checkbox" name="sinc_precio"> Igualar el precio de ML a Profit + recargo</label>'
+        + '<label class="mlx-ck"><input type="checkbox" name="pausar_sin_stock"> Pausar lo que se quede sin stock (y reactivar al volver)</label>'
+        + '<label class="mlx-ck"><input type="checkbox" name="auto_aplicar"> Aplicar estos cambios solos cada hora (si no, se aprueban aquí)</label>'
+        + '</div><p class="tt-note">Ejemplo: con 15% de recargo, un repuesto de US$ 100 en Profit se publica a US$ 115; después de la comisión de Mercado Libre queda cerca del precio de Profit.</p>'
+        + '<div class="sh-row" style="gap:.5rem"><button class="sh-btn" type="submit">Guardar reglas</button><button class="sh-btn lt" type="button" data-x="1">Cerrar</button></div>';
+      Object.entries(c).forEach(([k, v]) => { const i = f.elements[k]; if (!i) return; if (i.type === 'checkbox') i.checked = !!v; else i.value = v == null ? '' : v; });
+      f.querySelector('[data-x]').addEventListener('click', () => { f.hidden = true; });
+      f.addEventListener('submit', async (ev) => {
+        ev.preventDefault(); const o = {}; [...f.elements].forEach((i) => { if (i.name) o[i.name] = i.type === 'checkbox' ? i.checked : i.value; });
+        if (o.auto_aplicar && !c.auto_aplicar && !confirm('Con esta opción el tablero cambiará solo, cada hora, el stock y el precio de las publicaciones vinculadas a su inventario. ¿Activarla?')) return;
+        try { EST.config = await llamar('configurar', o); nota('Reglas guardadas.', 'ok'); CAMB = null; f.hidden = true; if (tab === 'cambios') cuerpo(); }
+        catch (e) { nota(e.message, 'err'); }
+      });
+      return f;
+    }
+    // ---- estadísticas
+    function estadisticas() {
+      const T = window.TT, ml = (SERVER && SERVER.ml) || {}, e = EST.estado || {}, pubs = ml.pubs || [], ventas = ml.ventas || [];
+      const d30 = Date.now() - 30 * 864e5, v30 = ventas.filter((v) => v.fecha && Date.parse(v.fecha) >= d30 && !/cancel/i.test(v.estado || ''));
+      const vis = pubs.reduce((s, p) => s + (Number(p.visitas_30) || 0), 0), uds = v30.reduce((s, v) => s + (Number(v.cantidad) || 0), 0), nv = new Set(v30.map((v) => v.venta_id)).size;
+      const monto = v30.reduce((s, v) => s + (Number(v.total) || 0), 0), com = v30.reduce((s, v) => s + (Number(v.comision) || 0), 0);
+      const act = pubs.filter((p) => p.estado === 'active'), rep = e.reputacion || {};
+      const NIV = { '5_green': 'Verde (la mejor)', '4_light_green': 'Verde claro', '3_yellow': 'Amarilla', '2_orange': 'Naranja', '1_red': 'Roja' };
+      const box = el('div', 'mlx-stats');
+      const k = (titulo, val, sub, cls) => { const d = el('div', 'mlx-k ' + (cls || '')); d.append(el('span', 'k', titulo), el('b', '', val), el('span', 's', sub || '')); box.appendChild(d); };
+      k('Visitas · 30 días', T.fmt.int(vis), act.length ? T.fmt.num(Math.round(vis / act.length * 10) / 10) + ' por publicación activa' : '');
+      k('Conversión · 30 días', vis ? T.fmt.pct(nv / vis) : '—', nv + ' ventas de ' + T.fmt.int(vis) + ' visitas', vis && nv / vis < 0.01 ? 'warn' : '');
+      k('Vendido · 30 días', T.fmt.usd0(monto), T.fmt.int(uds) + ' unidades' + (com ? ' · comisión ' + T.fmt.usd0(com) : ''), monto ? 'ok' : 'warn');
+      k('Reputación', NIV[e.nivel] || (e.nivel ? e.nivel : 'Sin nivel aún'), (e.medalla ? 'MercadoLíder ' + e.medalla + ' · ' : '') + (rep.transacciones && rep.transacciones.total ? T.fmt.int(rep.transacciones.total) + ' ventas en total' : ''), /green/.test(e.nivel || '') ? 'ok' : e.nivel ? 'warn' : '');
+      k('Preguntas sin responder', T.fmt.int(e.preguntas_pendientes || 0), e.pregunta_mas_antigua ? 'la más antigua desde ' + fmtF(e.pregunta_mas_antigua) : 'responder rápido sube la venta', e.preguntas_pendientes ? 'bad' : 'ok');
+      k('Publicaciones activas', T.fmt.int(act.length) + ' de ' + T.fmt.int(pubs.length), T.fmt.int(pubs.filter((p) => p.estado === 'paused').length) + ' pausadas', '');
+      // oportunidades
+      const opo = el('div', 'mlx-opo');
+      const lista = (titulo, expl, rows, cols) => { if (!rows.length) return; const c = el('div', 'mlx-l'); c.append(el('h5', '', titulo), el('p', 'tt-note', expl)); const tb = el('table', 'tt-t mlx-t'); const tr = el('tr'); cols.forEach(([, n]) => tr.appendChild(el('th', '', n))); const th = el('thead'); th.appendChild(tr); tb.appendChild(th); const bd = el('tbody');
+        rows.forEach((r) => { const x = el('tr'); cols.forEach(([f]) => { const td = el('td'); if (f === 'titulo' && r.permalink) { const a = el('a', '', r.titulo); a.href = r.permalink; a.target = '_blank'; a.rel = 'noopener'; td.appendChild(a); } else td.textContent = r[f] == null ? '—' : typeof r[f] === 'number' ? T.fmt.num(r[f]) : r[f]; x.appendChild(td); }); bd.appendChild(x); });
+        tb.appendChild(bd); c.appendChild(tb); opo.appendChild(c); };
+      const vend30 = {}; v30.forEach((v) => { vend30[v.item_id] = (vend30[v.item_id] || 0) + (Number(v.cantidad) || 0); });
+      lista('Muy visitadas y sin ventas (30 días)', 'La gente las ve pero no compra: revise precio, fotos, título y si responde rápido las preguntas.',
+        act.filter((p) => (p.visitas_30 || 0) >= 10 && !vend30[p.item_id]).sort((a, b) => b.visitas_30 - a.visitas_30).slice(0, 8).map((p) => ({ ...p, precio: u2(p.precio) })), [['titulo', 'Publicación'], ['visitas_30', 'Visitas'], ['precio', 'Precio'], ['stock', 'Stock']]);
+      lista('Las que más venden (30 días)', 'Cuide que nunca les falte stock.',
+        Object.entries(vend30).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([id, u]) => { const p = pubs.find((x) => x.item_id === id) || { titulo: id }; return { ...p, u, visitas_30: p.visitas_30 }; }), [['titulo', 'Publicación'], ['u', 'Unid.'], ['visitas_30', 'Visitas'], ['stock', 'Stock ML']]);
+      lista('Activas sin visitas (30 días)', 'Nadie las encuentra: mejore el título (marca, modelo, año, número de parte) y la foto principal.',
+        act.filter((p) => p.visitas_30 === 0).slice(0, 8).map((p) => ({ ...p, precio: u2(p.precio) })), [['titulo', 'Publicación'], ['precio', 'Precio'], ['stock', 'Stock']]);
+      const w = el('div'); w.append(box, opo); return w;
+    }
+    // ---- pestañas
+    function pestanas() {
+      const w = el('div', 'mlx-tabs'); w.setAttribute('role', 'tablist');
+      const P = [['cambios', 'Stock y precio por actualizar'], ['publicar', 'Publicar lo que falta'], ['preguntas', 'Preguntas'], ['historial', 'Historial de cambios']];
+      P.forEach(([id, n]) => { const b = el('button', 'mlx-tab' + (tab === id ? ' on' : ''), n); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', tab === id ? 'true' : 'false'); b.addEventListener('click', () => { tab = id; pintar(); }); w.appendChild(b); });
+      const c = el('div', 'mlx-body'); c.id = 'mlx-body'; const o = el('div'); o.append(w, c); return o;
+    }
+    function cuerpo() {
+      const c = $('mlx-body'); if (!c) return; c.replaceChildren();
+      if (tab === 'cambios') return vCambios(c);
+      if (tab === 'publicar') return vPublicar(c);
+      if (tab === 'preguntas') return vPreguntas(c);
+      return vHistorial(c);
+    }
+    // cambios de stock / precio
+    async function vCambios(c) {
+      if (!CAMB) { c.appendChild(el('p', 'tt-note', 'Calculando…')); try { CAMB = await llamar('cambios'); } catch (e) { c.replaceChildren(el('p', 'mlx-warn', e.message)); return; } c.replaceChildren(); }
+      const cfg = CAMB.config || {}, L = CAMB.cambios;
+      c.appendChild(el('p', 'tt-note', 'Publicaciones vinculadas a un código del inventario cuyo stock o precio no coincide con las reglas (precio de Profit + ' + cfg.recargo + '%' + (cfg.stock_reserva > 0 ? ', reservando ' + cfg.stock_reserva + ' unidades' : '') + '). Las publicaciones con variaciones se ajustan a mano en Mercado Libre.' + (cfg.auto_aplicar ? ' La aplicación automática cada hora está ACTIVA.' : '')));
+      if (!L.length) { c.appendChild(el('p', 'mlx-ok', '✔ Todo coincide: no hay cambios pendientes.')); return; }
+      const tb = el('table', 'tt-t mlx-t'); tb.innerHTML = '<thead><tr><th><input type="checkbox" aria-label="Marcar todos" checked></th><th>Publicación</th><th>Código</th><th class="n">Stock ML → nuevo</th><th class="n">Precio ML → nuevo</th><th>Estado</th></tr></thead>';
+      const bd = el('tbody');
+      L.forEach((x, i) => { const tr = el('tr'); const t0 = el('td'); const ck = el('input'); ck.type = 'checkbox'; ck.checked = true; ck.dataset.i = i; t0.appendChild(ck); tr.appendChild(t0);
+        const t1 = el('td'); t1.textContent = x.titulo; t1.appendChild(el('small', 'mlx-id', ' ' + x.item_id)); tr.appendChild(t1);
+        tr.appendChild(el('td', 'code', x.codigo));
+        tr.appendChild(el('td', 'n', x.stock != null ? x.stock_ml + ' → ' + x.stock : String(x.stock_ml)));
+        tr.appendChild(el('td', 'n', x.precio != null ? u2(x.precio_ml) + ' → ' + u2(x.precio) : u2(x.precio_ml)));
+        tr.appendChild(el('td', '', x.estado_nuevo ? (x.estado_nuevo === 'paused' ? 'Pausar' : 'Reactivar') + ' · ' + x.motivo : (x.estado === 'active' ? 'Activa' : 'Pausada')));
+        bd.appendChild(tr); });
+      tb.appendChild(bd); const sc = el('div', 'tt-scroll'); sc.appendChild(tb); c.appendChild(sc);
+      tb.querySelector('thead input').addEventListener('change', (ev) => bd.querySelectorAll('input').forEach((i) => { i.checked = ev.target.checked; }));
+      if (!editor()) return;
+      const b = el('button', 'sh-btn', 'Aplicar en Mercado Libre los marcados'); b.type = 'button'; c.appendChild(b);
+      b.addEventListener('click', async () => {
+        const sel = [...bd.querySelectorAll('input:checked')].map((i) => L[Number(i.dataset.i)]);
+        if (!sel.length) return nota('Marque al menos una publicación.', 'err');
+        if (!confirm('Se van a cambiar ' + sel.length + ' publicaciones en Mercado Libre (stock, precio o estado). ¿Continuar?')) return;
+        b.disabled = true; nota('Aplicando ' + sel.length + ' cambios…');
+        try { const r = await llamar('aplicar', sel); nota('Listo: ' + r.ok + ' publicaciones actualizadas' + (r.errores ? ' · ' + r.errores + ' con error: ' + r.resultados.filter((x) => !x.ok).slice(0, 3).map((x) => x.item_id + ' (' + x.error + ')').join('; ') : '') + '.', r.errores ? 'err' : 'ok'); CAMB = null; await window.TT_ML.recargar(); cuerpo(); }
+        catch (e) { nota(e.message, 'err'); b.disabled = false; }
+      });
+    }
+    // publicar
+    function candidatos() {
+      const R = window.TT_ML && window.TT_ML._conciliar(); if (!R) return [];
+      const fotos = window.TT_FOTO && window.TT_FOTO.yaMapa ? window.TT_FOTO.yaMapa() : null;
+      return R.k.np.slice().sort((a, b) => (b.valor || 0) - (a.valor || 0)).map((r) => ({ ...r, foto: fotos ? !!fotos[String(r.codigo).toUpperCase()] : null }));
+    }
+    function vPublicar(c) {
+      if (PREP) return vRevisar(c);
+      const L = candidatos();
+      c.appendChild(el('p', 'tt-note', 'Artículos con existencia que no tienen publicación activa, del mayor al menor valor a costo. Marque los que quiere publicar (hasta 20 por vez): el tablero sugiere título, categoría, atributos y precio, y usted revisa antes de publicar. Mercado Libre exige al menos una foto.'));
+      if (!L.length) { c.appendChild(el('p', 'mlx-ok', '✔ Todo lo que tiene stock ya está publicado.')); return; }
+      const fil = el('input', 'tt-in mlx-q'); fil.type = 'search'; fil.placeholder = 'Buscar código o descripción'; c.appendChild(fil);
+      const tb = el('table', 'tt-t mlx-t'); tb.innerHTML = '<thead><tr><th></th><th>Código</th><th>Descripción</th><th class="n">Stock</th><th class="n">Valor a costo</th><th>Foto</th></tr></thead>';
+      const bd = el('tbody'); tb.appendChild(bd); const sc = el('div', 'tt-scroll mlx-sc'); sc.appendChild(tb); c.appendChild(sc);
+      const sel = new Set();
+      const dibujar = () => { bd.replaceChildren(); const q = fil.value.trim().toLowerCase();
+        L.filter((r) => !q || (r.codigo + ' ' + r.descripcion).toLowerCase().includes(q)).slice(0, 300).forEach((r) => {
+          const tr = el('tr'); const t0 = el('td'); const ck = el('input'); ck.type = 'checkbox'; ck.checked = sel.has(r.codigo); ck.addEventListener('change', () => { if (ck.checked) { if (sel.size >= 20) { ck.checked = false; return nota('Máximo 20 artículos por vez.', 'err'); } sel.add(r.codigo); } else sel.delete(r.codigo); cnt(); }); t0.appendChild(ck); tr.appendChild(t0);
+          tr.append(el('td', 'code', r.codigo), el('td', '', r.descripcion), el('td', 'n', window.TT.fmt.num(r.stock)), el('td', 'n', r.valor == null ? '—' : window.TT.fmt.usd0(r.valor)), el('td', '', r.foto == null ? '' : r.foto ? '✔' : 'Falta'));
+          bd.appendChild(tr); }); };
+      fil.addEventListener('input', dibujar); dibujar();
+      const b = el('button', 'sh-btn', 'Preparar los marcados'); b.type = 'button'; b.disabled = true; c.appendChild(b);
+      const cnt = () => { b.disabled = !sel.size || !editor(); b.textContent = sel.size ? 'Preparar ' + sel.size + ' para publicar' : 'Preparar los marcados'; };
+      b.addEventListener('click', async () => { b.disabled = true; nota('Buscando categoría y datos que pide Mercado Libre…');
+        try { PREP = await llamar('preparar', [...sel]); nota(''); cuerpo(); } catch (e) { nota(e.message, 'err'); b.disabled = false; } });
+    }
+    function vRevisar(c) {
+      const cfg = PREP.config || {};
+      c.appendChild(el('p', 'tt-note', 'Revise cada artículo. Precio sugerido = precio de Profit + ' + cfg.recargo + '%. Tipo de publicación: ' + (TIPOS[cfg.tipo_publicacion] || cfg.tipo_publicacion) + '. Solo se publican los que usted marque como aprobados.'));
+      const cards = [];
+      PREP.articulos.forEach((a) => {
+        const d = el('div', 'mlx-art' + (a.listo ? '' : ' falta')); c.appendChild(d);
+        const top = el('div', 'mlx-art-h'); const ap = el('input'); ap.type = 'checkbox'; ap.checked = false; ap.disabled = !a.titulo; const lb = el('label', 'mlx-ap'); lb.append(ap, ' Aprobar');
+        top.append(el('b', 'code', a.codigo), el('span', '', ' ' + (a.descripcion || '')), lb); d.appendChild(top);
+        (a.avisos || []).forEach((t) => d.appendChild(el('p', 'mlx-warn', '⚠ ' + t)));
+        if (!a.titulo) return;
+        const fs = el('div', 'mlx-fotos'); (a.fotos || []).forEach((u) => { const i = el('img'); i.src = u; i.alt = ''; i.loading = 'lazy'; fs.appendChild(i); }); d.appendChild(fs);
+        const g = el('div', 'mlx-grid');
+        const campo = (lab, inp) => { const l = el('label', ''); l.append(lab, inp); g.appendChild(l); return inp; };
+        const ti = el('input', 'tt-in'); ti.maxLength = 60; ti.value = a.titulo; const tl = el('label', 'mlx-w'); const tc = el('small', '', ''); const upd = () => { tc.textContent = ' (' + ti.value.length + '/60)'; }; ti.addEventListener('input', upd); upd(); tl.append('Título', tc, ti); g.appendChild(tl);
+        const cat = el('select', 'tt-in'); (a.categorias || []).forEach((x) => cat.appendChild(new Option(x.nombre + ' · ' + x.id, x.id))); cat.appendChild(new Option('Otra (escribir código)…', '_')); campo('Categoría', cat);
+        const catx = el('input', 'tt-in'); catx.placeholder = 'MLV…'; catx.hidden = cat.value !== '_'; g.lastChild.appendChild(catx); cat.addEventListener('change', () => { catx.hidden = cat.value !== '_'; });
+        const pr = el('input', 'tt-in'); pr.type = 'number'; pr.min = '0.01'; pr.step = '0.01'; pr.value = a.precio == null ? '' : a.precio; campo('Precio US$', pr);
+        const sk = el('input', 'tt-in'); sk.type = 'number'; sk.min = '1'; sk.step = '1'; sk.value = a.stock || ''; campo('Stock a ofrecer (inventario: ' + a.stock_inv + ')', sk);
+        const atr = (a.atributos || []).map((x) => { let i; if (x.valores && x.valores.length) { i = el('select', 'tt-in'); i.appendChild(new Option('—', '')); x.valores.forEach((v) => i.appendChild(new Option(v, v))); if (x.valor && !x.valores.includes(x.valor)) i.appendChild(new Option(x.valor, x.valor)); i.value = x.valor || ''; } else { i = el('input', 'tt-in'); i.value = x.valor || ''; }
+          campo(x.nombre + (x.obligatorio ? ' *' : ''), i); return { id: x.id, i }; });
+        const ds = el('textarea', 'tt-in'); ds.rows = 2; ds.maxLength = 5000; ds.value = a.descripcion || ''; const dl = el('label', 'mlx-w'); dl.append('Descripción (se agrega el código y el texto de las reglas)', ds); g.appendChild(dl);
+        d.appendChild(g);
+        cards.push({ a, ap, d, leer: () => ({ codigo: a.codigo, titulo: ti.value.trim(), categoria: cat.value === '_' ? catx.value.trim().toUpperCase() : cat.value, precio: Number(pr.value), stock: Number(sk.value), fotos: a.fotos,
+          atributos: atr.map((x) => ({ id: x.id, valor: x.i.value })), descripcion_larga: ds.value, tipo: cfg.tipo_publicacion, condicion: cfg.condicion }) });
+      });
+      const fila = el('div', 'sh-row'); fila.style.gap = '.5rem'; fila.style.flexWrap = 'wrap'; c.appendChild(fila);
+      const b = el('button', 'sh-btn mlx-amarillo', 'Publicar los aprobados'); b.type = 'button'; const v = el('button', 'sh-btn lt', 'Volver a la lista'); v.type = 'button'; fila.append(b, v);
+      v.addEventListener('click', () => { PREP = null; cuerpo(); });
+      b.addEventListener('click', async () => {
+        const sel = cards.filter((x) => x.ap.checked);
+        if (!sel.length) return nota('Marque "Aprobar" en los artículos que quiere publicar.', 'err');
+        const malos = sel.map((x) => x.leer()).filter((o) => o.titulo.length < 10 || !(o.precio > 0) || !(o.stock > 0) || !/^MLV\d+$/.test(o.categoria) || !o.fotos.length);
+        if (malos.length) return nota('Revise ' + malos.map((o) => o.codigo).join(', ') + ': falta título, precio, stock, categoría o foto.', 'err');
+        if (!confirm('Se van a crear ' + sel.length + ' publicaciones nuevas en Mercado Libre, visibles para todos los compradores. ¿Publicar?')) return;
+        b.disabled = true; nota('Publicando ' + sel.length + '…');
+        try {
+          const r = await llamar('publicar', sel.map((x) => x.leer()));
+          r.resultados.forEach((x) => { const cd = sel.find((y) => y.a.codigo === x.codigo); if (!cd) return; const p = el('p', x.ok ? 'mlx-ok' : 'mlx-warn'); if (x.ok) { p.textContent = '✔ Publicado: '; const l = el('a', '', x.item_id); l.href = x.permalink || '#'; l.target = '_blank'; l.rel = 'noopener'; p.appendChild(l); cd.ap.checked = false; cd.ap.disabled = true; } else p.textContent = '✖ ' + x.error; cd.d.appendChild(p); });
+          nota(r.ok + ' publicados' + (r.errores ? ' · ' + r.errores + ' con error (vea el detalle en cada artículo, corrija y vuelva a presionar Publicar)' : '') + '.', r.errores ? 'err' : 'ok');
+          await window.TT_ML.recargar(); b.disabled = false;
+        } catch (e) { nota(e.message, 'err'); b.disabled = false; }
+      });
+    }
+    // preguntas
+    function vPreguntas(c) {
+      const L = ((SERVER && SERVER.ml && SERVER.ml.preguntas) || []).slice().sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)));
+      if (!L.length) { c.appendChild(el('p', 'mlx-ok', '✔ No hay preguntas esperando respuesta.')); return; }
+      c.appendChild(el('p', 'tt-note', 'Preguntas sin responder, la más antigua primero. La respuesta se publica en Mercado Libre con el nombre de la tienda.'));
+      const pubs = {}; ((SERVER.ml && SERVER.ml.pubs) || []).forEach((p) => { pubs[p.item_id] = p; });
+      L.forEach((q) => {
+        const d = el('div', 'mlx-q1'); const p = pubs[q.item_id] || {};
+        const h = el('div', 'mlx-qh'); const a = el('a', '', p.titulo || q.titulo || q.item_id); a.href = p.permalink || '#'; a.target = '_blank'; a.rel = 'noopener'; h.append(a, el('small', '', ' · ' + fmtF(q.fecha) + (p.stock != null ? ' · stock ML ' + p.stock : '') + (p.precio != null ? ' · ' + u2(p.precio) : '')));
+        d.append(h, el('p', 'mlx-qt', '“' + q.texto + '”'));
+        if (responde()) {
+          const t = el('textarea', 'tt-in'); t.rows = 2; t.maxLength = 2000; t.placeholder = 'Escriba la respuesta…'; const b = el('button', 'sh-btn', 'Responder'); b.type = 'button';
+          b.addEventListener('click', async () => { if (t.value.trim().length < 2) return nota('Escriba la respuesta.', 'err'); b.disabled = true;
+            try { await llamar('responder', q.pregunta_id, t.value.trim()); d.replaceChildren(el('p', 'mlx-ok', '✔ Respondida: ' + t.value.trim())); nota('Respuesta publicada.', 'ok'); window.TT_ML.recargar(); }
+            catch (e) { nota(e.message, 'err'); b.disabled = false; } });
+          d.append(t, b);
+        }
+        c.appendChild(d);
+      });
+    }
+    function vHistorial(c) {
+      const L = (EST && EST.acciones) || []; if (!L.length) { c.appendChild(el('p', 'tt-note', 'Todavía no hay cambios registrados.')); return; }
+      const NOM = { PUBLICAR: 'Publicó', STOCK: 'Stock', PRECIO: 'Precio', PAUSAR: 'Pausó', ACTIVAR: 'Reactivó', RESPONDER: 'Respondió', CONECTAR: 'Conectó', DESCONECTAR: 'Desconectó', SINCRONIZAR: 'Lectura', CONFIGURAR: 'Reglas', CAMBIO: 'Cambio' };
+      const tb = el('table', 'tt-t mlx-t'); tb.innerHTML = '<thead><tr><th>Fecha</th><th>Quién</th><th>Acción</th><th>Publicación</th><th>Detalle</th></tr></thead>'; const bd = el('tbody');
+      L.forEach((x) => { const tr = el('tr'); if (!x.ok) tr.className = 'mlx-err'; [fmtF(x.en), String(x.por || '').replace(/\s*<.*>/, ''), (NOM[x.accion] || x.accion) + (x.ok ? '' : ' ✖'), [x.item_id, x.codigo].filter(Boolean).join(' · '), String(x.detalle || '').slice(0, 220)].forEach((v) => tr.appendChild(el('td', '', v))); bd.appendChild(tr); });
+      tb.appendChild(bd); const sc = el('div', 'tt-scroll'); sc.appendChild(tb); c.appendChild(sc);
+    }
+    return { abrir, _llamar: llamar };
   })();
 
   // ---------- descargar en Excel lo que el usuario elija ----------
