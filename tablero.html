@@ -778,7 +778,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <!-- CARGAR -->
   <section class="sh-view" id="v-cargar" hidden>
     <h2 class="sh-h2">Cargar datos</h2>
-    <p class="sh-sub">Mientras no exista la conexión con Profit, el inventario se carga con los <b>4 reportes de inventario a costo</b> que entrega Profit, uno por almacén (.xls), y aparte la <b>lista de precios de venta</b>. Use una casilla por archivo, o arrastre todos juntos al recuadro: el tablero reconoce el almacén por el nombre del archivo (PRINCIPAL, TIENDA, TRANSITO, CONSIGNACION). Stock para vender = Principal + Tienda + Consignación; el tránsito se muestra aparte y suma al valor total. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
+    <p class="sh-sub">Mientras no exista la conexión con Profit, el inventario se carga con los <b>4 reportes de inventario a costo</b> que entrega Profit, uno por almacén (.xls), y aparte la <b>lista de precios de venta</b> y las <b>ventas del mes</b> (reporte "Facturas por artículo", en .xls o .pdf; puede subir varios meses). Use una casilla por archivo, o arrastre todos juntos al recuadro: el tablero reconoce el almacén por el nombre del archivo (PRINCIPAL, TIENDA, TRANSITO, CONSIGNACION). Stock para vender = Principal + Tienda + Consignación; el tránsito se muestra aparte y suma al valor total. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:900px">
       <div class="sh-slots" id="c-slots">
         <label class="sh-slot" data-alm="principal"><b>Almacén Principal</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
@@ -786,6 +786,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         <label class="sh-slot" data-alm="consignacion"><b>Consignación</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot" data-alm="transito"><b>Tránsito</b><small>Se muestra aparte · suma al total</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot pr" data-alm="precios"><b>Precios de venta</b><small>Lista de precios · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot pr" data-alm="ventas"><b>Ventas del mes</b><small>Facturas por artículo · Profit (.xls o .pdf)</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx,.pdf" multiple hidden></label>
       </div>
       <div class="sh-row">
         <div class="sh-f"><label for="c-corte">Fecha de corte del inventario</label><input type="date" id="c-corte"></div>
@@ -801,7 +802,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="sh-files" id="c-lista"></div>
       <div class="sh-drop" id="c-drop">
         <p style="margin:0 0 .5rem">O arrastre aquí todos los archivos juntos, o</p>
-        <input type="file" id="c-file" accept=".xls,.xlsx" multiple>
+        <input type="file" id="c-file" accept=".xls,.xlsx,.pdf" multiple>
       </div>
       <div class="tt-card">
         <h3>Últimas cargas</h3>
@@ -2952,6 +2953,102 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     return { lineas, hz, tot, archivos, faltan: ALM.filter(([k]) => !xs.some((x) => x.alm === k)).map(([, n]) => n), art: lineas.map(artDeLinea) };
   }
 
+  // ---------- ventas del mes: reporte "Facturas por artículo" de Profit (.pdf o .xls) ----------
+  const NUMV = /^-?\d{1,3}(?:\.\d{3})*,\d{2}$/, FECHAV = /^\d{2}\/\d{2}\/\d{4}$/;
+  const nVE = (v) => (typeof v === 'number' ? v : Number(String(v).trim().replace(/\./g, '').replace(',', '.')) || 0);
+  async function cargarPdfJs() {
+    if (window.pdfjsLib) return window.pdfjsLib;
+    await new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; sc.onload = ok; sc.onerror = () => no(new Error('no se pudo cargar el lector de PDF; revise la conexión a internet')); document.head.appendChild(sc); });
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    return window.pdfjsLib;
+  }
+  async function leerVentasPdf(buf, aviso) {
+    const lib = await cargarPdfJs(); const doc = await lib.getDocument({ data: buf }).promise;
+    const filas = [], malas = []; let tot = null, desde = null, hasta = null, esReporte = false;
+    for (let pn = 1; pn <= doc.numPages; pn++) {
+      if (aviso) aviso('Leyendo el PDF de ventas: página ' + pn + ' de ' + doc.numPages + '…');
+      const pg = await doc.getPage(pn); const H = pg.getViewport({ scale: 1 }).height; const tc = await pg.getTextContent();
+      const W = tc.items.filter((i) => i.str.trim()).map((i) => ({ t: i.str.trim(), x0: i.transform[4], x1: i.transform[4] + i.width, y: H - i.transform[5] }));
+      if (pn === 1) {
+        const txt = W.map((w) => w.t).join(' ');
+        esReporte = /FACTURAS POR ART/i.test(txt) || /Cantidad/i.test(txt);
+        const r = txt.match(/Desde\s+(\d{2}\/\d{2}\/\d{4})\s+Hasta\s+(\d{2}\/\d{2}\/\d{4})/); if (r) { desde = r[1]; hasta = r[2]; }
+      }
+      const tw = W.find((w) => /^Totales/.test(w.t)); const lim = tw ? tw.y - 2 : 1e9;
+      if (tw) { const L = W.filter((w) => Math.abs(w.y - tw.y) < 3 && NUMV.test(w.t)).sort((a, b) => a.x0 - b.x0); if (L.length >= 2) tot = { cantidad: nVE(L[0].t), total: nVE(L[L.length - 1].t) }; }
+      const ys = []; W.filter((w) => FECHAV.test(w.t) && w.x0 > 315 && w.x0 < 345 && w.y > 165 && w.y < lim).forEach((w) => { if (!ys.some((y) => Math.abs(y - w.y) < 1.5)) ys.push(w.y); });
+      ys.sort((a, b) => a - b).forEach((y) => {
+        const L = W.filter((w) => Math.abs(w.y - y) < 2);
+        const col = (a, b) => L.filter((w) => w.x0 >= a && w.x0 < b && !(w.x0 > 600 && NUMV.test(w.t))).sort((p, q) => p.x0 - q.x0).map((w) => w.t).join(' ').replace(/\s+/g, ' ').trim();
+        const r = { cliente: col(80, 222), vendedor: col(222, 270), numero: col(270, 318), fecha: col(318, 358), marca: col(358, 400), placa: col(400, 440), codigo: col(440, 486), descripcion: col(486, 636) };
+        const q = L.filter((w) => w.x1 >= 620 && w.x1 <= 656 && NUMV.test(w.t)), p = L.filter((w) => w.x1 >= 660 && w.x1 <= 705 && NUMV.test(w.t)), t = L.filter((w) => w.x1 >= 706 && w.x1 <= 760 && NUMV.test(w.t));
+        if (q.length !== 1 || t.length !== 1 || !FECHAV.test(r.fecha)) { malas.push('pág. ' + pn + ' factura ' + r.numero + ' ' + r.codigo); return; }
+        filas.push({ ...r, cantidad: nVE(q[0].t), precio: p.length ? nVE(p[0].t) : null, total: nVE(t[0].t) });
+      });
+    }
+    return esReporte || filas.length ? { filas, malas, tot, desde, hasta } : null;
+  }
+  function leerVentasXls(wb) {
+    for (const n of wb.SheetNames) {
+      const A = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: '', raw: true });
+      for (let i = 0; i < Math.min(30, A.length); i++) {
+        const cab = A[i].map((v, j) => quitarAcentos(String(v) + ' ' + String((A[i + 1] || [])[j] || '')).replace(/\s+/g, ' ').trim());
+        const busca = (f) => cab.findIndex(f);
+        const c = {
+          fecha: busca((h) => h.includes('fecha')), cant: busca((h) => h.startsWith('cantidad')), total: busca((h) => h.startsWith('total') || h.includes('monto') || h.includes('neto')),
+        };
+        if (c.fecha < 0 || c.cant < 0 || c.total < 0) continue;
+        Object.assign(c, {
+          num: busca((h) => /^(numero|nro|n°|factura|documento)/.test(h)),
+          cod: busca((h) => (h.includes('codigo') || h.startsWith('cod')) && h.includes('art')), des: busca((h) => h.includes('descrip') && h.includes('art')),
+          cli: busca((h) => (h.includes('descrip') && h.includes('cliente')) || h === 'cliente' || h.startsWith('nombre')), ven: busca((h) => h.includes('vendedor')),
+          mar: busca((h) => h.includes('marca') || h.includes('vehiculo')), pre: busca((h) => h.startsWith('precio')),
+        });
+        if (c.cod < 0) c.cod = busca((h) => h === 'articulo' || h.startsWith('codigo'));
+        if (c.des < 0) c.des = busca((h) => h.startsWith('descrip'));
+        if (c.cod < 0) continue;
+        const filas = [], malas = []; let tot = null;
+        A.slice(i + 1).forEach((r) => {
+          if (r.some((v) => /^totales?\s*:?$/i.test(String(v).trim()))) { const ns = r.filter((v) => typeof v === 'number' || /^-?[\d.]+(,\d+)?$/.test(String(v).trim())).map(nVE); if (ns.length >= 2) tot = { cantidad: ns[0], total: ns[ns.length - 1] }; return; }
+          let f = r[c.fecha]; const cod = String(r[c.cod] ?? '').trim();
+          if (f instanceof Date) f = String(f.getDate()).padStart(2, '0') + '/' + String(f.getMonth() + 1).padStart(2, '0') + '/' + f.getFullYear();
+          else if (typeof f === 'number' && f > 30000) { const d = new Date(Math.round((f - 25569) * 864e5)); f = String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0') + '/' + d.getUTCFullYear(); }
+          else f = String(f).trim().slice(0, 10).replace(/-/g, '/');
+          if (/^\d{4}\/\d{2}\/\d{2}$/.test(f)) f = f.split('/').reverse().join('/');
+          if (!FECHAV.test(f) || !cod) { if (cod && /\d/.test(String(r[c.fecha]))) malas.push(cod); return; }
+          filas.push({ cliente: c.cli >= 0 ? String(r[c.cli]).trim() : '', vendedor: c.ven >= 0 ? String(r[c.ven]).trim() : '', numero: c.num >= 0 ? String(r[c.num]).trim() : '', fecha: f,
+            marca: c.mar >= 0 ? String(r[c.mar]).trim() : '', codigo: cod, descripcion: c.des >= 0 ? String(r[c.des]).trim() : '',
+            cantidad: nVE(r[c.cant]), precio: c.pre >= 0 && r[c.pre] !== '' ? nVE(r[c.pre]) : null, total: nVE(r[c.total]) });
+        });
+        if (filas.length) return { filas, malas, tot, desde: null, hasta: null };
+      }
+    }
+    return null;
+  }
+  function armarVentas(filas) {
+    const M = {}; ((SERVER && SERVER.articulos) || []).forEach((a) => { M[String(a.codigo).toUpperCase()] = a; });
+    return filas.map((r) => {
+      const c = String(r.codigo).trim(), a = M[c.toUpperCase()]; const [d, m, y] = r.fecha.split('/');
+      const cat = a ? 'Repuestos de inventario' : /^SER/i.test(c) ? 'Mano de obra' : /^EXT/i.test(c) ? 'Servicios externos' : /^SM-/i.test(c) ? 'Lavado' : 'Repuestos fuera de inventario';
+      return { mes: y + '-' + m, fecha: y + '-' + m + '-' + d, factura: String(r.numero || '').replace(/^0+/, ''), cliente: r.cliente || null, vendedor: r.vendedor || null, vehiculo: (r.marca || '').toUpperCase() || null,
+        codigo: a ? a.codigo : c, descripcion: r.descripcion || null, categoria: cat, cantidad: r.cantidad, precio: r.precio, total: Math.round(r.total * 100) / 100,
+        costo_unit: a && a.costo ? Math.round(a.costo * 10000) / 10000 : null };
+    });
+  }
+  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const nomMes = (m) => MESES[Number(m.slice(5, 7)) - 1] + ' ' + m.slice(0, 4);
+  async function guardarVentas(xs) {
+    const filas = xs.flatMap((x) => x.filas.map((f) => ({ ...f, archivo: x.archivo })));
+    const meses = [...new Set(filas.map((f) => f.mes))].sort();
+    const ya = ok(await sb.from('ventas_lineas').select('mes').eq('empresa_id', EMPRESA).in('mes', meses).limit(1));
+    if (ya.length && !window.confirm('Ya hay ventas cargadas de ' + meses.map(nomMes).join(', ') + '. Se reemplazarán por las de este archivo. ¿Continuar?')) throw new Error('Carga de ventas cancelada. No se cambió nada.');
+    ok(await sb.from('ventas_lineas').delete().eq('empresa_id', EMPRESA).in('mes', meses));
+    const cnt = {}, ins = filas.map((f) => { cnt[f.mes] = (cnt[f.mes] || 0) + 1; return { empresa_id: EMPRESA, linea: cnt[f.mes], ...f, cargado_por: YO.correo }; });
+    try { await enBloques('ventas_lineas', ins, 'Guardando ventas'); }
+    catch (e) { await sb.from('ventas_lineas').delete().eq('empresa_id', EMPRESA).in('mes', meses); throw new Error('No se pudieron guardar las ventas (' + e.message + '). Vuelva a subir el archivo de ventas'); }
+    return { meses, lineas: ins.length, total: ins.reduce((t, f) => t + f.total, 0) };
+  }
+
   let LOTE = [];
   const fmtU = (v) => 'US$ ' + d3.format(',.0f')(v).replace(/,/g, '.');
   const fmtNum = (v) => (Math.round(v * 100) / 100).toLocaleString('es-VE');
@@ -2960,7 +3057,18 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     let error = false;
     for (const f of files) {
       try {
-        const wb = XLSX.read(await f.arrayBuffer(), { type: 'array', cellDates: true });
+        const buf = await f.arrayBuffer();
+        if (/\.pdf$/i.test(f.name)) {
+          const v = await leerVentasPdf(new Uint8Array(buf), (t) => msg($('c-msg'), t));
+          if (v && v.filas.length) { LOTE = LOTE.filter((x) => !(x.tipo === 'ventas' && x.archivo === f.name)); LOTE.push({ tipo: 'ventas', archivo: f.name, ...v, filas: armarVentas(v.filas) }); continue; }
+          error = true; msg($('c-msg'), '✖ ' + f.name + ': no reconozco este PDF. Debe ser el reporte "Facturas por artículo" de Profit. Vuelva a elegirlo.', 'err'); continue;
+        }
+        const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+        if (forzado === 'ventas') {
+          const v = leerVentasXls(wb);
+          if (v) { LOTE = LOTE.filter((x) => !(x.tipo === 'ventas' && x.archivo === f.name)); LOTE.push({ tipo: 'ventas', archivo: f.name, ...v, filas: armarVentas(v.filas) }); continue; }
+          error = true; msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo de ventas. Debe traer las columnas Fecha, Código de artículo, Cantidad y Total. Vuelva a elegirlo o súbalo en PDF.', 'err'); continue;
+        }
         if (forzado !== 'precios') {
           const r = leerAlmacen(wb);
           if (r && r.filas.length) {
@@ -2980,6 +3088,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         }
         const p = leerPrecios(wb);
         if (p && p.length) { LOTE = LOTE.filter((x) => x.tipo !== 'precios'); LOTE.push({ tipo: 'precios', archivo: f.name, filas: p }); continue; }
+        if (!forzado) { const v = leerVentasXls(wb); if (v) { LOTE = LOTE.filter((x) => !(x.tipo === 'ventas' && x.archivo === f.name)); LOTE.push({ tipo: 'ventas', archivo: f.name, ...v, filas: armarVentas(v.filas) }); continue; } }
         error = true;
         msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo, vuelva a elegirlo. ' + (forzado === 'precios' ? 'La lista de precios debe tener las columnas Código, Descripción y Precio 1.' : 'El reporte de inventario de Profit debe tener las columnas Artículo, Descripción, Stock Actual, Costo y Valor Total.'), 'err');
       } catch (e) { error = true; msg($('c-msg'), '✖ ' + f.name + ': no se pudo leer (' + e.message + '). Vuelva a elegir el archivo.', 'err'); }
@@ -2999,7 +3108,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const L = $('c-lista'); L.replaceChildren();
     const nombres = { articulos: 'Inventario conciliado', hallazgos: 'Hallazgos', precios: 'Lista de precios de venta' };
     const linea_ = (titulo, texto, cls) => { const d = document.createElement('div'); d.className = 'sh-file' + (cls ? ' ' + cls : ''); const b = document.createElement('b'); b.textContent = titulo; const s = document.createElement('span'); s.textContent = texto; d.append(b, s); L.appendChild(d); return d; };
-    const orden = (x) => (x.tipo === 'alm' ? (x.alm ? ALM.findIndex(([k]) => k === x.alm) : 9) : x.tipo === 'precios' ? 20 : 10);
+    const orden = (x) => (x.tipo === 'alm' ? (x.alm ? ALM.findIndex(([k]) => k === x.alm) : 9) : x.tipo === 'precios' ? 20 : x.tipo === 'ventas' ? 30 : 10);
     [...LOTE].sort((a, b) => orden(a) - orden(b)).forEach((x) => {
       if (x.tipo === 'alm') {
         const cuadra = !x.total ? null : Math.abs(x.total.valor - x.valor) < 1 && Math.abs(x.total.unidades - x.unidades) < 0.01;
@@ -3011,6 +3120,15 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           sel.addEventListener('change', () => { if (!sel.value) return; LOTE = LOTE.filter((y) => y === x || !(y.tipo === 'alm' && y.alm === sel.value)); x.alm = sel.value; pintarLote(); msg($('c-msg'), 'Archivos leídos. Revise el resumen y pulse "⬆ Subir al tablero".'); });
           d.appendChild(sel);
         }
+        return;
+      }
+      if (x.tipo === 'ventas') {
+        const uds = x.filas.reduce((t, f) => t + f.cantidad, 0), tot = x.filas.reduce((t, f) => t + f.total, 0), meses = [...new Set(x.filas.map((f) => f.mes))].sort();
+        const cuadra = !x.tot ? null : Math.abs(x.tot.total - tot) < 1 && Math.abs(x.tot.cantidad - uds) < 0.01;
+        const inv = x.filas.filter((f) => f.categoria === 'Repuestos de inventario');
+        linea_('Ventas de ' + meses.map(nomMes).join(', '), x.archivo + (x.desde ? ' · del ' + x.desde + ' al ' + x.hasta : '') + ' · ' + x.filas.length.toLocaleString('es-VE') + ' líneas · ' + fmtNum(uds) + ' uds. · ' + fmtU(tot) +
+          ' · repuestos del inventario ' + fmtU(inv.reduce((t, f) => t + f.total, 0)) + (cuadra === true ? ' · ✔ cuadra con los totales del reporte' : cuadra === false ? ' · ⚠ no cuadra con los totales del reporte (' + fmtNum(x.tot.cantidad) + ' uds. · ' + fmtU(x.tot.total) + ')' : '') +
+          (x.malas.length ? ' · ⚠ ' + x.malas.length + ' líneas no se pudieron leer' : ''), cuadra === false || x.malas.length ? 'warn' : '');
         return;
       }
       const r = resumenDe(x);
@@ -3025,8 +3143,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
     // estado de cada casilla
     document.querySelectorAll('#c-slots .sh-slot').forEach((c) => {
-      const k = c.dataset.alm, x = k === 'precios' ? LOTE.find((l) => l.tipo === 'precios') : LOTE.find((l) => l.tipo === 'alm' && l.alm === k);
-      c.classList.toggle('ok', !!x); c.querySelector('.st').textContent = x ? '✔ ' + x.archivo : 'Sin archivo'; c.querySelector('.sh-elegir').textContent = x ? '🔄 Cambiar archivo' : '📂 Elegir archivo';
+      const k = c.dataset.alm, vs = LOTE.filter((l) => l.tipo === 'ventas'), x = k === 'ventas' ? vs[0] : k === 'precios' ? LOTE.find((l) => l.tipo === 'precios') : LOTE.find((l) => l.tipo === 'alm' && l.alm === k);
+      c.classList.toggle('ok', !!x); c.querySelector('.st').textContent = x ? '✔ ' + (k === 'ventas' ? vs.map((v) => v.archivo).join(', ') : x.archivo) : 'Sin archivo'; c.querySelector('.sh-elegir').textContent = x ? '🔄 Cambiar archivo' : '📂 Elegir archivo';
     });
     const pend = LOTE.some((x) => x.tipo === 'alm' && !x.alm);
     $('c-ver').disabled = $('c-guardar').disabled = !LOTE.length || pend;
@@ -3040,17 +3158,19 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       else if (pend) { est.textContent = 'Indique el almacén de cada archivo marcado en amarillo'; est2.textContent = 'No se reconoció el almacén por el nombre del archivo'; }
       else {
         est.textContent = 'Paso 2: pulse "⬆ Subir al tablero" para guardar';
-        const f = [...(hayA && faltanA.length ? ['falta inventario de ' + faltanA.join(', ')] : []), ...(!hayA ? ['no se sube inventario'] : []), ...(!hayP ? ['no se sube lista de precios'] : [])];
-        est2.textContent = f.length ? 'Atención: ' + f.join(' · ') : '✔ Están los 4 reportes de inventario y la lista de precios';
+        const hayV = LOTE.some((x) => x.tipo === 'ventas');
+        const sube = [...(hayA ? ['inventario'] : []), ...(hayP ? ['lista de precios'] : []), ...(hayV ? ['ventas'] : [])];
+        const f = hayA && faltanA.length ? ' · Atención: falta inventario de ' + faltanA.join(', ') : '';
+        est2.textContent = 'Se subirá: ' + sube.join(', ') + f;
       }
     }
   }
   document.querySelectorAll('#c-slots .sh-slot').forEach((c) => {
     const inp = c.querySelector('input');
-    inp.addEventListener('change', (e) => { recibir([...e.target.files], c.dataset.alm); e.target.value = ''; });
+    inp.addEventListener('change', (e) => { if (c.dataset.alm === 'ventas') LOTE = LOTE.filter((x) => x.tipo !== 'ventas'); recibir([...e.target.files], c.dataset.alm); e.target.value = ''; });
     ['dragenter', 'dragover'].forEach((t) => c.addEventListener(t, (e) => { e.preventDefault(); c.classList.add('over'); }));
     ['dragleave', 'drop'].forEach((t) => c.addEventListener(t, (e) => { e.preventDefault(); c.classList.remove('over'); }));
-    c.addEventListener('drop', (e) => recibir([...e.dataTransfer.files].slice(0, 1), c.dataset.alm));
+    c.addEventListener('drop', (e) => recibir(c.dataset.alm === 'ventas' ? [...e.dataTransfer.files] : [...e.dataTransfer.files].slice(0, 1), c.dataset.alm));
   });
   $('c-file').addEventListener('change', (e) => { recibir([...e.target.files]); e.target.value = ''; });
   const drop = $('c-drop');
@@ -3061,7 +3181,14 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
 
   const combinado = () => {
     const base = soloDatos(SERVER || {});
-    LOTE.forEach((x) => { if (x.tipo !== 'alm') base[x.tipo] = x.filas; });
+    LOTE.forEach((x) => { if (x.tipo !== 'alm' && x.tipo !== 'ventas') base[x.tipo] = x.filas; });
+    const VS = LOTE.filter((x) => x.tipo === 'ventas');
+    if (VS.length) {
+      const nuevas = VS.flatMap((x) => x.filas), ms = new Set(nuevas.map((f) => f.mes));
+      base.ventas = [...base.ventas.filter((v) => !ms.has(v.mes)), ...nuevas.map((v) => ({ ...v, cliente: v.cliente || '', vendedor: v.vendedor || '', vehiculo: v.vehiculo || '', descripcion: v.descripcion || '', costo_total: v.costo_unit == null ? null : Math.round(v.costo_unit * v.cantidad * 100) / 100 }))]
+        .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha))).map((v, i) => ({ ...v, id: i + 1 }));
+      const t = document.getElementById('tab-ventas'); if (t) t.hidden = false;
+    }
     const U = unirAlmacenes();
     if (U) { base.articulos = U.art; base.hallazgos = U.hz; const c = $('c-corte').value || 'vista previa'; const mt = document.querySelector('.tt-meta'); if (mt && /^\d{4}-/.test(c)) mt.textContent = 'Vista previa del corte al ' + c.split('-').reverse().join('-') + ': reportes de inventario a costo de Profit por almacén · cifras en USD a costo'; base.historico = [...base.historico.filter((h) => h.corte !== c), { corte: c, valor_total: U.tot.valor_total, articulos_con_stock: U.tot.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
     else if (LOTE.some((x) => x.tipo === 'articulos')) { const r = resumenDe(LOTE.find((x) => x.tipo === 'articulos')); base.historico = [...base.historico.filter((h) => h.corte !== r.corte), { corte: r.corte || 'vista previa', valor_total: r.valor_total, articulos_con_stock: r.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
@@ -3157,6 +3284,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         hecho.push('inventario al ' + fecha.split('-').reverse().join('/') + ' (' + U.archivos.length + ' almacenes · ' + U.lineas.length.toLocaleString('es-VE') + ' códigos · valor total ' + fmtU(U.tot.valor_total) + ')');
         bitacora('CARGA INVENTARIO POR ALMACÉN', 'corte ' + fecha + ' · ' + U.archivos.map((x) => x.nombre + ' (' + x.archivo + ')').join(', ') + ' · ' + U.lineas.length + ' códigos · total ' + fmtU(U.tot.valor_total));
       } else if (a) { a.filas.archivo = a.archivo; await guardarCorte(a.filas, h && h.filas, fecha); bitacora('CARGA CONCILIACIÓN', a.archivo + ' · corte ' + fecha + ' · ' + a.filas.length + ' filas'); }
+      const vs = LOTE.filter((l) => l.tipo === 'ventas');
+      if (vs.length) { const r = await guardarVentas(vs); hecho.push('ventas de ' + r.meses.map(nomMes).join(', ') + ' (' + r.lineas.toLocaleString('es-VE') + ' líneas · ' + fmtU(r.total) + ')'); bitacora('CARGA VENTAS', vs.map((v) => v.archivo).join(', ') + ' · ' + r.meses.join(', ') + ' · ' + r.lineas + ' líneas'); }
       if (p) { await guardarPrecios(p, fecha); hecho.push('lista de precios (' + p.filas.length.toLocaleString('es-VE') + ' artículos)'); bitacora('CARGA PRECIOS', p.archivo + ' · ' + p.filas.length + ' filas'); }
       LOTE = []; PREVIEW = null; pintarLote(); $('t-preview').hidden = true;
       const ok_ = '✔ Datos subidos con éxito: ' + (hecho.join(' y ') || 'conciliación') + '. Todos los usuarios ya ven la nueva versión.';
