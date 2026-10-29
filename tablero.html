@@ -483,6 +483,20 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .alm-fil{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}.alm-fil input{flex:1 1 16rem;max-width:28rem}
 #t-almd th{cursor:pointer;white-space:nowrap}#t-almd td.neg{color:var(--color-bad);font-weight:600}
 
+.tt-tasas{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.75rem}
+.tt-tasas .tz{display:flex;flex-direction:column;gap:.1rem;padding:.55rem .85rem;border:1px solid var(--color-border-line);border-radius:10px;background:var(--color-panel);min-width:0}
+.tt-tasas .tz small{font-size:.72rem;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:.03em}
+.tt-tasas .tz b{font-family:var(--font-anthropic-serif);font-weight:400;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.tt-tasas .tz span{font-size:.76rem;color:var(--color-fg-muted)}
+.tt-tasas .tz-b{border-left:4px solid #f0b90b}
+.tt-tasas .tz-c{border-left:4px solid var(--color-border-line);opacity:.85}
+.tt-tasas .tz-sw{margin-left:auto;justify-content:center}
+.tz-g{display:flex;border:1px solid var(--color-border-line);border-radius:99px;overflow:hidden;margin-top:.2rem}
+.tz-g button{border:0;background:transparent;padding:.35rem .8rem;font-size:.82rem;cursor:pointer;color:var(--color-fg)}
+.tz-g button.on{background:var(--tt-ink,#2b2f36);color:#fff}
+.tz-g button:disabled{opacity:.4;cursor:not-allowed}
+@media print{.tt-tasas .tz-sw{display:none}}
+
 </style>
 </head>
 <body>
@@ -872,6 +886,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
     <button class="tt-btn tt-print" id="tt-print" title="Imprimir o guardar como PDF la pestaña que está viendo">Imprimir / PDF</button>
     <div class="tt-brandrow"><h2 class="tt-title" id="titulo">Inventario de repuestos Toyotengo</h2></div>
     <div class="tt-meta">Corte al 23-10-2026: reporte de Valor de Inventario de Profit conciliado contra el reporte de Stocks · cifras en USD a costo</div>
+    <div class="tt-tasas" id="tt-tasas"></div>
   </header>
 
   <nav class="tt-tabs" role="tablist" aria-label="Secciones">
@@ -1471,7 +1486,14 @@ window.TT = (() => {
   const num = (v) => (Number.isInteger(+v) ? d3.format(',')(v) : d3.format(',.1f')(v)).replace(/,/g, '§').replace(/\./g, ',').replace(/§/g, '.');
   const pct = (v) => d3.format('.1%')(v).replace('.', ',');
   const usdES = (s) => s.replace(/,/g, '§').replace(/\./g, ',').replace(/§/g, '.');
-  const fmt = { usd0: (v) => usdES(usd0(v)), usd2: (v) => usdES(usd2(v)), usdK: (v) => usdK(v), int, num, pct };
+  // Moneda: por defecto bolívares a tasa Binance P2P (la tasa BCV queda solo como constancia)
+  const MON = window.TT_MON = window.TT_MON || { modo: (() => { try { return localStorage.getItem('tt_mon') || 'BS'; } catch (e) { return 'BS'; } })(), binance: null, bcv: null };
+  const enBs = () => MON.modo === 'BS' && MON.binance > 0;
+  const bs0 = (v) => (v < 0 ? '−' : '') + 'Bs ' + d3.format(',.0f')(Math.abs(v * MON.binance));
+  const bs2 = (v) => (v == null ? '—' : 'Bs ' + d3.format(',.2f')(v * MON.binance));
+  const bsK = (v) => 'Bs ' + new Intl.NumberFormat('es', { notation: 'compact', maximumFractionDigits: 1 }).format(v * MON.binance);
+  const fmtUSD = { usd0: (v) => usdES(usd0(v)), usd2: (v) => usdES(usd2(v)), usdK: (v) => usdK(v), int, num, pct };
+  const fmt = { usd0: (v) => usdES(enBs() ? bs0(v) : usd0(v)), usd2: (v) => usdES(enBs() ? bs2(v) : usd2(v)), usdK: (v) => (enBs() ? bsK(v) : usdK(v)), int, num, pct, usd: fmtUSD };
   const fail = (el) => { el.replaceChildren(); const d = document.createElement('div'); d.className = 'tt-fail'; d.style.minHeight = '120px'; d.textContent = 'No cargó'; el.appendChild(d); };
   const tip = (box) => {
     let t = box.querySelector('.tt-tip');
@@ -1549,6 +1571,7 @@ window.TT = (() => {
     return l.length;
   };
   const chip = (td, text, kind) => { const s = document.createElement('span'); s.className = 'tt-chip ' + (kind || ''); s.textContent = text; td.appendChild(s); };
+  window.TT_USD = { fmt: fmtUSD, fail, tip, hbar, table, chip, measure };
   return { fmt, fail, tip, hbar, table, chip, measure };
 })();
 
@@ -2614,21 +2637,59 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       v_principal: r2(l.valor_principal), v_tienda: r2(l.valor_tienda), v_consignacion: r2(l.valor_consignacion) });
     return a;
   }
+  // ---------- tasas de cambio: Binance P2P para los cálculos, BCV como constancia ----------
+  function ponerTasas(t) {
+    const M = window.TT_MON; if (!M || !t) return;
+    const b = (t || []).find((x) => x.fuente === 'BINANCE'), c = (t || []).find((x) => x.fuente === 'BCV');
+    M.binance = b ? Number(b.valor) : null; M.bcv = c ? Number(c.valor) : null; M.tb = b; M.tc = c;
+    pintarTasas();
+    // si la tasa Binance tiene más de 40 minutos, se pide una nueva al servidor (sin esperar)
+    if (!M._pidiendo && (!b || Date.now() - new Date(b.tomada_en).getTime() > 40 * 60000)) {
+      M._pidiendo = true;
+      fetch(SUPABASE_URL + '/functions/v1/inventario', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fn: 'tasas', args: [] }) })
+        .then((r) => r.json()).then((j) => { if (j && j.ok && j.v) { const nb = j.v.find((x) => x.fuente === 'BINANCE'); if (nb && (!b || nb.tomada_en !== b.tomada_en)) { ponerTasas(j.v); dash._redraw(); } } }).catch(() => {}).finally(() => { setTimeout(() => { M._pidiendo = false; }, 60000); });
+    }
+  }
+  const fmtTasa = (v) => (v == null ? '—' : 'Bs ' + Number(v).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+  const fmtHora = (t) => { try { const d = new Date(t); return d.toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+  function pintarTasas() {
+    const el = document.getElementById('tt-tasas'), M = window.TT_MON; if (!el || !M) return;
+    el.replaceChildren();
+    const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+    const b = mk('div', 'tz tz-b'); b.append(mk('small', null, 'Tasa Binance P2P · para los cálculos'), mk('b', null, M.binance ? fmtTasa(M.binance) + ' por US$' : 'sin dato'),
+      mk('span', null, M.tb ? (M.tb.compra && M.tb.venta ? 'compra ' + fmtTasa(M.tb.compra) + ' · venta ' + fmtTasa(M.tb.venta) + ' · ' : '') + 'actualizada ' + fmtHora(M.tb.tomada_en) : 'se actualiza cada 30 minutos'));
+    b.title = M.tb ? 'Fuente: ' + M.tb.origen : '';
+    const c = mk('div', 'tz tz-c'); c.append(mk('small', null, 'Tasa oficial BCV · solo constancia'), mk('b', null, M.bcv ? fmtTasa(M.bcv) + ' por US$' : 'sin dato'),
+      mk('span', null, M.tc ? (M.tc.fecha_valor ? 'fecha valor ' + M.tc.fecha_valor.split('-').reverse().join('/') : '') + (M.binance && M.bcv ? ' · brecha Binance +' + ((M.binance / M.bcv - 1) * 100).toFixed(1).replace('.', ',') + ' %' : '') : ''));
+    c.title = M.tc ? 'Fuente: ' + M.tc.origen : '';
+    const sw = mk('div', 'tz tz-sw'); sw.appendChild(mk('small', null, 'Ver las cifras en'));
+    const g = mk('div', 'tz-g');
+    [['BS', 'Bs (tasa Binance)'], ['USD', 'US$']].forEach(([k, l]) => { const bt = mk('button', M.modo === k ? 'on' : '', l); bt.type = 'button'; bt.disabled = k === 'BS' && !M.binance;
+      bt.addEventListener('click', () => { M.modo = k; try { localStorage.setItem('tt_mon', k); } catch (e) {} pintarTasas(); metaMoneda(); dash._redraw(); }); g.appendChild(bt); });
+    sw.appendChild(g); el.append(b, c, sw);
+    metaMoneda();
+  }
+  function metaMoneda() {
+    const mt = document.querySelector('.tt-meta'), M = window.TT_MON; if (!mt || !M) return;
+    const enBs = M.modo === 'BS' && M.binance;
+    mt.textContent = mt.textContent.replace(/ · cifras .*$/, '') + ' · cifras ' + (enBs ? 'en bolívares a costo, a tasa Binance P2P (' + fmtTasa(M.binance) + ' por US$)' : 'en US$ a costo');
+  }
   async function leerDatos() {
     // Todo lo que no depende del corte arranca de una vez, en paralelo (ventas, histórico, Mercado Libre)
     const pVentas = todas(() => sb.from('ventas_lineas').select('mes, linea, fecha, factura, cliente, vendedor, vehiculo, codigo, descripcion, categoria, cantidad, precio, total, costo_unit').eq('empresa_id', EMPRESA).order('mes').order('linea')).catch(() => []);
     const pHist = todas(() => sb.from('v_historico').select('*').eq('empresa_id', EMPRESA).order('fecha_corte'));
     const pML = window.TT_ML ? window.TT_ML.leerML() : Promise.resolve(null);
+    const pTasas = sb.from('v_tasas').select('*').then(ok).catch(() => []);
     const pLista = sb.from('listas_precios').select('id, fecha').eq('empresa_id', EMPRESA).order('fecha', { ascending: false }).order('id', { ascending: false }).limit(1).then(ok)
       .then((l) => { const lista = l[0] || null; return Promise.all([lista, lista ? todas(() => sb.from('precios').select('codigo, descripcion, modelo, precio_1, precio_2').eq('lista_id', lista.id).order('codigo')) : []]); });
     const ult = ok(await sb.from('v_ultimo_corte').select('*').eq('empresa_id', EMPRESA).limit(1));
     const corte = ult[0] || null;
-    const [lineas, hz, [lista, pr], hist, seg, vt, ml] = await Promise.all([
+    const [lineas, hz, [lista, pr], hist, seg, vt, ml, tasas] = await Promise.all([
       corte ? todas(() => sb.from('corte_lineas').select('*').eq('corte_id', corte.id).order('fila')) : [],
       corte ? todas(() => sb.from('hallazgos').select('*').eq('corte_id', corte.id).order('id')) : [],
       pLista, pHist,
       corte ? todas(() => sb.from('seguimiento').select('*').eq('corte_id', corte.id)).catch(() => null) : [],
-      pVentas, pML,
+      pVentas, pML, pTasas,
     ]);
     const SEG = {}; (seg || []).forEach((x) => { SEG[x.clave] = x; });
     const out = {
@@ -2642,14 +2703,14 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         costo_unit: v.costo_unit == null ? null : num(v.costo_unit), costo_total: v.costo_unit == null ? null : r2(num(v.costo_unit) * num(v.cantidad)) })),
       historico: hist.map((h) => ({ corte: String(h.fecha_corte).slice(0, 10), valor_total: r2(h.valor_calculado != null ? h.valor_calculado : h.valor_sistema), articulos_con_stock: num(h.articulos_con_stock) })),
     };
-    out.ml = ml;
+    out.ml = ml; out.tasas = tasas; ponerTasas(tasas);
     return out;
   }
   const soloDatos = (d) => {
     const t = document.getElementById('tab-ventas'); if (t) t.hidden = !(d.ventas && d.ventas.length);
     setTimeout(() => window.TT_SEG && window.TT_SEG.pintar(), 0);
     const mt = document.querySelector('.tt-meta');
-    if (mt && d.corte) { const f = String(d.corte.fecha_corte).slice(0, 10).split('-').reverse().join('-'); mt.textContent = 'Corte al ' + f + ': ' + ((d.articulos || []).some((x) => x.alm) ? 'reportes de inventario a costo de Profit por almacén (Principal, Tienda, Consignación y Tránsito)' : 'reporte de Valor de Inventario de Profit conciliado contra el reporte de Stocks') + ' · cifras en USD a costo'; }
+    if (mt && d.corte) { const f = String(d.corte.fecha_corte).slice(0, 10).split('-').reverse().join('-'); mt.textContent = 'Corte al ' + f + ': ' + ((d.articulos || []).some((x) => x.alm) ? 'reportes de inventario a costo de Profit por almacén (Principal, Tienda, Consignación y Tránsito)' : 'reporte de Valor de Inventario de Profit conciliado contra el reporte de Stocks') + ' · cifras en USD a costo'; metaMoneda(); }
     return { articulos: d.articulos || [], hallazgos: d.hallazgos || [], precios: d.precios || [], historico: d.historico || [], ventas: d.ventas || [] };
   };
 
@@ -3201,7 +3262,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const t = document.getElementById('tab-ventas'); if (t) t.hidden = false;
     }
     const U = unirAlmacenes();
-    if (U) { base.articulos = U.art; base.hallazgos = U.hz; const c = $('c-corte').value || 'vista previa'; const mt = document.querySelector('.tt-meta'); if (mt && /^\d{4}-/.test(c)) mt.textContent = 'Vista previa del corte al ' + c.split('-').reverse().join('-') + ': reportes de inventario a costo de Profit por almacén · cifras en USD a costo'; base.historico = [...base.historico.filter((h) => h.corte !== c), { corte: c, valor_total: U.tot.valor_total, articulos_con_stock: U.tot.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
+    if (U) { base.articulos = U.art; base.hallazgos = U.hz; const c = $('c-corte').value || 'vista previa'; const mt = document.querySelector('.tt-meta'); if (mt && /^\d{4}-/.test(c)) mt.textContent = 'Vista previa del corte al ' + c.split('-').reverse().join('-') + ': reportes de inventario a costo de Profit por almacén · cifras en USD a costo'; metaMoneda(); base.historico = [...base.historico.filter((h) => h.corte !== c), { corte: c, valor_total: U.tot.valor_total, articulos_con_stock: U.tot.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
     else if (LOTE.some((x) => x.tipo === 'articulos')) { const r = resumenDe(LOTE.find((x) => x.tipo === 'articulos')); base.historico = [...base.historico.filter((h) => h.corte !== r.corte), { corte: r.corte || 'vista previa', valor_total: r.valor_total, articulos_con_stock: r.con_stock }].sort((a, b) => String(a.corte).localeCompare(String(b.corte))); }
     return base;
   };
@@ -3946,7 +4007,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const activa = (e) => !e || /^(active|activ|publicad)/i.test(String(e).trim());
     const pausada = (e) => /^(paused|pausad|inactiv|under_review|revisi)/i.test(String(e || '').trim());
     const puede = () => !!YO && (YO.rol === 'ADMIN' || YO.rol === 'CARGA' || YO.rol === 'REGULARIZA');
-    const aj = () => ({ com: (pn(LS.get('com', '13')) || 0) / 100, min: (pn(LS.get('min', '25')) || 0) / 100, tasa: pn(LS.get('tasa', '')) || 0 });
+    const aj = () => ({ com: (pn(LS.get('com', '13')) || 0) / 100, min: (pn(LS.get('min', '25')) || 0) / 100, tasa: pn(LS.get('tasa', '')) || (window.TT_MON && window.TT_MON.binance) || 0 });
     const aUsd = (p, mon, tasa) => (p == null ? null : /VES|VEF|BS/i.test(mon || '') ? (tasa > 0 ? p / tasa : null) : p);
     const EXPL = {
       np: 'Artículos con existencia que no tienen ninguna publicación en Mercado Libre. Son ventas que se pueden estar perdiendo: publíquelos. Si ya están publicados con otro código, escriba el número de publicación en el Excel y súbalo.',
@@ -3969,7 +4030,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     function conciliar() {
       const S = SERVER; if (!S) return null;
       const ml = S.ml || { pubs: [], ventas: [], vinc: [], estado: null, ok: false };
-      const A = aj(), T = window.TT;
+      const A = aj(), T = (window.TT_USD || window.TT);
       const md = dash.data('margen_art'), M = {}; (md.status === 'ok' ? md.data : []).forEach((m) => { M[m.fila] = m; });
       const inv = {}; S.articulos.forEach((a) => { const k = norm(a.codigo); if (k && !inv[k]) inv[k] = a; });
       const vinc = {}; (ml.vinc || []).forEach((v) => { vinc[v.item_id] = v.codigo; });
@@ -4055,7 +4116,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (e && e.mensaje) add(e.mensaje, 'Nota:');
     }
     function tiles() {
-      const T = window.TT, k = R.k, el = $('ml-tiles'); el.replaceChildren();
+      const T = (window.TT_USD || window.TT), k = R.k, el = $('ml-tiles'); el.replaceChildren();
       if (!k.hay) return;
       const v = $('ml-ver').value;
       const L = [
@@ -4077,7 +4138,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       });
     }
     function tabla() {
-      const T = window.TT, v = $('ml-ver').value, q = $('ml-q').value.trim().toLowerCase(), f = $('ml-fam').value;
+      const T = (window.TT_USD || window.TT), v = $('ml-ver').value, q = $('ml-q').value.trim().toLowerCase(), f = $('ml-fam').value;
       const tipo = v === 'np' || v === 'pa' ? 'inv' : v === 'vt' ? 'vt' : 'pub';
       vista = filas(v).filter((r) => (!f || r.familia === f) && (!q || [r.codigo, r.descripcion, r.titulo, r.item_id, r.sku].join(' ').toLowerCase().includes(q)));
       $('ml-expl').textContent = EXPL[v] || '';
@@ -4100,7 +4161,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       resumen(v, tipo);
     }
     function resumen(v, tipo) {
-      const T = window.TT, el = $('ml-res'); el.replaceChildren();
+      const T = (window.TT_USD || window.TT), el = $('ml-res'); el.replaceChildren();
       if (!R || !R.k.hay && tipo !== 'vt') { el.hidden = true; return; }
       el.hidden = false;
       const rows = vista, n = rows.length, sum = (f) => rows.reduce((s, r) => s + (Number(f(r)) || 0), 0);
@@ -4160,7 +4221,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       } else { const m = {}; rows.forEach((r) => { const k = (r.fecha || '').slice(0, 7) || 'sin fecha'; m[k] = (m[k] || 0) + (r.total_usd || 0); }); barras('Monto vendido por mes', m, u0); }
     }
     function resumenVentas() {
-      const T = window.TT, M = {};
+      const T = (window.TT_USD || window.TT), M = {};
       R.ventas.forEach((v) => { const m = (v.fecha || '').slice(0, 7) || 'sin fecha'; const o = M[m] = M[m] || { mes: m, ventas: new Set(), u: 0, t: 0, c: 0, cc: 0 }; o.ventas.add(v.venta_id); o.u += v.cantidad; o.t += v.total_usd || 0; if (v.costo_total != null) { o.c += v.costo_total; o.cc += v.total_usd || 0; } });
       const tb = $('ml-meses').querySelector('tbody'); tb.replaceChildren();
       Object.values(M).sort((a, b) => b.mes.localeCompare(a.mes)).slice(0, 12).forEach((o) => {
@@ -4193,11 +4254,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const nomMes = (m) => MESES_C[Number(m.slice(5, 7)) - 1] + ' ' + m.slice(2, 4);
     const mesHoy = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
     const vst = { per: 'mes', mon: 'usd' };
-    function tasaHoy(b) { const e = (R && R.ml.estado) || {}; if (b) { if (e.tasa_binance_hoy) return Number(e.tasa_binance_hoy); } else { if (e.tasa_bcv_hoy) return Number(e.tasa_bcv_hoy); const A = aj(); if (A.tasa) return A.tasa; } const vm = (R && R.ml.vmes) || []; const u = vm.filter((m) => (b ? m.tasa_binance : m.tasa)).slice(-1)[0]; return u ? Number(b ? u.tasa_binance : u.tasa) : 0; }
+    function tasaHoy(b) { const e = (R && R.ml.estado) || {}, MN = window.TT_MON || {}; if (b) { if (MN.binance) return MN.binance; if (e.tasa_binance_hoy) return Number(e.tasa_binance_hoy); } else { if (MN.bcv) return MN.bcv; if (e.tasa_bcv_hoy) return Number(e.tasa_bcv_hoy); const A = aj(); if (A.tasa) return A.tasa; } const vm = (R && R.ml.vmes) || []; const u = vm.filter((m) => (b ? m.tasa_binance : m.tasa)).slice(-1)[0]; return u ? Number(b ? u.tasa_binance : u.tasa) : 0; }
     function mesesVenta() { return ((R && R.ml.vmes) || []).slice().sort((a, b) => a.mes.localeCompare(b.mes)).map((m) => ({ ...m, usd: m.monto_usd != null ? Number(m.monto_usd) : (m.tasa ? m.monto_bs / m.tasa : null), usdb: m.monto_usd_binance != null ? Number(m.monto_usd_binance) : (m.tasa_binance ? m.monto_bs / m.tasa_binance : null), bs: Number(m.monto_bs || 0) })); }
 
     function ctrl() {
-      const el = $('ml-ctrl'); el.replaceChildren(); const e = (R && R.ml.estado) || {}, T = window.TT;
+      const el = $('ml-ctrl'); el.replaceChildren(); const e = (R && R.ml.estado) || {}, T = (window.TT_USD || window.TT);
       const card = (cls, icon, titulo, val, lineas, pie, acciones) => {
         const c = mk('div', 'ml-cc ' + cls); const h = mk('div', 'ml-cc-h'); const ic = mk('span', 'ml-cc-i'); ic.appendChild(ico(icon)); h.append(ic, mk('span', 'ml-cc-t', titulo)); c.appendChild(h);
         c.appendChild(mk('div', 'ml-cc-v', val)); (lineas || []).forEach(([t, k]) => { const p = mk('div', 'ml-cc-l' + (k ? ' ' + k : '')); p.textContent = t; c.appendChild(p); });
@@ -4257,7 +4318,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
 
     function listaAlertas() {
-      const A = [], e = (R && R.ml.estado) || {}, T = window.TT, k = R ? R.k : null, add = (nivel, icon, txt, accion) => A.push({ nivel, icon, txt, accion });
+      const A = [], e = (R && R.ml.estado) || {}, T = (window.TT_USD || window.TT), k = R ? R.k : null, add = (nivel, icon, txt, accion) => A.push({ nivel, icon, txt, accion });
       if (e.cuenta_estado && e.cuenta_estado !== 'ACTIVA') add('mal', 'stop', 'Cuenta ' + e.cuenta_estado.toLowerCase() + ' por falta de pago: ninguna publicación se está mostrando. Pagar ' + bsf(Number(e.deuda_vencida || 0) + Number(e.deuda_curso || 0)) + ' para reactivarla.', ['Ir a pagar', 'https://vendedores.mercadolibre.com.ve/billing/resume']);
       if (Number(e.deuda_vencida) > 0) { const d = dias(e.deuda_vencida_vence); add('mal', 'dinero', 'Deuda vencida de ' + bsf(e.deuda_vencida) + (d != null && d < 0 ? ', lleva ' + -d + ' días vencida.' : '.')); }
       if (Number(e.deuda_curso) > 0 && e.deuda_curso_vence) { const d = dias(e.deuda_curso_vence); if (d != null && d <= 7) add(d <= 2 ? 'mal' : 'aviso', 'reloj', 'La factura en curso de ' + bsf(e.deuda_curso) + (d >= 0 ? ' vence en ' + d + (d === 1 ? ' día' : ' días') + ' (' + ffecha(e.deuda_curso_vence) + '). Páguela a tiempo.' : ' ya venció.')); else add('info', 'reloj', 'Próxima factura: ' + bsf(e.deuda_curso) + ', vence el ' + ffecha(e.deuda_curso_vence) + '.'); }
@@ -4295,7 +4356,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
 
     function vendedor() {
-      const T = window.TT, M = mesesVenta(), card = $('ml-vend'); card.hidden = !M.length; if (!M.length) return;
+      const T = (window.TT_USD || window.TT), M = mesesVenta(), card = $('ml-vend'); card.hidden = !M.length; if (!M.length) return;
       document.querySelectorAll('#ml-v-per button').forEach((b) => b.classList.toggle('on', b.dataset.v === vst.per));
       document.querySelectorAll('#ml-v-mon button').forEach((b) => b.classList.toggle('on', b.dataset.v === vst.mon));
       const usd = vst.mon !== 'bs', val = (m) => (vst.mon === 'usd' ? m.usd : vst.mon === 'usdb' ? m.usdb : m.bs), fm = (x) => (x == null ? '—' : usd ? T.fmt.usd0(x) : bs0(x)), mh = mesHoy(), monTxt = vst.mon === 'usd' ? 'US$ a tasa BCV' : vst.mon === 'usdb' ? 'US$ a tasa Binance' : 'bolívares';
@@ -4372,7 +4433,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       XLSX.writeFile(wb, 'Mercado_Libre_ventas_' + new Date().toISOString().slice(0, 10) + '.xlsx'); bitacora('DESCARGA', 'Mercado Libre · ventas por mes y año');
     }
     function pintar() {
-      if (!window.TT || !SERVER) return;
+      if (!(window.TT_USD || window.TT) || !SERVER) return;
       conciliar(); contador();
       document.querySelectorAll('#v-ml .ml-resp').forEach((b) => { b.hidden = !puede(); });
       $('ml-conectar').hidden = !(YO && YO.rol === 'ADMIN');
@@ -4412,7 +4473,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const nom = 'TOYOTENGO_MercadoLibre_' + NOMBRE[v].replace(/[^\wáéíóúñ]+/gi, '_') + '_' + fecha() + '.xlsx'; XLSX.writeFile(wb, nom); bitacora('DESCARGA MERCADO LIBRE', nom);
     }
     function bajarTodo() {
-      if (!window.XLSX || !R) return; const k = R.k, T = window.TT;
+      if (!window.XLSX || !R) return; const k = R.k, T = (window.TT_USD || window.TT);
       const wb = XLSX.utils.book_new();
       const res = [['Indicador', 'Valor'], ['Publicaciones en la cuenta', k.pubs], ['Publicaciones activas', k.activas], ['Pausadas o finalizadas', k.pausadas], ['Artículos con stock', k.conStock],
         ['Con stock y NO publicados', k.np.length], ['Valor a costo no publicado US$', Math.round(k.np.reduce((s, r) => s + (r.valor || 0), 0) * 100) / 100], ['Cobertura de publicación %', k.cobertura],
@@ -4571,7 +4632,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       return o.v;
     }
     const nota = (t, k) => { const m = $('mlx-msg'); m.textContent = t || ''; m.className = 'sh-msg' + (k ? ' ' + k : ''); };
-    const u2 = (x) => (x == null ? '—' : window.TT.fmt.usd2(x));
+    const u2 = (x) => (x == null ? '—' : (window.TT_USD || window.TT).fmt.usd2(x));
     async function abrir() {
       if (!$('ml-cx')) return;
       if (cargando) return; cargando = true;
@@ -4644,7 +4705,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
     // ---- estadísticas
     function estadisticas() {
-      const T = window.TT, ml = (SERVER && SERVER.ml) || {}, e = EST.estado || {}, pubs = ml.pubs || [], ventas = ml.ventas || [];
+      const T = (window.TT_USD || window.TT), ml = (SERVER && SERVER.ml) || {}, e = EST.estado || {}, pubs = ml.pubs || [], ventas = ml.ventas || [];
       const d30 = Date.now() - 30 * 864e5, v30 = ventas.filter((v) => v.fecha && Date.parse(v.fecha) >= d30 && !/cancel/i.test(v.estado || ''));
       const vis = pubs.reduce((s, p) => s + (Number(p.visitas_30) || 0), 0), uds = v30.reduce((s, v) => s + (Number(v.cantidad) || 0), 0), nv = new Set(v30.map((v) => v.venta_id)).size;
       const monto = v30.reduce((s, v) => s + (Number(v.total) || 0), 0), com = v30.reduce((s, v) => s + (Number(v.comision) || 0), 0);
@@ -4732,7 +4793,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const dibujar = () => { bd.replaceChildren(); const q = fil.value.trim().toLowerCase();
         L.filter((r) => !q || (r.codigo + ' ' + r.descripcion).toLowerCase().includes(q)).slice(0, 300).forEach((r) => {
           const tr = el('tr'); const t0 = el('td'); const ck = el('input'); ck.type = 'checkbox'; ck.checked = sel.has(r.codigo); ck.addEventListener('change', () => { if (ck.checked) { if (sel.size >= 20) { ck.checked = false; return nota('Máximo 20 artículos por vez.', 'err'); } sel.add(r.codigo); } else sel.delete(r.codigo); cnt(); }); t0.appendChild(ck); tr.appendChild(t0);
-          tr.append(el('td', 'code', r.codigo), el('td', '', r.descripcion), el('td', 'n', window.TT.fmt.num(r.stock)), el('td', 'n', r.valor == null ? '—' : window.TT.fmt.usd0(r.valor)), el('td', '', r.foto == null ? '' : r.foto ? '✔' : 'Falta'));
+          tr.append(el('td', 'code', r.codigo), el('td', '', r.descripcion), el('td', 'n', (window.TT_USD || window.TT).fmt.num(r.stock)), el('td', 'n', r.valor == null ? '—' : (window.TT_USD || window.TT).fmt.usd0(r.valor)), el('td', '', r.foto == null ? '' : r.foto ? '✔' : 'Falta'));
           bd.appendChild(tr); }); };
       fil.addEventListener('input', dibujar); dibujar();
       const b = el('button', 'sh-btn', 'Preparar los marcados'); b.type = 'button'; b.disabled = true; c.appendChild(b);
