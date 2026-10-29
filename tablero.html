@@ -2498,14 +2498,31 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   // Lee todas las filas de una consulta (el servidor entrega máximo 1000 por pedido).
   // La primera página va sola; si viene llena, las siguientes se piden de 6 en 6 en paralelo.
   async function todas(consulta) {
-    const L = 1000, PAR = 6;
+    const L = 1000, PAR = 4;
     const out = ok(await consulta().range(0, L - 1));
     if (out.length < L) return out;
     for (let base = L; ; base += L * PAR) {
-      const rs = await Promise.all(Array.from({ length: PAR }, (_, k) => consulta().range(base + k * L, base + k * L + L - 1).then(ok)));
+      let rs;
+      try { rs = await Promise.all(Array.from({ length: PAR }, (_, k) => consulta().range(base + k * L, base + k * L + L - 1).then(ok))); }
+      catch (e) { // si el servidor se satura, se sigue de a una página
+        for (let i = base; ; i += L) { const d = ok(await consulta().range(i, i + L - 1)); out.push(...d); if (d.length < L) return out; }
+      }
       for (const d of rs) { out.push(...d); if (d.length < L) return out; }
     }
   }
+  // Ventas: una consulta por mes (en paralelo, de 4 en 4) para que el servidor no recorra todo cada vez
+  async function leerVentas() {
+    const cols = 'mes, linea, fecha, factura, cliente, vendedor, vehiculo, codigo, descripcion, categoria, cantidad, precio, total, costo_unit';
+    const hoy = new Date(), meses = [];
+    for (let d = new Date(hoy.getFullYear() - 2, 0, 1); d <= hoy; d.setMonth(d.getMonth() + 1)) meses.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+    const out = [];
+    for (let i = 0; i < meses.length; i += 4) {
+      const rs = await Promise.all(meses.slice(i, i + 4).map((m) => todas(() => sb.from('ventas_lineas').select(cols).eq('empresa_id', EMPRESA).eq('mes', m).order('linea'))));
+      rs.forEach((r) => out.push(...r));
+    }
+    return out;
+  }
+
   const bitacora = (accion, detalle) => sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MODULO, p_accion: accion, p_detalle: detalle || null }).then(() => {}, () => {});
 
   // ---------- vistas ----------
@@ -2725,7 +2742,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
 
   async function leerDatos() {
     // Todo lo que no depende del corte arranca de una vez, en paralelo (ventas, histórico, Mercado Libre)
-    const pVentas = todas(() => sb.from('ventas_lineas').select('mes, linea, fecha, factura, cliente, vendedor, vehiculo, codigo, descripcion, categoria, cantidad, precio, total, costo_unit').eq('empresa_id', EMPRESA).order('mes').order('linea')).catch(() => []);
+    const pVentas = leerVentas().catch((e) => { console.error('ventas', e); return []; });
     const pHist = todas(() => sb.from('v_historico').select('*').eq('empresa_id', EMPRESA).order('fecha_corte'));
     const pML = window.TT_ML ? window.TT_ML.leerML() : Promise.resolve(null);
     const pTasas = sb.from('v_tasas').select('*').then(ok).catch(() => []);
