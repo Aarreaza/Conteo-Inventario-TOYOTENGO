@@ -491,6 +491,12 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .tt-tasas .tz-b{border-left:4px solid #f0b90b}
 .tt-tasas .tz-c{border-left:4px solid var(--color-border-line);opacity:.85}
 .tt-tasas .tz-sw{margin-left:auto;justify-content:center}
+.tz-pan{flex:1 1 100%;border:1px solid var(--color-border-line);border-radius:10px;background:var(--color-panel);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.7rem}
+.tz-pan h4{margin:0;font-size:1rem}
+.tz-conv{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;font-size:.88rem}
+.tz-conv input{width:9rem}
+.tz-conv b{font-variant-numeric:tabular-nums}
+.tz-btn{border:1px solid var(--color-border-line);background:var(--color-bg);border-radius:8px;padding:.4rem .8rem;font-size:.82rem;cursor:pointer;color:var(--color-fg)}
 .tz-g{display:flex;border:1px solid var(--color-border-line);border-radius:99px;overflow:hidden;margin-top:.2rem}
 .tz-g button{border:0;background:transparent;padding:.35rem .8rem;font-size:.82rem;cursor:pointer;color:var(--color-fg)}
 .tz-g button.on{background:var(--tt-ink,#2b2f36);color:#fff}
@@ -1486,9 +1492,9 @@ window.TT = (() => {
   const num = (v) => (Number.isInteger(+v) ? d3.format(',')(v) : d3.format(',.1f')(v)).replace(/,/g, '§').replace(/\./g, ',').replace(/§/g, '.');
   const pct = (v) => d3.format('.1%')(v).replace('.', ',');
   const usdES = (s) => s.replace(/,/g, '§').replace(/\./g, ',').replace(/§/g, '.');
-  // Moneda: por defecto bolívares a tasa Binance P2P (la tasa BCV queda solo como constancia)
-  const MON = window.TT_MON = window.TT_MON || { modo: (() => { try { return localStorage.getItem('tt_mon') || 'BS'; } catch (e) { return 'BS'; } })(), binance: null, bcv: null };
-  const enBs = () => MON.modo === 'BS' && MON.binance > 0;
+  // Todo el tablero se muestra en US$ (así vienen los reportes de Profit). Las tasas solo se muestran como referencia.
+  const MON = window.TT_MON = window.TT_MON || { modo: 'USD', binance: null, bcv: null };
+  const enBs = () => false;
   const bs0 = (v) => (v < 0 ? '−' : '') + 'Bs ' + d3.format(',.0f')(Math.abs(v * MON.binance));
   const bs2 = (v) => (v == null ? '—' : 'Bs ' + d3.format(',.2f')(v * MON.binance));
   const bsK = (v) => 'Bs ' + new Intl.NumberFormat('es', { notation: 'compact', maximumFractionDigits: 1 }).format(v * MON.binance);
@@ -2652,28 +2658,71 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   }
   const fmtTasa = (v) => (v == null ? '—' : 'Bs ' + Number(v).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   const fmtHora = (t) => { try { const d = new Date(t); return d.toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+  let TZ_ABIERTO = false, TZ_MONTO = '100', TZ_DIAS = null;
+  async function historicoTasas() {
+    try {
+      const t = await todas(() => sb.from('tasas').select('fuente, valor, tomada_en, fecha_valor').order('tomada_en', { ascending: false }));
+      const D = {};
+      t.forEach((x) => {
+        const d = new Date(x.tomada_en).toLocaleDateString('en-CA', { timeZone: 'America/Caracas' });
+        const o = D[d] || (D[d] = { dia: d, bin: [], bcv: null, fv: null });
+        if (x.fuente === 'BINANCE') o.bin.push(Number(x.valor)); else if (o.bcv == null) { o.bcv = Number(x.valor); o.fv = x.fecha_valor; }
+      });
+      let ultBcv = null;
+      TZ_DIAS = Object.values(D).sort((a, b) => a.dia.localeCompare(b.dia)).map((o) => { if (o.bcv != null) ultBcv = o.bcv; else o.bcv = ultBcv;
+        const p = o.bin.length ? o.bin.reduce((a, b) => a + b, 0) / o.bin.length : null;
+        return { dia: o.dia, bcv: o.bcv, bin: p, min: o.bin.length ? Math.min(...o.bin) : null, max: o.bin.length ? Math.max(...o.bin) : null, n: o.bin.length, brecha: p && o.bcv ? p / o.bcv - 1 : null }; }).reverse();
+    } catch (e) { TZ_DIAS = []; }
+    const box = document.getElementById('tz-hist'); if (!box) return; box.replaceChildren();
+    const tbl = document.createElement('table'); tbl.className = 'tt-t';
+    const th = document.createElement('tr'); ['Día', 'BCV (constancia)', 'Binance P2P promedio', 'Mínimo del día', 'Máximo del día', 'Lecturas', 'Brecha'].forEach((h, i) => { const x = document.createElement('th'); x.textContent = h; if (i) x.className = 'n'; th.appendChild(x); });
+    const tb = document.createElement('tbody'); tbl.append(Object.assign(document.createElement('thead'), {}), tb); tbl.tHead.appendChild(th);
+    TZ_DIAS.forEach((r) => { const tr = document.createElement('tr'); [r.dia.split('-').reverse().join('/'), fmtTasa(r.bcv), fmtTasa(r.bin), fmtTasa(r.min), fmtTasa(r.max), String(r.n), r.brecha == null ? '—' : '+' + (r.brecha * 100).toFixed(1).replace('.', ',') + ' %'].forEach((v, i) => { const td = document.createElement('td'); td.textContent = v; if (i) td.className = 'n'; tr.appendChild(td); }); tb.appendChild(tr); });
+    if (!TZ_DIAS.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 7; td.textContent = 'Todavía no hay registros.'; tr.appendChild(td); tb.appendChild(tr); }
+    box.appendChild(tbl);
+  }
+  async function descargarTasas() {
+    if (!TZ_DIAS) await historicoTasas();
+    const t = await todas(() => sb.from('tasas').select('fuente, valor, compra, venta, origen, fecha_valor, tomada_en').order('tomada_en', { ascending: false }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet((TZ_DIAS || []).map((r) => ({ 'Día': r.dia, 'BCV Bs/US$ (constancia)': r.bcv, 'Binance P2P promedio Bs/US$': r.bin == null ? '' : Math.round(r.bin * 100) / 100, 'Mínimo': r.min, 'Máximo': r.max, 'Lecturas': r.n, 'Brecha %': r.brecha == null ? '' : Math.round(r.brecha * 1000) / 10 }))), 'Por día');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(t.map((x) => ({ 'Fecha y hora': new Date(x.tomada_en).toLocaleString('es-VE', { timeZone: 'America/Caracas' }), Tasa: x.fuente, 'Bs por US$': Number(x.valor), Compra: x.compra == null ? '' : Number(x.compra), Venta: x.venta == null ? '' : Number(x.venta), 'Fecha valor BCV': x.fecha_valor || '', Fuente: x.origen || '' }))), 'Todas las lecturas');
+    XLSX.writeFile(wb, 'Toyotengo_Historico_tasas.xlsx');
+  }
   function pintarTasas() {
     const el = document.getElementById('tt-tasas'), M = window.TT_MON; if (!el || !M) return;
     el.replaceChildren();
     const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
-    const b = mk('div', 'tz tz-b'); b.append(mk('small', null, 'Tasa Binance P2P · para los cálculos'), mk('b', null, M.binance ? fmtTasa(M.binance) + ' por US$' : 'sin dato'),
+    const b = mk('div', 'tz tz-b'); b.append(mk('small', null, 'Tasa Binance P2P · referencia para conversiones'), mk('b', null, M.binance ? fmtTasa(M.binance) + ' por US$' : 'sin dato'),
       mk('span', null, M.tb ? (M.tb.compra && M.tb.venta ? 'compra ' + fmtTasa(M.tb.compra) + ' · venta ' + fmtTasa(M.tb.venta) + ' · ' : '') + 'actualizada ' + fmtHora(M.tb.tomada_en) : 'se actualiza cada 30 minutos'));
     b.title = M.tb ? 'Fuente: ' + M.tb.origen : '';
-    const c = mk('div', 'tz tz-c'); c.append(mk('small', null, 'Tasa oficial BCV · solo constancia'), mk('b', null, M.bcv ? fmtTasa(M.bcv) + ' por US$' : 'sin dato'),
+    const c = mk('div', 'tz tz-c'); c.append(mk('small', null, 'Tasa oficial BCV · constancia'), mk('b', null, M.bcv ? fmtTasa(M.bcv) + ' por US$' : 'sin dato'),
       mk('span', null, M.tc ? (M.tc.fecha_valor ? 'fecha valor ' + M.tc.fecha_valor.split('-').reverse().join('/') : '') + (M.binance && M.bcv ? ' · brecha Binance +' + ((M.binance / M.bcv - 1) * 100).toFixed(1).replace('.', ',') + ' %' : '') : ''));
     c.title = M.tc ? 'Fuente: ' + M.tc.origen : '';
-    const sw = mk('div', 'tz tz-sw'); sw.appendChild(mk('small', null, 'Ver las cifras en'));
-    const g = mk('div', 'tz-g');
-    [['BS', 'Bs (tasa Binance)'], ['USD', 'US$']].forEach(([k, l]) => { const bt = mk('button', M.modo === k ? 'on' : '', l); bt.type = 'button'; bt.disabled = k === 'BS' && !M.binance;
-      bt.addEventListener('click', () => { M.modo = k; try { localStorage.setItem('tt_mon', k); } catch (e) {} pintarTasas(); metaMoneda(); dash._redraw(); }); g.appendChild(bt); });
-    sw.appendChild(g); el.append(b, c, sw);
+    const sw = mk('div', 'tz tz-sw'); sw.appendChild(mk('small', null, 'Referencia'));
+    const bt = mk('button', 'tz-btn', TZ_ABIERTO ? 'Ocultar histórico y conversión' : 'Histórico de tasas y conversión'); bt.type = 'button';
+    bt.addEventListener('click', () => { TZ_ABIERTO = !TZ_ABIERTO; pintarTasas(); if (TZ_ABIERTO) historicoTasas(); });
+    sw.appendChild(bt); el.append(b, c, sw);
+    if (TZ_ABIERTO) {
+      const pan = mk('div', 'tz-pan'); pan.id = 'tz-pan';
+      pan.appendChild(mk('h4', null, 'Conversión de referencia (las cifras del tablero están en US$)'));
+      const cv = mk('div', 'tz-conv'); const inp = mk('input', 'tt-in'); inp.type = 'number'; inp.min = '0'; inp.step = '0.01'; inp.value = TZ_MONTO; inp.setAttribute('aria-label', 'Monto en US$');
+      const r1 = mk('b'), r2 = mk('b'), r3 = mk('span');
+      const calc = () => { const v = Number(inp.value) || 0; TZ_MONTO = inp.value; r1.textContent = M.binance ? fmtTasa(v * M.binance) : '—'; r2.textContent = M.bcv ? fmtTasa(v * M.bcv) : '—'; r3.textContent = M.binance && M.bcv ? 'diferencia ' + fmtTasa(v * (M.binance - M.bcv)) : ''; };
+      inp.addEventListener('input', calc);
+      cv.append(mk('span', null, 'US$'), inp, mk('span', null, '= a tasa Binance'), r1, mk('span', null, '· a tasa BCV'), r2, r3); calc();
+      const tb = mk('div', 'tt-scroll'); tb.style.maxHeight = '22rem'; tb.id = 'tz-hist'; tb.appendChild(mk('p', 'note', 'Cargando histórico…'));
+      const dl = mk('button', 'tz-btn', '⬇ Descargar histórico (Excel)'); dl.type = 'button'; dl.style.alignSelf = 'flex-start'; dl.addEventListener('click', () => descargarTasas());
+      pan.append(cv, mk('h4', null, 'Histórico de tasas (Bs por US$)'), mk('p', 'note', 'Un registro por día: tasa BCV publicada y promedio del día de la tasa Binance P2P (con mínimo y máximo). Se guarda desde el 29/10/2026, cada 30 minutos.'), tb, dl);
+      el.appendChild(pan);
+    }
     metaMoneda();
   }
   function metaMoneda() {
-    const mt = document.querySelector('.tt-meta'), M = window.TT_MON; if (!mt || !M) return;
-    const enBs = M.modo === 'BS' && M.binance;
-    mt.textContent = mt.textContent.replace(/ · cifras .*$/, '') + ' · cifras ' + (enBs ? 'en bolívares a costo, a tasa Binance P2P (' + fmtTasa(M.binance) + ' por US$)' : 'en US$ a costo');
+    const mt = document.querySelector('.tt-meta'); if (!mt) return;
+    mt.textContent = mt.textContent.replace(/ · cifras .*$/, '') + ' · cifras en US$ a costo';
   }
+
   async function leerDatos() {
     // Todo lo que no depende del corte arranca de una vez, en paralelo (ventas, histórico, Mercado Libre)
     const pVentas = todas(() => sb.from('ventas_lineas').select('mes, linea, fecha, factura, cliente, vendedor, vehiculo, codigo, descripcion, categoria, cantidad, precio, total, costo_unit').eq('empresa_id', EMPRESA).order('mes').order('linea')).catch(() => []);
