@@ -2466,12 +2466,15 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     return m;
   }
   // Trae todas las filas (el servidor entrega máximo 1000 por consulta)
+  // Lee todas las filas de una consulta (el servidor entrega máximo 1000 por pedido).
+  // La primera página va sola; si viene llena, las siguientes se piden de 6 en 6 en paralelo.
   async function todas(consulta) {
-    const out = [];
-    for (let i = 0; ; i += 1000) {
-      const d = ok(await consulta().range(i, i + 999));
-      out.push(...d);
-      if (d.length < 1000) return out;
+    const L = 1000, PAR = 6;
+    const out = ok(await consulta().range(0, L - 1));
+    if (out.length < L) return out;
+    for (let base = L; ; base += L * PAR) {
+      const rs = await Promise.all(Array.from({ length: PAR }, (_, k) => consulta().range(base + k * L, base + k * L + L - 1).then(ok)));
+      for (const d of rs) { out.push(...d); if (d.length < L) return out; }
     }
   }
   const bitacora = (accion, detalle) => sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MODULO, p_accion: accion, p_detalle: detalle || null }).then(() => {}, () => {});
@@ -2612,17 +2615,20 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     return a;
   }
   async function leerDatos() {
+    // Todo lo que no depende del corte arranca de una vez, en paralelo (ventas, histórico, Mercado Libre)
+    const pVentas = todas(() => sb.from('ventas_lineas').select('mes, linea, fecha, factura, cliente, vendedor, vehiculo, codigo, descripcion, categoria, cantidad, precio, total, costo_unit').eq('empresa_id', EMPRESA).order('mes').order('linea')).catch(() => []);
+    const pHist = todas(() => sb.from('v_historico').select('*').eq('empresa_id', EMPRESA).order('fecha_corte'));
+    const pML = window.TT_ML ? window.TT_ML.leerML() : Promise.resolve(null);
+    const pLista = sb.from('listas_precios').select('id, fecha').eq('empresa_id', EMPRESA).order('fecha', { ascending: false }).order('id', { ascending: false }).limit(1).then(ok)
+      .then((l) => { const lista = l[0] || null; return Promise.all([lista, lista ? todas(() => sb.from('precios').select('codigo, descripcion, modelo, precio_1, precio_2').eq('lista_id', lista.id).order('codigo')) : []]); });
     const ult = ok(await sb.from('v_ultimo_corte').select('*').eq('empresa_id', EMPRESA).limit(1));
     const corte = ult[0] || null;
-    const lista = ok(await sb.from('listas_precios').select('id, fecha').eq('empresa_id', EMPRESA).order('fecha', { ascending: false }).order('id', { ascending: false }).limit(1))[0] || null;
-    const [lineas, hz, pr, hist, seg, vt] = await Promise.all([
+    const [lineas, hz, [lista, pr], hist, seg, vt, ml] = await Promise.all([
       corte ? todas(() => sb.from('corte_lineas').select('*').eq('corte_id', corte.id).order('fila')) : [],
       corte ? todas(() => sb.from('hallazgos').select('*').eq('corte_id', corte.id).order('id')) : [],
-      lista ? todas(() => sb.from('precios').select('codigo, descripcion, modelo, precio_1, precio_2').eq('lista_id', lista.id).order('codigo')) : [],
-      todas(() => sb.from('v_historico').select('*').eq('empresa_id', EMPRESA).order('fecha_corte')),
-      // ventas: si la tabla aún no existe, el tablero sigue sin la pestaña de ventas
+      pLista, pHist,
       corte ? todas(() => sb.from('seguimiento').select('*').eq('corte_id', corte.id)).catch(() => null) : [],
-      todas(() => sb.from('ventas_lineas').select('mes, linea, fecha, factura, cliente, vendedor, vehiculo, codigo, descripcion, categoria, cantidad, precio, total, costo_unit').eq('empresa_id', EMPRESA).order('mes').order('linea')).catch(() => []),
+      pVentas, pML,
     ]);
     const SEG = {}; (seg || []).forEach((x) => { SEG[x.clave] = x; });
     const out = {
@@ -2636,7 +2642,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         costo_unit: v.costo_unit == null ? null : num(v.costo_unit), costo_total: v.costo_unit == null ? null : r2(num(v.costo_unit) * num(v.cantidad)) })),
       historico: hist.map((h) => ({ corte: String(h.fecha_corte).slice(0, 10), valor_total: r2(h.valor_calculado != null ? h.valor_calculado : h.valor_sistema), articulos_con_stock: num(h.articulos_con_stock) })),
     };
-    out.ml = window.TT_ML ? await window.TT_ML.leerML() : null;
+    out.ml = ml;
     return out;
   }
   const soloDatos = (d) => {
