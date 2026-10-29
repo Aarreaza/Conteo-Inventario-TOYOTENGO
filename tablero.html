@@ -2882,17 +2882,22 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   }
   function leerPrecios(wb) {
     for (const n of wb.SheetNames) {
-      const t = filasConCabecera(wb.Sheets[n], ['codigo', 'descripcion', 'precio 1']);
+      const t = filasConCabecera(wb.Sheets[n], ['codigo', 'descripcion']);
       if (!t) continue;
-      const j = (k) => t.cab.indexOf(k); const out = [];
+      const j = (k) => t.cab.indexOf(k);
+      // columna de precio: "Precio 1", "Precio", "Precio de venta", "PVP"…
+      const p1 = j('precio 1') >= 0 ? j('precio 1') : t.cab.findIndex((h) => /^(precio|pvp|p\.v\.p)/.test(h) && !/costo|2$/.test(h));
+      if (p1 < 0) continue;
+      const p2 = j('precio 2'); const out = [];
       t.filas.forEach((r, i) => {
-        const cod = String(r[j('codigo')] ?? '').trim(); if (!cod) return;
-        out.push({ linea_lista: N(r[j('#')]) || i + 1, codigo: cod, descripcion: String(r[j('descripcion')] || '').trim(), modelo: String(r[j('modelo')] || '').trim(), precio_1: N(r[j('precio 1')]), precio_2: j('precio 2') >= 0 ? N(r[j('precio 2')]) : 0 });
+        const cod = String(r[j('codigo')] ?? '').trim(); if (!cod || /^total/i.test(cod)) return;
+        out.push({ linea_lista: N(r[j('#')]) || i + 1, codigo: cod, descripcion: String(r[j('descripcion')] || '').trim(), modelo: String(r[j('modelo')] || '').trim(), precio_1: N(r[p1]), precio_2: p2 >= 0 ? N(r[p2]) : 0 });
       });
-      return out;
+      if (out.length) return out;
     }
     return null;
   }
+
 
   // ---------- los 4 reportes de inventario de Profit (uno por almacén) ----------
   const ALM = [['principal', 'Almacén Principal'], ['tienda', 'Almacén Tienda'], ['transito', 'Tránsito'], ['consignacion', 'Consignación']];
@@ -3090,7 +3095,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         if (p && p.length) { LOTE = LOTE.filter((x) => x.tipo !== 'precios'); LOTE.push({ tipo: 'precios', archivo: f.name, filas: p }); continue; }
         if (!forzado) { const v = leerVentasXls(wb); if (v) { LOTE = LOTE.filter((x) => !(x.tipo === 'ventas' && x.archivo === f.name)); LOTE.push({ tipo: 'ventas', archivo: f.name, ...v, filas: armarVentas(v.filas) }); continue; } }
         error = true;
-        msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo, vuelva a elegirlo. ' + (forzado === 'precios' ? 'La lista de precios debe tener las columnas Código, Descripción y Precio 1.' : 'El reporte de inventario de Profit debe tener las columnas Artículo, Descripción, Stock Actual, Costo y Valor Total.'), 'err');
+        msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo, vuelva a elegirlo. ' + (forzado === 'precios' ? 'La lista de precios debe tener las columnas Código, Descripción y Precio (o Precio 1).' : 'El reporte de inventario de Profit debe tener las columnas Artículo, Descripción, Stock Actual, Costo y Valor Total.'), 'err');
       } catch (e) { error = true; msg($('c-msg'), '✖ ' + f.name + ': no se pudo leer (' + e.message + '). Vuelva a elegir el archivo.', 'err'); }
     }
     pintarLote();
