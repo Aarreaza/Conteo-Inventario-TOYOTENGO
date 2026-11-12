@@ -4580,7 +4580,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       let col = -1, best = 0;
       for (let c = 0; c < ncol; c++) { let n = 0; for (let r = 0; r < Math.min(aoa.length, 400); r++) if (esId((aoa[r] || [])[c])) n++; if (n > best) { best = n; col = c; } }
       let hdr = -1, hdrTxt = [];
-      const buscarCab = (desde) => { for (let r = desde; r >= 0; r--) { const f = (aoa[r] || []).map(sinAcento); if (f.filter((x) => x && !/^\d+([.,]\d+)?$/.test(x)).length >= 3) return r; } return -1; };
+      // fila de títulos: la más cercana arriba de los datos que nombre columnas conocidas (la planilla de ML trae filas de ayuda en medio)
+      const CONOCIDAS = /^(titulo|title|sku|precio|price|stock|estado|status|moneda|item_id|numero de publicacion|publicacion|stock en tu deposito|tipo de publicacion)$/;
+      const buscarCab = (desde) => {
+        for (let r = desde; r >= Math.max(0, desde - 8); r--) { const f = (aoa[r] || []).map(sinAcento); if (f.filter((x) => CONOCIDAS.test(x)).length >= 3) return r; }
+        for (let r = desde; r >= 0; r--) { const f = (aoa[r] || []).map(sinAcento); if (f.filter((x) => x && !/^\d+([.,]\d+)?$/.test(x)).length >= 3) return r; } return -1; };
       if (col >= 0) { let first = aoa.findIndex((f) => esId((f || [])[col])); hdr = buscarCab(first - 1); }
       else { for (let r = 0; r < Math.min(aoa.length, 15); r++) { const f = (aoa[r] || []).map(sinAcento); if (f.some((x) => /venta/.test(x)) && f.some((x) => /unidades|cantidad/.test(x))) { hdr = r; break; } } }
       if (hdr < 0 && col < 0) return null;
@@ -4629,6 +4633,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       try {
         if (pubs.size) {
           if (!confirm('Se reemplazarán las publicaciones guardadas por las ' + pubs.size + ' del archivo. ¿Continuar?')) return msg($('ml-msg'), 'Carga cancelada.');
+          // si un archivo no trae SKU (p. ej. la planilla de pausadas), se conserva el SKU que ya teníamos de esa publicación
+          if ([...pubs.values()].some((x) => !x.sku)) {
+            const prev = {}; (await todas(() => sb.from('ml_publicaciones').select('item_id, sku').eq('empresa_id', EMPRESA))).forEach((x) => { if (x.sku) prev[x.item_id] = x.sku; });
+            pubs.forEach((x) => { if (!x.sku && prev[x.item_id]) x.sku = prev[x.item_id]; });
+          }
           ok(await sb.from('ml_publicaciones').delete().eq('empresa_id', EMPRESA));
           await guardarLotes('ml_publicaciones', [...pubs.values()].map((x) => ({ empresa_id: EMPRESA, ...x, origen: 'EXCEL', archivo: nombres.join(', ').slice(0, 300), cargado_en: ahora, cargado_por: quien })), 'empresa_id,item_id');
           partes.push(pubs.size + ' publicaciones');
