@@ -4758,17 +4758,20 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       }
       if (!pubs.size && !ventas.size && !vinc.length) return avisa('✖ No se reconoció ningún dato de Mercado Libre en ' + files.map((f) => f.name).join(', ') + '. Descargue desde Mercado Libre el listado de publicaciones (o de ventas) en Excel.', 'err');
       const quien = YO.nombre + ' <' + YO.correo + '>', ahora = new Date().toISOString(), partes = [];
+      let soloInactivas = false;
       try {
         if (pubs.size) {
-          if (!confirm('Se reemplazarán las publicaciones guardadas por las ' + pubs.size + ' del archivo. ¿Continuar?')) return avisa('Carga cancelada.');
+          // si solo vienen pausadas/inactivas (p. ej. solo la planilla de pausadas), se agregan sin borrar las activas que ya estaban
+          soloInactivas = [...pubs.values()].every((x) => !activa(x.estado));
           // si un archivo no trae SKU (p. ej. la planilla de pausadas), se conserva el SKU que ya teníamos de esa publicación
           if ([...pubs.values()].some((x) => !x.sku)) {
             const prev = {}; (await todas(() => sb.from('ml_publicaciones').select('item_id, sku').eq('empresa_id', EMPRESA))).forEach((x) => { if (x.sku) prev[x.item_id] = x.sku; });
             pubs.forEach((x) => { if (!x.sku && prev[x.item_id]) x.sku = prev[x.item_id]; });
           }
-          ok(await sb.from('ml_publicaciones').delete().eq('empresa_id', EMPRESA));
+          if (soloInactivas) ok(await sb.from('ml_publicaciones').delete().eq('empresa_id', EMPRESA).in('item_id', [...pubs.keys()]));
+          else ok(await sb.from('ml_publicaciones').delete().eq('empresa_id', EMPRESA));
           await guardarLotes('ml_publicaciones', [...pubs.values()].map((x) => ({ empresa_id: EMPRESA, ...x, origen: 'EXCEL', archivo: nombres.join(', ').slice(0, 300), cargado_en: ahora, cargado_por: quien })), 'empresa_id,item_id');
-          partes.push(pubs.size + ' publicaciones');
+          partes.push(pubs.size + ' publicaciones' + (soloInactivas ? ' pausadas o inactivas (se conservaron las activas que ya estaban; para reemplazar todo suba las planillas de activas y pausadas juntas)' : ''));
         }
         if (ventas.size) { await guardarLotes('ml_ventas', [...ventas.values()].map((x) => ({ empresa_id: EMPRESA, ...x, origen: 'EXCEL', cargado_en: ahora })), 'empresa_id,venta_id,item_id'); partes.push(ventas.size + ' líneas de venta'); }
         if (vinc.length) {
@@ -4779,7 +4782,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           partes.push(val.length + ' vínculos publicación ↔ código' + (malos.length ? ' (no existen en el inventario: ' + [...new Set(malos)].slice(0, 8).join(', ') + ')' : ''));
         }
         if (pubs.size || ventas.size) ok(await sb.from('ml_estado').upsert({ empresa_id: EMPRESA, origen: 'EXCEL', ultima_sync: ahora, ...(pubs.size ? { publicaciones: pubs.size } : {}), ...(ventas.size ? { ventas: ventas.size } : {}), mensaje: 'Archivo: ' + nombres.join(', ').slice(0, 200) + ' · por ' + YO.nombre }, { onConflict: 'empresa_id' }));
-        if (planillas.length) guardarPlanillas(planillas);
+        if (planillas.length) guardarPlanillas(soloInactivas ? [...PLANILLAS.filter((x) => !planillas.some((y) => y.nombre === x.nombre)), ...planillas] : planillas);
         bitacora('CARGA MERCADO LIBRE', partes.join(' · ') + ' · ' + nombres.join(', '));
         await recargar();
         avisa('✔ Subido con éxito: ' + partes.join(' · ') + ' (' + nombres.join(', ') + ').' + (ignorados.length ? ' ⚠ Sin datos de Mercado Libre: ' + ignorados.join(', ') + '.' : ''), 'ok');
