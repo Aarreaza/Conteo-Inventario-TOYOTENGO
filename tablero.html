@@ -129,6 +129,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-dif.wa{color:#b26a00;font-weight:600}.ml-dif.ig{color:#1d6f42}#ml-tabla td .tt-chip{display:inline-block;margin:.1rem 0}.ml-dif.dn{color:#c0182a;font-weight:600}
 .ml-edhint{background:#eef4ff;border:1px solid #b9cdf5;border-left:5px solid #2d5bd0;border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;font-size:.88rem;line-height:1.45}.ml-edhint b{color:#173f8a}.ml-edhint .ir{display:inline-flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}.ml-edhint button{font:600 .8rem inherit;border-radius:999px;padding:.3rem .75rem;cursor:pointer;border:1px solid #2d5bd0;background:#fff;color:#173f8a}.ml-edhint button:hover{background:#2d5bd0;color:#fff}.ml-sug{font:600 .75rem inherit;border:1px dashed #1d6f42;background:#eaf7ef;color:#14532d;border-radius:6px;padding:.15rem .45rem;margin:.15rem .25rem 0 0;cursor:pointer}
 .ml-mbtn{cursor:pointer}.ml-mbtn:hover{outline:2px solid #2d5bd0;outline-offset:1px}.ml-mbtn::after{content:" ✏";font-size:.75em;opacity:.65}.ml-mnew{font-size:.72rem;color:#7a4b00;background:#fff1b8;border-radius:4px;padding:0 .3rem;margin-top:.15rem;display:inline-block}.ml-medit{display:flex;align-items:center;gap:.2rem;justify-content:flex-end}.ml-mprev{font-size:.72rem;color:#173f8a;margin-top:.15rem}.ml-mok,.ml-mno{font:600 .8rem inherit;border:1px solid #ccd;border-radius:5px;background:#fff;cursor:pointer;padding:.1rem .35rem}.ml-mok{background:#1d6f42;color:#fff;border-color:#1d6f42}.ml-mall{display:inline-flex;align-items:center;gap:.3rem;background:#fff;border:1px solid #b9cdf5;border-radius:999px;padding:.2rem .3rem .2rem .7rem;font-size:.82rem}
+.pf-bar{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.5rem 0 .4rem}.pf-bar.on{background:#fff8e6;border:1px solid #f0c060;border-left:5px solid #e8a400;border-radius:8px;padding:.45rem .6rem}.pf-b{font:600 .86rem inherit;border-radius:8px;padding:.45rem .85rem;cursor:pointer;border:1.5px solid transparent}.pf-b.ed{background:#fff;color:#7a4b00;border-color:#e8a400}.pf-b.ed.on{background:#b26a00;color:#fff;border-color:#b26a00}.pf-b.x{background:#1d6f42;color:#fff;border-color:#1d6f42}.pf-b.x:disabled{background:#fff;color:#1d6f42;opacity:.55;cursor:default}.pf-b.c{background:#e8eefc;color:#173f8a;border-color:#b9cdf5}.pf-n{font-size:.82rem;color:#7a4b00;font-weight:600}td.pf-td{background:#fffaf0}.pf-ed{width:6.4rem;font:inherit;text-align:right;padding:.25rem .35rem;border:1px solid #d7b46a;border-radius:6px;background:#fff}.pf-ed.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-ed.okk{background:#dff5e6;border-color:#1d6f42}.pf-ed.err{background:#fde8ea;border-color:#c0182a}.pf-m{display:block;font-size:.7rem;color:#555}.pf-m.bad{color:#c0182a}
 .ml-al-x{white-space:nowrap;font:600 .78rem inherit;border:1px solid #1d6f42;color:#1d6f42;background:#fff;border-radius:6px;padding:.15rem .5rem;cursor:pointer;margin-left:.4rem}.ml-al-x:hover{background:#1d6f42;color:#fff}.ml-al-up{margin-left:auto;font:600 .8rem inherit;background:#1d6f42;color:#fff;border:0;border-radius:6px;padding:.35rem .7rem;cursor:pointer}.ml-al-up:hover{filter:brightness(1.1)}.ml-al-ayuda{font-size:.8rem;color:#555;margin:.3rem 0 .5rem}.mla-trab{margin-top:.7rem;padding-top:.6rem;border-top:1px dashed #ccd;font-size:.85rem}.mla-trab select{max-width:15rem}
 .ml-al-i{display:inline-flex;margin-top:.1rem}.ml-al-t{flex:1}.ml-al-a{white-space:nowrap;font-weight:600;font-size:.82rem;text-decoration:none}
 .ml-al.mal{background:#fff1f2;border-left-color:var(--color-bad)}.ml-al.mal .ml-al-i{color:var(--color-bad)}.ml-al.mal .ml-al-a{color:var(--color-bad)}
@@ -1649,6 +1650,7 @@ window.TT = (() => {
         if (th.classList.contains('tt-hide-n')) td.classList.add('tt-hide-n');
         if (c.render) c.render(td, r); else td.textContent = c.fmt ? c.fmt(r[f], r) : (r[f] ?? '');
         if (c.cls) td.classList.add(c.cls);
+        if (window.TT_EDCELL) window.TT_EDCELL(tbl, td, f, r);
         tr.appendChild(td);
       });
       tb.appendChild(tr);
@@ -6179,7 +6181,7 @@ function zoomEn(box){
   const nrm = (s) => String(s == null ? '' : s).toUpperCase().replace(/[\s\-._\/]/g, '');
   const sinAc = (s) => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const NO_CAT = /^(codigo|descripcion|titulo|item_id|sku|id|fila|db_id|detalle|accion|justificacion|permalink|venta_id|factura|cliente|fecha|mes|corte|clave|archivo|correo|nombre|sugerido|ubicaciones|codigos|lineas)$/;
-  const TF = new Map();
+  const TF = new Map(); window.TT_TF = TF;
   function barra(tbl, modo) {
     let F = TF.get(tbl); if (F) return F;
     F = { q: '', sel: {}, modo, bar: document.createElement('div') }; TF.set(tbl, F);
@@ -6217,6 +6219,7 @@ function zoomEn(box){
   window.TT_FILTRO = (tbl, rows, cols, keyOf, state) => {
     if (!tbl || tbl.dataset.nofiltro != null) return rows;
     const F = barra(tbl, 'datos'); F.tbl = tbl;
+    if (rows.length && rows[0] && 'codigo' in rows[0] && window.TT_PROF) window.TT_PROF.enganchar(tbl, F);
     F.redraw = state && state.redraw ? () => state.redraw() : () => window.TT.table(tbl, F.rows, cols, keyOf, state || {});
     F.rows = rows;
     const ths = [...tbl.querySelectorAll('thead th')].filter((th) => th.dataset.field);
@@ -6272,6 +6275,108 @@ function zoomEn(box){
   }
   ['b-tabla', 'c-hist', 'seg-tabla', 'ml-vtabla', 'ml-meses', 'ml-top', 'u-tabla'].forEach((id) => { try { domEnganchar(id); } catch (e) {} });
 
+  // ---------- correcciones para Profit desde cualquier tabla: costo, precio de venta y stock contado ----------
+  window.TT_PROF = (() => {
+    const fmtN = (x) => (x == null || x === '' ? '' : Number(x).toLocaleString('es-VE', { maximumFractionDigits: 2 }));
+    const CAMPO = (f) => (/^(costo|costo_unit|costo_prom|costo_unitario)$/.test(f) ? 'costo_nuevo' : /^(precio|precio_lista|precio_venta|precio_1|pvp)$/.test(f) ? 'precio_nuevo' : /^(stock|contado|existencia)$/.test(f) ? 'stock_contado' : null);
+    const ETQ = { costo_nuevo: 'costo', precio_nuevo: 'precio de venta', stock_contado: 'stock contado' };
+    // formato del archivo para Profit (encabezados iguales a los reportes que exporta Profit; se ajusta aquí si su plantilla de importación usa otros)
+    const FMT = {
+      precios: { hoja: 'Precios', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Precio 1', (p) => p.precio_nuevo]] },
+      costos: { hoja: 'Costos', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Costo', (p) => p.costo_nuevo]] },
+      ajuste: { hoja: 'Ajuste de inventario', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Almacén', (p) => p.almacen || 'PRINCIPAL'], ['Stock sistema', (p) => p.stock_antes], ['Stock contado', (p) => p.stock_contado], ['Ajuste', (p) => (p.stock_contado != null && p.stock_antes != null ? Math.round((p.stock_contado - p.stock_antes) * 100) / 100 : '')], ['Costo unitario', (p) => (p.costo_nuevo != null ? p.costo_nuevo : p.costo_antes)]] },
+    };
+    let PP = null, enDB = true, cargando = null;
+    const puedeEditar = () => !!YO && ['ADMIN', 'CARGA', 'REGULARIZA'].includes(YO.rol);
+    const quien = () => (YO ? (YO.nombre || '') + ' <' + (YO.correo || '') + '>' : '');
+    const art = (c) => ((SERVER && SERVER.articulos) || []).find((a) => String(a.codigo).toUpperCase() === String(c).toUpperCase()) || null;
+    const precioActual = (c) => { const p = ((SERVER && SERVER.precios) || []).find((x) => String(x.codigo).toUpperCase() === String(c).toUpperCase()); return p ? Number(p.precio_1) || null : null; };
+    const local = () => { try { localStorage.setItem('tt_prof_pend', JSON.stringify(Object.values(PP || {}))); } catch (e) {} };
+    async function cargar() {
+      if (PP) return PP; if (cargando) return cargando;
+      cargando = (async () => {
+        let L = [];
+        try { L = await todas(() => sb.from('profit_pendientes').select('*').eq('empresa_id', EMPRESA).order('codigo')); enDB = true; }
+        catch (e) { enDB = false; try { L = JSON.parse(localStorage.getItem('tt_prof_pend') || '[]'); } catch (x) { L = []; } }
+        PP = {}; L.forEach((x) => { PP[String(x.codigo).toUpperCase()] = x; });
+        // los que ya aparecen hechos en los reportes de Profit se cierran solos
+        const hechos = Object.values(PP).filter((x) => { const a = art(x.codigo); if (!a) return false; const pa = precioActual(x.codigo);
+          return (x.costo_nuevo == null || (a.costo != null && Math.abs(Number(a.costo) - Number(x.costo_nuevo)) < 0.01)) && (x.precio_nuevo == null || (pa != null && Math.abs(pa - Number(x.precio_nuevo)) < 0.01)) && (x.stock_contado == null || Number(a.stock) === Number(x.stock_contado)); });
+        if (hechos.length) await cerrar(hechos.map((x) => x.codigo)).catch(() => {});
+        cargando = null; botones(); return PP;
+      })();
+      return cargando;
+    }
+    async function cerrar(cods) {
+      if (enDB) for (let i = 0; i < cods.length; i += 200) ok(await sb.from('profit_pendientes').delete().eq('empresa_id', EMPRESA).in('codigo', cods.slice(i, i + 200)));
+      cods.forEach((c) => { delete PP[String(c).toUpperCase()]; }); if (!enDB) local();
+    }
+    async function guardar(r, campo, valor, origen) {
+      await cargar(); const k = String(r.codigo).toUpperCase(), a = art(r.codigo) || {};
+      const cur = { ...(PP[k] || { empresa_id: EMPRESA, codigo: r.codigo, descripcion: r.descripcion || a.descripcion || '', costo_antes: a.costo != null ? Number(a.costo) : (r.costo ?? null), precio_antes: precioActual(r.codigo) ?? (r.precio ?? r.precio_lista ?? null), stock_antes: a.stock != null ? Number(a.stock) : (r.stock ?? null) }) };
+      cur[campo] = valor; cur.por = quien(); cur.en = new Date().toISOString(); cur.origen = origen || cur.origen || ''; cur.exportado_en = null; cur.exportado_por = null;
+      const vacio = cur.costo_nuevo == null && cur.precio_nuevo == null && cur.stock_contado == null;
+      if (enDB) { if (vacio) ok(await sb.from('profit_pendientes').delete().eq('empresa_id', EMPRESA).eq('codigo', r.codigo)); else ok(await sb.from('profit_pendientes').upsert(cur, { onConflict: 'empresa_id,codigo' })); }
+      if (vacio) delete PP[k]; else PP[k] = cur; if (!enDB) local();
+      botones();
+    }
+    // celdas editables (las llama TT.table después de pintar cada celda)
+    window.TT_EDCELL = (tbl, td, f, r) => {
+      const F = window.TT_TF && window.TT_TF.get(tbl); if (!F || !F.prof || !r || r.codigo == null) return;
+      const campo = CAMPO(f); if (!campo || !puedeEditar()) return;
+      const P = (PP || {})[String(r.codigo).toUpperCase()] || {}, val = P[campo], actual = r[f];
+      td.replaceChildren(); td.classList.add('pf-td');
+      const i = document.createElement('input'); i.className = 'pf-ed' + (val != null ? ' pend' : ''); i.inputMode = 'decimal'; i.value = val != null ? String(val).replace('.', ',') : ''; i.placeholder = fmtN(actual) || '—';
+      i.title = 'Actual: ' + (fmtN(actual) || '—') + ' · escriba el ' + ETQ[campo] + ' correcto y salga de la casilla · vacío = sin cambio';
+      i.addEventListener('keydown', (e) => { if (e.key === 'Enter') i.blur(); if (e.key === 'Escape') { i.value = val != null ? String(val).replace('.', ',') : ''; i.blur(); } });
+      i.addEventListener('change', async () => {
+        const t = i.value.trim(); let v = null;
+        if (t) { v = Number(t.replace(/\s/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')); if (!isFinite(v) || (campo !== 'stock_contado' && v <= 0) || v < 0) { i.className = 'pf-ed err'; return avisoCarga('✖ ' + r.codigo + ': valor no válido.', 'err'); } v = Math.round(v * 100) / 100; }
+        try { await guardar(r, campo, v, (tbl.closest('.tt-card') && (tbl.closest('.tt-card').querySelector('h3') || {}).textContent) || tbl.id);
+          i.className = 'pf-ed ' + (v != null ? 'pend' : 'okk'); avisoCarga(v != null ? '✔ ' + r.codigo + ': ' + ETQ[campo] + ' ' + fmtN(v) + ' queda pendiente para el Excel de Profit.' : '✔ ' + r.codigo + ': se quitó la corrección de ' + ETQ[campo] + '.', 'ok'); }
+        catch (e) { i.className = 'pf-ed err'; avisoCarga('✖ No se pudo guardar: ' + e.message, 'err'); }
+      });
+      td.appendChild(i);
+      if (campo === 'precio_nuevo' && val != null && r.costo > 0) { const m = (val - r.costo) / val, s = document.createElement('small'); s.className = 'pf-m ' + (m < 0 ? 'bad' : ''); s.textContent = 'margen ' + (m * 100).toFixed(1).replace('.', ',') + '%'; td.appendChild(s); }
+    };
+    // botones en la barra de cada tabla que tiene códigos
+    const BARRAS = new Set();
+    function botones() {
+      const n = PP ? Object.keys(PP).length : 0, exp = PP ? Object.values(PP).filter((x) => x.exportado_en).length : 0;
+      BARRAS.forEach((F) => { if (!F.pfx) return; F.pfx.textContent = '⬇ Excel para Profit' + (n ? ' (' + n + ')' : ''); F.pfx.disabled = !n; F.pfc.hidden = !exp; F.pfc.textContent = '✔ Ya cargué en Profit (' + exp + ')'; F.pfn.hidden = !n || !F.prof; F.pfn.textContent = n + ' corrección' + (n === 1 ? '' : 'es') + ' pendiente' + (n === 1 ? '' : 's') + (enDB ? '' : ' · solo en este navegador'); });
+    }
+    function enganchar(tbl, F) {
+      if (F.pfe || tbl.id === 'ml-tabla' || tbl.dataset.noprofit != null || !puedeEditar()) return; F.pfe = true; BARRAS.add(F);
+      const box = document.createElement('div'); box.className = 'pf-bar';
+      const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'pf-b ed'; ed.textContent = '✏ Corregir para Profit';
+      ed.title = 'Las columnas de costo, precio y stock se vuelven editables; lo corregido se junta en un Excel para cargar en Profit';
+      ed.addEventListener('click', async () => { await cargar(); F.prof = !F.prof; ed.classList.toggle('on', F.prof); ed.textContent = F.prof ? '✔ Terminar de corregir' : '✏ Corregir para Profit'; box.classList.toggle('on', F.prof); botones(); if (F.redraw) F.redraw(); });
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'pf-b x'; x.addEventListener('click', () => exportar().catch((e) => avisoCarga('✖ ' + e.message, 'err')));
+      const c = document.createElement('button'); c.type = 'button'; c.className = 'pf-b c'; c.hidden = true; c.title = 'Cierra las correcciones ya descargadas: úselo cuando las haya cargado en Profit';
+      c.addEventListener('click', async () => { if (!c.dataset.k) { c.dataset.k = '1'; c.textContent = '¿Seguro? toque otra vez'; setTimeout(() => { delete c.dataset.k; botones(); }, 4000); return; } delete c.dataset.k;
+        const L = Object.values(PP).filter((y) => y.exportado_en).map((y) => y.codigo); await cerrar(L); botones(); BARRAS.forEach((G) => G.redraw && G.redraw()); avisoCarga('✔ ' + L.length + ' correcciones marcadas como cargadas en Profit.', 'ok'); });
+      const n = document.createElement('span'); n.className = 'pf-n'; n.hidden = true;
+      box.append(ed, x, c, n); F.bar.parentNode.insertBefore(box, F.bar); F.pfx = x; F.pfc = c; F.pfn = n;
+      cargar().then(botones).catch(() => {});
+    }
+    async function exportar() {
+      await cargar(); const L = Object.values(PP).sort((a, b) => String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true })); if (!L.length) return avisoCarga('No hay correcciones pendientes.', 'ok');
+      const wb = XLSX.utils.book_new(), hoja = (fm, rows) => { const ws = XLSX.utils.aoa_to_sheet([fm.cols.map((c) => c[0]), ...rows.map((p) => fm.cols.map((c) => { const v = c[1](p); return v == null ? '' : v; }))]); ws['!cols'] = fm.cols.map((c) => ({ wch: /Descrip/.test(c[0]) ? 45 : 14 }));
+        for (let r = 1; r <= rows.length; r++) { const cel = ws[XLSX.utils.encode_cell({ r, c: 0 })]; if (cel) { cel.t = 's'; cel.v = String(cel.v); } } return ws; };
+      const pr = L.filter((p) => p.precio_nuevo != null), co = L.filter((p) => p.costo_nuevo != null), st = L.filter((p) => p.stock_contado != null);
+      if (pr.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.precios, pr), FMT.precios.hoja);
+      if (co.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.costos, co), FMT.costos.hoja);
+      if (st.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.ajuste, st), FMT.ajuste.hoja);
+      const det = XLSX.utils.json_to_sheet(L.map((p) => ({ 'Código': String(p.codigo), 'Descripción': p.descripcion, 'Costo antes': p.costo_antes, 'Costo nuevo': p.costo_nuevo, 'Precio antes': p.precio_antes, 'Precio nuevo': p.precio_nuevo, 'Margen nuevo': p.precio_nuevo && (p.costo_nuevo || p.costo_antes) ? Math.round((1 - (p.costo_nuevo || p.costo_antes) / p.precio_nuevo) * 1000) / 1000 : null, 'Stock antes': p.stock_antes, 'Stock contado': p.stock_contado, 'Corregido en': p.origen, 'Por': p.por, 'Fecha': String(p.en || '').slice(0, 16).replace('T', ' ') })));
+      det['!cols'] = [{ wch: 14 }, { wch: 45 }, ...Array(8).fill({ wch: 12 }), { wch: 28 }, { wch: 30 }, { wch: 16 }]; XLSX.utils.book_append_sheet(wb, det, 'Detalle (control)');
+      const f = new Date().toLocaleDateString('en-CA'), nom = 'TOYOTENGO_Correcciones_para_Profit_' + f + '.xlsx'; XLSX.writeFile(wb, nom);
+      const ahora = new Date().toISOString(), yo = quien(); L.forEach((p) => { p.exportado_en = ahora; p.exportado_por = yo; });
+      if (enDB) { for (let i = 0; i < L.length; i += 300) ok(await sb.from('profit_pendientes').upsert(L.slice(i, i + 300), { onConflict: 'empresa_id,codigo' })); } else local();
+      bitacora('EXCEL PARA PROFIT', nom + ' · ' + pr.length + ' precios · ' + co.length + ' costos · ' + st.length + ' ajustes de stock'); botones();
+      avisoCarga('✔ Descargado ' + nom + ': ' + [pr.length ? pr.length + ' precios' : '', co.length ? co.length + ' costos' : '', st.length ? st.length + ' ajustes de stock' : ''].filter(Boolean).join(' · ') + '. Cárguelo en Profit; al subir los reportes nuevos se cierran solos (o toque «Ya cargué en Profit»).', 'ok');
+    }
+    return { enganchar, cargar, exportar, FMT };
+  })();
   // ---------- ficha del artículo ----------
   const FICHA = (() => {
     const dlg = document.createElement('dialog'); dlg.id = 'ficha'; dlg.className = 'fa-dlg'; document.body.appendChild(dlg);
