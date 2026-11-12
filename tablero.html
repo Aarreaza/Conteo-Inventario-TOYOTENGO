@@ -5112,19 +5112,20 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const A = aj(); $('ml-com').value = Math.round(A.com * 1000) / 10; $('ml-min').value = Math.round(A.min * 1000) / 10; $('ml-tasa').value = A.tasa || '';
       if (!famLlena && SERVER.articulos.length) { famLlena = true; [...new Set(SERVER.articulos.map((a) => a.familia))].sort((a, b) => a.localeCompare(b, 'es')).forEach((f) => $('ml-fam').appendChild(new Option(f, f))); }
       if (!document.getElementById('ml-codigos') && SERVER.articulos.length) { const dl = document.createElement('datalist'); dl.id = 'ml-codigos'; SERVER.articulos.forEach((a) => dl.appendChild(new Option(a.descripcion || '', a.codigo))); document.body.appendChild(dl); }
-      if (!pintar._red && SERVER.ml && (SERVER.ml.pend || []).some((x) => x.precio_nuevo != null && Number(x.precio_nuevo) !== redPrecio(x.precio_nuevo))) {
-        pintar._red = true; const L = SERVER.ml.pend.filter((x) => x.precio_nuevo != null && Number(x.precio_nuevo) !== redPrecio(x.precio_nuevo)).map((x) => ({ item_id: x.item_id, precio_nuevo: redPrecio(x.precio_nuevo) }));
-        guardarPendLote(L, 'PANEL').then(() => { avisa('✔ ' + L.length + ' precios pendientes se redondearon a dólares enteros. Vuelva a bajar la 🛒 Planilla para Mercado Libre.', 'ok'); tabla(); }).catch(() => {});
+      // ajustes automáticos de los pendientes: precios a dólares enteros y stock nunca mayor que lo DISPONIBLE (sin comprometido)
+      if (!pintar._aj && R && R.k.hay && SERVER.ml && (SERVER.ml.pend || []).length) {
+        const C = reglasStock.cache || { res: 0, tope: null }, qOk = (x) => { let q = Math.max(0, Math.floor((Number(x) || 0) - C.res)); if (C.tope != null && q > C.tope) q = C.tope; return q; };
+        const P = {}; R.pubs.forEach((r) => { P[r.item_id] = r; });
+        let nP = 0, nS = 0; const L = [];
+        SERVER.ml.pend.forEach((x) => { const c = { item_id: x.item_id }; let cambia = false;
+          if (x.precio_nuevo != null && Number(x.precio_nuevo) !== redPrecio(x.precio_nuevo)) { c.precio_nuevo = redPrecio(x.precio_nuevo); cambia = true; nP++; }
+          const r = P[x.item_id]; if (x.stock_nuevo != null && r && r.codigo && Number(x.stock_nuevo) > qOk(r.stock)) { c.stock_nuevo = qOk(r.stock); cambia = true; nS++; }
+          if (cambia) L.push(c); });
+        if (L.length) { pintar._aj = true;
+          guardarPendLote(L, 'PANEL').then(() => { pintar._aj = false; avisa('✔ Pendientes ajustados: ' + [nS ? nS + ' stocks bajados a lo disponible para la venta (sin comprometido)' : '', nP ? nP + ' precios redondeados a dólares enteros' : ''].filter(Boolean).join(' · ') + '. Vuelva a bajar la 🛒 Planilla para Mercado Libre.', 'ok'); tabla(); })
+            .catch((e) => { pintar._aj = false; avisa('✖ No se pudieron ajustar los pendientes: ' + e.message, 'err'); }); }
       }
-      // ningún stock pendiente para ML puede superar lo DISPONIBLE (p. ej. después de cargar el comprometido)
-      if (!pintar._cap && R && R.k.hay && (SERVER.ml.pend || []).some((x) => x.stock_nuevo != null)) {
-        pintar._cap = true;
-        reglasStock().then((qOk) => { const P = {}; R.pubs.forEach((r) => { P[r.item_id] = r; });
-          const L = (SERVER.ml.pend || []).filter((x) => { const r = P[x.item_id]; return x.stock_nuevo != null && r && r.codigo && Number(x.stock_nuevo) > qOk(r.stock); }).map((x) => ({ item_id: x.item_id, stock_nuevo: qOk(P[x.item_id].stock) }));
-          if (!L.length) { pintar._cap = false; return; }
-          return guardarPendLote(L, 'PANEL').then(() => { pintar._cap = false; avisa('✔ ' + L.length + ' stocks pendientes para Mercado Libre se bajaron a lo disponible para la venta (sin lo comprometido). Vuelva a bajar la 🛒 Planilla para Mercado Libre.', 'ok'); tabla(); });
-        }).catch(() => { pintar._cap = false; });
-      }
+      if (!reglasStock.cache) reglasStock().then(() => { if ((SERVER.ml.pend || []).length) pintar(); }).catch(() => {});
       estadoTxt(); ctrl(); alertas(); tiles(); tabla(); vendedor(); resumenVentas(); pintarPlanillas();
       pintarInsignias();
       $('ml-graf').hidden = !R.ventas.length;
@@ -5349,6 +5350,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     async function reglasStock() {
       let c = {}; try { c = (await sb.from('ml_config').select('stock_reserva, stock_maximo').eq('empresa_id', EMPRESA).maybeSingle()).data || {}; } catch (e) { c = {}; }
       const res = Number(c.stock_reserva) || 0, tope = c.stock_maximo == null ? null : Number(c.stock_maximo);
+      reglasStock.cache = { res, tope };
       return (s) => { let q = Math.max(0, Math.floor((Number(s) || 0) - res)); if (tope != null && q > tope) q = tope; return q; };
     }
     async function bajarTrabajo(id, filasDadas) {
