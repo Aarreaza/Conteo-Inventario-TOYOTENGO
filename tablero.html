@@ -501,6 +501,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .alm-ec .t small{display:block;font-size:.78rem;color:var(--color-fg-muted)}
 .alm-ec .t b{display:block;font-family:var(--font-anthropic-serif);font-weight:400;font-size:1.55rem;font-variant-numeric:tabular-nums;line-height:1.2}
 .alm-ec .t span{font-size:.8rem;color:var(--color-fg-muted)}
+.alm-ec .t.disp{border-left:5px solid #1d6f42;background:#f1faf4}.alm-ec .t.comp{border-left:5px solid #b26a00;background:#fffaf0}
 .alm-ec .op{align-self:center;font-size:1.4rem;color:var(--color-fg-muted);padding:0 .1rem}
 .alm-ec .t.tot{border:2px solid var(--tt-ink,#2b2f36)}
 .alm-bar{display:flex;height:2.4rem;border-radius:8px;overflow:hidden;margin-bottom:.4rem;background:var(--color-border-line)}
@@ -1002,7 +1003,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <section id="resumen" class="tt-page">
     <div style="display:flex;flex-direction:column;gap:var(--cds-gap-md)">
       <div class="tt-tiles" id="kpi-tiles">
-        <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_inventario">—</span><span class="s">para vender <span data-source="kpis" data-field="valor_total">—</span> · en tránsito <span data-source="kpis" data-field="valor_transito">—</span></span></div>
+        <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_inventario">—</span><span class="s">para vender <span data-source="kpis" data-field="valor_total">—</span><span id="kv-comp" hidden> (disponible <span data-source="kpis" data-field="valor_disponible">—</span> · comprometido <span data-source="kpis" data-field="valor_comprometido">—</span>)</span> · en tránsito <span data-source="kpis" data-field="valor_transito">—</span></span></div>
         <div class="tt-tile" id="tile-disp"><span class="k">Disponible para la venta</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_disponible">—</span><span class="s"><span id="tile-disp-ok">comprometido <span data-source="kpis" data-field="valor_comprometido">—</span> (<span data-source="kpis" data-field="pct_comprometido">—</span>) en <span data-source="kpis" data-field="art_comp">—</span> códigos · <span data-source="kpis" data-field="unidades_disp">—</span> uds. libres</span><span id="tile-disp-no" hidden style="color:#b26a00">⚠ este corte no trae lo comprometido: suba el archivo de stock comprometido de Profit en «Cargar datos» (casilla Comprometido)</span></span></div>
         <div class="tt-tile"><span class="k">Valor a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">ganancia potencial <span data-source="kpis_precio" data-field="margen_usd">—</span> (<span data-source="kpis_precio" data-field="margen_pct">—</span>) · solo el <span data-source="kpis_precio" data-field="cobertura">—</span> del inventario tiene precio</span></div>
         <div class="tt-tile"><span class="k">Artículos con existencia</span><span class="v dash-skeleton" data-source="kpis" data-field="con_stock">—</span><span class="s">de <span data-source="kpis" data-field="articulos_total">—</span> códigos en el maestro</span></div>
@@ -1479,7 +1480,7 @@ dash.calc('kpis', {
       valor_transito, valor_inventario: valor_total + valor_transito, unidades_transito: sum(tr, 'transito'), art_transito: tr.filter((r) => n(r.transito) > 0).length, hay_alm: articulos.some((r) => r.alm),
       pct_comprometido: valor_total ? valor_comprometido / valor_total : 0,
       articulos_total: articulos.length, con_stock: con.length, negativos: neg.length,
-      valor_negativo: sum(neg, 'valor'), unidades, comprometido_u: sum(con, 'comprometido'), hay_comp: articulos.some((r) => n(r.comprometido) > 0), unidades_disp: unidades - sum(con, 'comprometido'),
+      valor_negativo: sum(neg, 'valor'), unidades, comprometido_u: sum(con, 'comprometido'), hay_comp: articulos.some((r) => n(r.comprometido) > 0), unidades_disp: articulos.some((r) => n(r.comprometido) > 0) ? sum(con, 'disponible') : unidades,
       art_comp: articulos.filter((r) => n(r.comprometido) > 0).length,
       costo_prom: unidades ? sum(con, 'valor') / unidades : 0,
       sin_costo: articulos.filter((r) => r.en_rep_valor === 'NO').length,
@@ -1711,6 +1712,8 @@ window.TT = (() => {
     tienda: { nom: 'Almacén Tienda', c: 'var(--s2)', s: (r) => r.st_tienda, v: (r) => r.v_tienda },
     consignacion: { nom: 'Consignación', c: 'var(--s3)', s: (r) => r.st_consignacion, v: (r) => r.v_consignacion },
     transito: { nom: 'Tránsito', c: 'var(--s4)', s: (r) => r.transito, v: (r) => r.valor_transito },
+    disponible: { nom: 'Disponible para la venta (para vender − comprometido)', c: '#1d6f42', s: (r) => r.disponible, v: (r) => (Number(r.valor) || 0) - (Number(r.valor_comprometido) || 0) },
+    comprometido: { nom: 'Comprometido (por facturar)', c: '#b26a00', s: (r) => Math.min(Number(r.comprometido) || 0, Math.max(0, Number(r.stock) || 0)), v: (r) => r.valor_comprometido },
     vender: { nom: 'Para vender (Principal + Tienda + Consignación)', c: 'var(--tt-ink,#2b2f36)', s: (r) => r.stock, v: (r) => r.valor, det: ['principal', 'tienda', 'consignacion'] },
     total: { nom: 'Inventario total (los 4 almacenes)', c: 'var(--tt-ink,#2b2f36)', s: (r) => (Number(r.stock) || 0) + (Number(r.transito) || 0), v: (r) => (Number(r.valor) || 0) + (Number(r.valor_transito) || 0), det: ['principal', 'tienda', 'consignacion', 'transito'] },
   };
@@ -1830,6 +1833,7 @@ window.TT = (() => {
     if (k.status === 'ok') {
       const r0 = k.data[0];
       const cu = document.getElementById('card-uso'); if (cu) cu.hidden = !r0.hay_comp;
+      { const kc = document.getElementById('kv-comp'); if (kc) kc.hidden = !r0.hay_comp; }
       { const a1 = document.getElementById('tile-disp-ok'), a2 = document.getElementById('tile-disp-no'); if (a1 && a2) { a1.hidden = !r0.hay_comp; a2.hidden = !!r0.hay_comp; } }
       const ca = document.getElementById('card-alm'); ca.hidden = !r0.hay_alm;
       if (r0.hay_alm) {
@@ -1849,10 +1853,19 @@ window.TT = (() => {
         const ec = document.getElementById('alm-ec'); ec.replaceChildren();
         const caja = (t, v, s, cls) => { const d = mk('div', 't' + (cls ? ' ' + cls : '')); d.append(mk('small', null, t), mk('b', null, v), mk('span', null, s)); return d; };
         const ck = (el, k) => { el.dataset.alm = k; el.title = 'Clic para ver los artículos y descargar el Excel'; el.addEventListener('click', () => almAbrir(k)); return el; };
-        ec.append(caja('Para vender', fmt.usd0(V.val), fmt.pct(pc(V.val)) + ' · ' + fmt.num(V.uds) + ' uds. · ' + fmt.int(V.cod) + ' códigos'), mk('div', 'op', '+'),
-          caja('En tránsito', fmt.usd0(Tr.val), fmt.pct(pc(Tr.val)) + ' · ' + fmt.num(Tr.uds) + ' uds. · ' + fmt.int(Tr.cod) + ' códigos'), mk('div', 'op', '='),
-          caja('Inventario total a costo', fmt.usd0(Tot.val), fmt.num(Tot.uds) + ' uds. · ' + fmt.int(Tot.cod) + ' códigos con existencia', 'tot'));
-        [...ec.querySelectorAll('.t')].forEach((el, i) => ck(el, ['vender', 'transito', 'total'][i]));
+        const Cm = fila('Comprometido (por facturar)', (r) => Math.min(Number(r.comprometido) || 0, Math.max(0, Number(r.stock) || 0)), (r) => r.valor_comprometido), Dp = { ...fila('Disponible para la venta', (r) => r.disponible, (r) => (Number(r.valor) || 0) - (Number(r.valor_comprometido) || 0)) };
+        if (r0.hay_comp) {
+          ec.append(caja('Disponible para la venta', fmt.usd0(Dp.val), fmt.pct(pc(Dp.val)) + ' · ' + fmt.num(Dp.uds) + ' uds. · lo que se puede vender y publicar', 'disp'), mk('div', 'op', '+'),
+            caja('Comprometido (por facturar)', fmt.usd0(Cm.val), fmt.pct(pc(Cm.val)) + ' · ' + fmt.num(Cm.uds) + ' uds. · ' + fmt.int(Cm.cod) + ' códigos · ya salió, falta facturar', 'comp'), mk('div', 'op', '+'),
+            caja('En tránsito', fmt.usd0(Tr.val), fmt.pct(pc(Tr.val)) + ' · ' + fmt.num(Tr.uds) + ' uds. · ' + fmt.int(Tr.cod) + ' códigos · aún no se vende'), mk('div', 'op', '='),
+            caja('Inventario total a costo', fmt.usd0(Tot.val), fmt.num(Tot.uds) + ' uds. · ' + fmt.int(Tot.cod) + ' códigos con existencia', 'tot'));
+          [...ec.querySelectorAll('.t')].forEach((el, i) => ck(el, ['disponible', 'comprometido', 'transito', 'total'][i]));
+        } else {
+          ec.append(caja('Para vender', fmt.usd0(V.val), fmt.pct(pc(V.val)) + ' · ' + fmt.num(V.uds) + ' uds. · ' + fmt.int(V.cod) + ' códigos · ⚠ sin dato de comprometido'), mk('div', 'op', '+'),
+            caja('En tránsito', fmt.usd0(Tr.val), fmt.pct(pc(Tr.val)) + ' · ' + fmt.num(Tr.uds) + ' uds. · ' + fmt.int(Tr.cod) + ' códigos'), mk('div', 'op', '='),
+            caja('Inventario total a costo', fmt.usd0(Tot.val), fmt.num(Tot.uds) + ' uds. · ' + fmt.int(Tot.cod) + ' códigos con existencia', 'tot'));
+          [...ec.querySelectorAll('.t')].forEach((el, i) => ck(el, ['vender', 'transito', 'total'][i]));
+        }
         // barra de composición
         const bar = document.getElementById('alm-bar'); bar.replaceChildren();
         bar.setAttribute('aria-label', W.map((w) => w.nom + ' ' + fmt.pct(pc(w.val))).join(', '));
@@ -1871,7 +1884,7 @@ window.TT = (() => {
         almPintar();
         // tabla detallada
         const tb = document.querySelector('#t-alm tbody'); tb.replaceChildren();
-        [W[0], W[1], W[2], { ...V, b: 1 }, Tr, { ...Tot, b: 1 }].forEach((x) => {
+        [W[0], W[1], W[2], { ...V, b: 1 }, ...(r0.hay_comp ? [{ ...Dp, nom: '   · Disponible para la venta' }, { ...Cm, nom: '   · Comprometido (por facturar)' }] : []), Tr, { ...Tot, b: 1 }].forEach((x) => {
           const trr = document.createElement('tr'); if (x.b) trr.style.fontWeight = '600';
           [[x.nom, ''], [fmt.int(x.cod), 'n'], [fmt.num(x.uds), 'n'], [fmt.usd0(x.val), 'n'], [fmt.pct(pc(x.val)), 'n'], [x.neg ? fmt.int(x.neg) : '—', 'n']].forEach(([t, cl]) => { const td = document.createElement('td'); td.textContent = t; if (cl) td.className = cl; trr.appendChild(td); });
           tb.appendChild(trr);
@@ -2753,8 +2766,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const co = l.costo == null ? null : Math.round(num(l.costo) * 10000) / 10000;
     const alm = l.stock_principal != null || l.stock_tienda != null || l.stock_transito != null || l.stock_consignacion != null;
     const a = { fila: l.fila, codigo: String(l.codigo), descripcion: l.descripcion || '', familia: l.familia || 'Otros', linea: l.marca || 'Sin modelo en descripción',
-      estado: st < 0 ? 'Negativo' : st > 0 ? 'Con stock' : 'Sin stock', stock: st, comprometido: num(l.comprometido), disponible: alm ? st - num(l.comprometido) : num(l.disponible), comp: l.comprometido != null, por_llegar: alm ? num(l.stock_transito) : num(l.por_llegar),
-      costo: co, valor: r2(l.valor_calculado), valor_comprometido: r2(num(l.comprometido) * (co || 0)),
+      estado: st < 0 ? 'Negativo' : st > 0 ? 'Con stock' : 'Sin stock', stock: st, comprometido: num(l.comprometido), disponible: alm ? Math.max(0, st - num(l.comprometido)) : num(l.disponible), comp: l.comprometido != null, por_llegar: alm ? num(l.stock_transito) : num(l.por_llegar),
+      costo: co, valor: r2(l.valor_calculado), valor_comprometido: r2(Math.min(num(l.comprometido), Math.max(0, st)) * (co || 0)),
       en_rep_stocks: l.en_rep_stocks === false ? 'NO' : 'SÍ', en_rep_valor: l.en_rep_valor === false ? 'NO' : 'SÍ', hallazgo: l.hallazgo || 'OK' };
     if (alm) Object.assign(a, { alm: true, transito: num(l.stock_transito), valor_transito: r2(l.valor_transito),
       st_principal: num(l.stock_principal), st_tienda: num(l.stock_tienda), st_consignacion: num(l.stock_consignacion),
@@ -3662,8 +3675,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const vs = LOTE.filter((l) => l.tipo === 'ventas');
       if (vs.length) { const r = await guardarVentas(vs); hecho.push('ventas de ' + r.meses.map(nomMes).join(', ') + ' (' + r.lineas.toLocaleString('es-VE') + ' líneas · ' + fmtU(r.total) + ')'); bitacora('CARGA VENTAS', vs.map((v) => v.archivo).join(', ') + ' · ' + r.meses.join(', ') + ' · ' + r.lineas + ' líneas'); }
       if (p) { await guardarPrecios(p, fecha); hecho.push('lista de precios (' + p.filas.length.toLocaleString('es-VE') + ' artículos)'); bitacora('CARGA PRECIOS', p.archivo + ' · ' + p.filas.length + ' filas'); }
-      LOTE = []; PREVIEW = null; pintarLote(); $('t-preview').hidden = true;
       const fl = (controlCarga().it || []).filter((x) => !x.en && (x.falta || x.viejo));
+      LOTE = []; PREVIEW = null; pintarLote(); $('t-preview').hidden = true;
       const ok_ = '✔ Datos subidos con éxito: ' + (hecho.join(' y ') || 'conciliación') + '. Todos los usuarios ya ven la nueva versión.' + (fl.length ? ' ⚠ No olvide cargar también: ' + fl.map((x) => x.n).join(', ') + '.' : '');
       msg($('c-msg'), ok_, 'ok'); avisoCarga(ok_, 'ok');
       SERVER = await leerDatos(); dash._set(soloDatos(SERVER)); ver('v-tablero');
