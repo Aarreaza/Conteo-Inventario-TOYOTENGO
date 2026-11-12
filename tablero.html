@@ -4374,33 +4374,38 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const PH = (r) => r.pend || {};
     // precio en ML para lograr un margen (después de la comisión), en la moneda de la publicación
     const fMon = (r) => (r.precio_ml && r.precio_usd ? r.precio_ml / r.precio_usd : 1);
+    // base: precio de venta al público del inventario (si no tiene, el costo). Lo que se recibe después de la comisión = base ÷ (1 − %)
+    const baseDe = (r) => (r.precio_lista > 0 ? r.precio_lista : r.costo > 0 ? r.costo : null);
+    const sobrePub = (r) => r.precio_lista > 0;
     function precioPorMargen(r, m) {
-      if (!r.costo || m >= 1 || R.A.com >= 1) return null;
-      return Math.round(r.costo / ((1 - m) * (1 - R.A.com)) * fMon(r) * 100) / 100;
+      const b = baseDe(r); if (!b || m >= 1 || R.A.com >= 1) return null;
+      return Math.round(b / ((1 - m) * (1 - R.A.com)) * fMon(r) * 100) / 100;
     }
+    const pctSobreBase = (r, precio) => { const b = baseDe(r), neto = precio / fMon(r) * (1 - R.A.com); return b && neto ? 1 - b / neto : null; };
     const margenDe = (r, precio) => { const neto = precio / fMon(r) * (1 - R.A.com); return r.costo && neto ? (neto - r.costo) / neto : null; };
     function margenEditable(td, r, T) {
       td.style.whiteSpace = 'nowrap';
       const P = PH(r), mN = P.precio_nuevo != null ? margenDe(r, Number(P.precio_nuevo)) : null;
       const pinta = () => {
         td.replaceChildren();
-        if (r.margen_ml == null) { td.textContent = r.costo ? '—' : 'sin costo'; return; }
-        T.chip(td, T.fmt.pct(r.margen_ml), r.margen_ml < 0 ? 'bad' : r.margen_ml < R.A.min ? 'warn' : 'ok');
+        if (r.margen_ml == null && !baseDe(r)) { td.textContent = 'sin costo'; return; }
+        if (r.margen_ml == null) { const b = mk('span', 'tt-chip', '—'); td.appendChild(b); } else T.chip(td, T.fmt.pct(r.margen_ml), r.margen_ml < 0 ? 'bad' : r.margen_ml < R.A.min ? 'warn' : 'ok');
         const ch = td.lastElementChild;
         if (mN != null) { const n = mk('div', 'ml-mnew', '→ ' + T.fmt.pct(mN) + ' · ' + T.fmt.usd2(Number(P.precio_nuevo) / fMon(r))); n.title = 'Precio nuevo pendiente para la planilla de Mercado Libre'; td.appendChild(n); }
-        if (!puede() || !r.item_id || !r.costo || !ch) return;
-        ch.classList.add('ml-mbtn'); ch.title = 'Toque para cambiar el margen: el panel calcula el precio en Mercado Libre'; ch.tabIndex = 0;
+        if (!puede() || !r.item_id || !baseDe(r) || !ch) return;
+        ch.classList.add('ml-mbtn'); ch.title = 'Toque para fijar el % sobre el ' + (sobrePub(r) ? 'precio de venta al público' : 'costo (no tiene precio al público)') + ': el panel calcula el precio en Mercado Libre'; ch.tabIndex = 0;
         ch.addEventListener('click', edita); ch.addEventListener('keydown', (e) => { if (e.key === 'Enter') edita(); });
       };
       const edita = () => {
         td.replaceChildren();
         const w = mk('div', 'ml-medit'), i = document.createElement('input'); i.className = 'ml-ed'; i.style.width = '3.6rem'; i.inputMode = 'decimal';
-        i.value = String(Math.round((mN != null ? mN : r.margen_ml) * 1000) / 10).replace('.', ','); const pc = mk('span', null, '%'), out = mk('div', 'ml-mprev');
+        const act = pctSobreBase(r, P.precio_nuevo != null ? Number(P.precio_nuevo) : r.precio_ml);
+        i.value = act == null ? '' : String(Math.round(Math.max(0, act) * 1000) / 10).replace('.', ','); const pc = mk('span', null, '% sobre ' + (sobrePub(r) ? 'P. público' : 'costo')), out = mk('div', 'ml-mprev');
         const leer = () => { const m = Number(i.value.replace(',', '.').replace('%', '').trim()) / 100; return i.value.trim() !== '' && isFinite(m) && m >= 0 && m < 0.95 ? m : null; };
-        const prev = () => { const m = leer(), pr = m == null ? null : precioPorMargen(r, m); out.textContent = pr == null ? 'margen entre 0 y 94%' : '= precio ML ' + T.fmt.usd2(pr / fMon(r)) + (/US/.test(String(r.moneda || 'US')) ? '' : ' (' + pr + ' ' + r.moneda + ')'); };
+        const prev = () => { const m = leer(), pr = m == null ? null : precioPorMargen(r, m); out.textContent = pr == null ? '% entre 0 y 94' : '= precio ML ' + T.fmt.usd2(pr / fMon(r)) + (/US/.test(String(r.moneda || 'US')) ? '' : ' (' + pr + ' ' + r.moneda + ')') + ' · recibe ' + T.fmt.usd2(pr / fMon(r) * (1 - R.A.com)) + (r.costo ? ' · margen ML ' + T.fmt.pct(margenDe(r, pr)) : ''); };
         const ok2 = mk('button', 'ml-mok', '✔'), no = mk('button', 'ml-mno', '✖'); ok2.type = no.type = 'button'; ok2.title = 'Guardar como precio nuevo'; no.title = 'Cancelar';
         const guardar = async () => { const m = leer(), pr = m == null ? null : precioPorMargen(r, m); if (pr == null) return avisa('✖ Escriba un margen entre 0 y 94%.', 'err');
-          try { await guardarPend(r.item_id, { precio_nuevo: pr }); avisa('✔ ' + r.item_id + ': margen ' + T.fmt.pct(m) + ' → precio nuevo en ML ' + T.fmt.usd2(pr / fMon(r)) + '. Queda pendiente para la 🛒 Planilla para Mercado Libre.', 'ok'); tabla(); }
+          try { await guardarPend(r.item_id, { precio_nuevo: pr }); avisa('✔ ' + r.item_id + ': ' + T.fmt.pct(m) + ' sobre el ' + (sobrePub(r) ? 'precio al público' : 'costo') + ' → precio nuevo en ML ' + T.fmt.usd2(pr / fMon(r)) + '. Queda pendiente para la 🛒 Planilla para Mercado Libre.', 'ok'); tabla(); }
           catch (e) { avisa('✖ No se pudo guardar: ' + e.message, 'err'); } };
         i.addEventListener('input', prev); i.addEventListener('keydown', (e) => { if (e.key === 'Enter') guardar(); if (e.key === 'Escape') pinta(); });
         ok2.addEventListener('click', guardar); no.addEventListener('click', pinta);
@@ -4410,11 +4415,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
     // aplicar un mismo margen a toda la lista que se está viendo
     async function margenALista(m) {
-      const L = vista.filter((r) => r.tipo === 'pub' && r.item_id && r.costo), cam = [];
+      const L = vista.filter((r) => r.tipo === 'pub' && r.item_id && baseDe(r)), cam = [];
       L.forEach((r) => { const pr = precioPorMargen(r, m); if (pr != null && Math.abs(pr - (r.precio_ml || 0)) >= 0.01) cam.push({ item_id: r.item_id, precio_nuevo: pr }); });
       if (!cam.length) return avisa('No hay publicaciones con costo para cambiar en esta lista.', 'ok');
       const P0 = {}; L.forEach((r) => { P0[r.item_id] = r; }); const baja = cam.filter((c) => { const r = P0[c.item_id]; return c.precio_nuevo < (r.precio_ml || 0); }).length, bajoPub = cam.filter((c) => { const r = P0[c.item_id]; return r.precio_lista && c.precio_nuevo / fMon(r) < r.precio_lista; }).length;
-      await guardarPendLote(cam, 'PANEL'); avisa('✔ Margen ' + Math.round(m * 1000) / 10 + '% aplicado: ' + cam.length + ' precios nuevos quedan pendientes (' + (cam.length - baja) + ' suben, ' + baja + ' bajan)' + (bajoPub ? ' · ⚠ ' + bajoPub + ' quedan por debajo del precio de venta al público' : '') + (L.length < vista.length ? ' · ' + (vista.length - L.length) + ' sin costo no se tocaron' : '') + '. Revíselos antes de bajar la planilla; puede descartarlos en la barra amarilla.', bajoPub ? 'err' : 'ok'); tabla();
+      await guardarPendLote(cam, 'PANEL'); avisa('✔ ' + Math.round(m * 1000) / 10 + '% sobre el precio al público aplicado: ' + cam.length + ' precios nuevos quedan pendientes (' + (cam.length - baja) + ' suben, ' + baja + ' bajan)' + (bajoPub ? ' · ⚠ ' + bajoPub + ' quedan por debajo del precio de venta al público' : '') + (L.length < vista.length ? ' · ' + (vista.length - L.length) + ' sin precio ni costo no se tocaron' : '') + (L.some((r) => !sobrePub(r)) ? ' · ' + L.filter((r) => !sobrePub(r)).length + ' sin precio al público se calcularon sobre el costo' : '') + '. Revíselos antes de bajar la planilla; puede descartarlos en la barra amarilla.', bajoPub ? 'err' : 'ok'); tabla();
     }
     function pintarAyudaEdit(modo, tipo, v) {
       const el = $('ml-edhint'); el.replaceChildren(); el.hidden = modo !== 'edit'; if (el.hidden) return;
@@ -4426,10 +4431,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         el.append(mk('div', null, 'Para corregir PRECIO, STOCK, CÓDIGO o PAUSAR/ACTIVAR en Mercado Libre, abra una lista de publicaciones:'));
         fila.append(ir('todas', 'Todas las publicaciones'), ir('bc', 'Precio bajo el costo'), ir('mb', 'Margen bajo'), ir('sd', 'Stock distinto'), ir('ss', 'Publicadas sin stock'), ir('sv', 'Sin código'));
       } else {
-        el.append(mk('b', null, 'Corrija en las columnas amarillas ✏: '), '«N.º publicación ML» es el número de Mercado Libre (MLV…, toque para abrirla) · «✏ Código inventario» une la publicación con su código · «✏ Stock ML nuevo» y «✏ Precio ML nuevo» cambian lo que se muestra en Mercado Libre · «✏ Pausar / activar» · toque el % de «Margen ML» para cambiarlo y el panel calcula el precio. Se guarda al salir de la casilla y queda pendiente para la 🛒 Planilla para Mercado Libre.');
-        if (puede()) { const box = mk('span', 'ml-mall'), i = document.createElement('input'), b = mk('button', null, 'Aplicar a toda esta lista'); i.className = 'ml-ed'; i.style.width = '3.6rem'; i.inputMode = 'decimal'; i.value = String(Math.round(R.A.min * 1000) / 10).replace('.', ','); b.type = 'button';
+        el.append(mk('b', null, 'Corrija en las columnas amarillas ✏: '), '«N.º publicación ML» es el número de Mercado Libre (MLV…, toque para abrirla) · «✏ Código inventario» une la publicación con su código · «✏ Stock ML nuevo» y «✏ Precio ML nuevo» cambian lo que se muestra en Mercado Libre · «✏ Pausar / activar» · toque el % de «Margen ML» y escriba cuánto quiere ganar sobre el precio de venta al público: el panel calcula el precio en ML. Se guarda al salir de la casilla y queda pendiente para la 🛒 Planilla para Mercado Libre.');
+        if (puede()) { const box = mk('span', 'ml-mall'), i = document.createElement('input'), b = mk('button', null, 'Aplicar a toda esta lista'); i.className = 'ml-ed'; i.style.width = '3.6rem'; i.inputMode = 'decimal'; i.value = '0'; b.type = 'button';
           b.addEventListener('click', () => { const m = Number(i.value.replace(',', '.')) / 100; if (!(m >= 0 && m < 0.95)) return avisa('✖ Escriba un margen entre 0 y 94%.', 'err'); margenALista(m).catch((e) => avisa('✖ ' + e.message, 'err')); });
-          box.append('Margen ML deseado ', i, ' % ', b); fila.append(box); }
+          box.append('Precio ML = precio al público + ', i, ' % (después de comisión) ', b); box.title = 'Con 0 % recibe exactamente su precio al público después de la comisión de Mercado Libre'; fila.append(box); }
         if (v === 'todas' || v === 'ok' || v === 'pz') fila.append(mk('span', null, 'Ir a:'), ir('bc', 'Precio bajo el costo'), ir('mb', 'Margen bajo'), ir('sd', 'Stock distinto'), ir('ss', 'Publicadas sin stock'));
       }
       if (fila.childNodes.length) el.appendChild(fila);
