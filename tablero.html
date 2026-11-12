@@ -4508,10 +4508,13 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         const d = document.createElement('button'); d.type = 'button'; d.className = 'sh-lctile ml-tile ' + cls + (v === id ? ' on' : '');
         const TI = { pz: 'stop', np: 'tienda', todas: 'grafico', ok: 'ok', act: 'ok', bc: 'alerta', mb: 'dinero', ss: 'alerta', vt: 'grafico', sv: 'info' };
         [['k', t], ['v', val], ['s', sub]].forEach(([c, x]) => { const s = document.createElement('span'); s.className = c; if (c === 'k') { const ic = document.createElement('span'); ic.className = 'ml-ti'; ic.appendChild(ico(TI[id] || 'info')); s.appendChild(ic); s.append(x); } else s.textContent = x; d.appendChild(s); });
-        d.addEventListener('click', () => { $('ml-ver').value = id; pintar(); }); el.appendChild(d);
+        d.addEventListener('click', () => { $('ml-ver').value = id; limpiarFiltrosEd(); pintar(); }); el.appendChild(d);
       });
     }
+    // filtros de «Corregir aquí» (solo pendientes / al día / por revisar): se quitan al cambiar de lista para no esconder filas
+    function limpiarFiltrosEd() { st.soloPend = false; st.pendTipo = null; st.estado = null; }
     function tabla() {
+      if (st.soloPend && !(SERVER && SERVER.ml && (SERVER.ml.pend || []).length)) limpiarFiltrosEd();
       const T = (window.TT_USD || window.TT), v = $('ml-ver').value, q = $('ml-q').value.trim().toLowerCase(), f = $('ml-fam').value;
       const tipo = v === 'np' || v === 'pa' ? 'inv' : v === 'vt' ? 'vt' : 'pub';
       vista = filas(v).filter((r) => (!f || r.familia === f) && (!q || [r.codigo, r.descripcion, r.titulo, r.item_id, r.sku].join(' ').toLowerCase().includes(q)));
@@ -4743,6 +4746,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const fila = mk('div', 'ir');
       if (tipo === 'inv') {
         st.estado = null;
+        if (st.soloPend) { const d = mk('div', 'mr-f', 'Mostrando solo los cambios pendientes. '); const x = mk('button', 'mr-c all', 'Ver todos'); x.type = 'button'; x.addEventListener('click', () => { limpiarFiltrosEd(); pintar(); }); d.appendChild(x); el.appendChild(d); }
         el.append(mk('b', null, v === 'pa' ? 'Estos artículos tienen stock pero su publicación está pausada. ' : 'Estos artículos NO están publicados en Mercado Libre: por eso aquí no hay precio ni número de Mercado Libre. '),
           v === 'pa' ? 'Use «▶ Activar» para que vuelvan a mostrarse con el stock del inventario.' : 'Si alguno sí está publicado, escriba su número (MLV…) en la columna amarilla y queda unido; si el panel encontró una publicación parecida, aparece como sugerencia para tocar. Para publicar los que faltan use Archivos → paso 4.');
         el.append(mk('div', null, 'Para corregir PRECIO, STOCK, CÓDIGO o PAUSAR/ACTIVAR en Mercado Libre, abra una lista de publicaciones:'));
@@ -5724,7 +5728,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     $('ml-file').addEventListener('change', (e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) subir(f); });
     $('ml-conectar').addEventListener('click', () => { const x = $('ml-cx'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     $('ml-abrir').addEventListener('click', () => bitacora('ABRIR MERCADO LIBRE', ''));
-    ['ml-ver', 'ml-fam'].forEach((i) => $(i).addEventListener('change', () => { st.sort = null; pintar(); }));
+    ['ml-ver', 'ml-fam'].forEach((i) => $(i).addEventListener('change', () => { st.sort = null; if (i === 'ml-ver') limpiarFiltrosEd(); pintar(); }));
     $('ml-q').addEventListener('input', tabla);
     [['ml-com', 'com'], ['ml-min', 'min'], ['ml-tasa', 'tasa']].forEach(([i, k]) => $(i).addEventListener('change', () => { LS.set(k, $(i).value); pintar(); }));
     $('ml-bajar-vista').addEventListener('click', () => { const v = $('ml-ver').value; if (v === 'vt' || !R || !R.k.hay) return bajarVista(); bajarTrabajo(v, vista).catch((e) => avisa('✖ No se pudo descargar: ' + e.message, 'err')); });
