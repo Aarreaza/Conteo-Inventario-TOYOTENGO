@@ -4155,7 +4155,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const aUsd = (p, mon, tasa) => (p == null ? null : /VES|VEF|BS/i.test(mon || '') ? (tasa > 0 ? p / tasa : null) : p);
     const EXPL = {
       np: 'Artículos con existencia que no tienen ninguna publicación en Mercado Libre. Son ventas que se pueden estar perdiendo: publíquelos. Si ya están publicados con otro código, escriba el número de publicación en el Excel y súbalo.',
-      bc: 'Publicaciones activas cuyo precio en Mercado Libre es menor que el costo de la mercancía: se vende a pérdida. Suba el precio al mínimo sugerido.',
+      bc: 'Publicaciones activas cuyo precio en Mercado Libre es menor que el costo de la mercancía: se vende a pérdida. Súbalo al menos a su precio de venta al público.',
       mb: 'Publicaciones activas que, después de la comisión de Mercado Libre, dejan menos margen que el mínimo deseado.',
       ss: 'Publicaciones activas de artículos que en el inventario están en cero o negativo: si alguien compra, no hay mercancía. Páuselas o revise el inventario.',
       sd: 'El stock disponible en Mercado Libre no coincide con el del inventario. Actualice la cantidad en la publicación.',
@@ -4168,23 +4168,23 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       vt: 'Ventas registradas en Mercado Libre (por archivo o conexión automática), con su costo y margen.',
     };
     const COLS = {
-      inv: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['familia', 'Familia', 'h'], ['stock', 'Stock', 'n'], ['costo', 'Costo unit.', 'n'], ['valor', 'Valor a costo', 'n'], ['precio_lista', 'Precio lista', 'n h'], ['precio_min', 'Precio mínimo en ML', 'n'], ['estado_ml', 'Publicación', 'h']],
-      pub: [['item_id', 'N.º publicación ML'], ['titulo', 'Título'], ['codigo', 'Código'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML', 'n'], ['costo', 'Costo unit.', 'n'], ['precio_usd', 'Precio ML', 'n'], ['margen_ml', 'Margen ML', 'n'], ['precio_min', 'Precio mínimo', 'n h'], ['estado_ml', 'Estado', 'h'], ['problema', 'Situación']],
+      inv: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['familia', 'Familia', 'h'], ['stock', 'Stock', 'n'], ['costo', 'Costo unit.', 'n'], ['valor', 'Valor a costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['estado_ml', 'Publicación', 'h']],
+      pub: [['item_id', 'N.º publicación ML'], ['titulo', 'Título'], ['codigo', 'Código'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['precio_usd', 'Precio en ML', 'n'], ['margen_ml', 'Margen ML', 'n'], ['estado_ml', 'Estado', 'h'], ['problema', 'Situación']],
       vt: [['fecha', 'Fecha'], ['venta_id', 'Venta'], ['codigo', 'Código'], ['titulo', 'Título'], ['cantidad', 'Unid.', 'n'], ['total_usd', 'Monto', 'n'], ['costo_total', 'Costo', 'n h'], ['margen', 'Margen', 'n']],
       // comparar inventario vs Mercado Libre
-      pubC: [['item_id', 'N.º publicación ML'], ['codigo', 'Código'], ['titulo', 'Título', 'h'], ['stock', 'Stock inv.', 'n cmp'], ['stock_ml', 'Stock ML', 'n cmp'], ['dif_stock', 'Dif. stock', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta (Profit)', 'n cmp'], ['precio_usd', 'Precio ML', 'n cmp'], ['ml_vs_lista', 'ML vs tienda', 'n cmp'], ['margen_ml', 'Margen ML', 'n cmp'], ['cbar', 'Costo · tienda · ML', 'cmp'], ['inc_txt', 'Incidencias']],
-      invC: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock inv.', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta (Profit)', 'n cmp'], ['margen_lista', 'Margen tienda', 'n cmp'], ['precio_min', 'Precio mínimo ML', 'n cmp'], ['cbar', 'Costo · tienda · mínimo ML', 'cmp'], ['inc_txt', 'Incidencias']],
+      pubC: [['item_id', 'N.º publicación ML'], ['codigo', 'Código'], ['titulo', 'Título', 'h'], ['stock', 'Stock inv.', 'n cmp'], ['stock_ml', 'Stock ML', 'n cmp'], ['dif_stock', 'Dif. stock', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta público', 'n cmp'], ['precio_usd', 'Precio en ML', 'n cmp'], ['ml_vs_lista', 'ML vs público', 'n cmp'], ['margen_ml', 'Margen ML', 'n cmp'], ['cbar', 'Costo · público · ML', 'cmp'], ['inc_txt', 'Incidencias']],
+      invC: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock inv.', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta público', 'n cmp'], ['margen_lista', 'Margen al público', 'n cmp'], ['cbar', 'Costo · público', 'cmp'], ['inc_txt', 'Incidencias']],
       // corregir directo en el panel
-      pubE: [['item_id', 'N.º publicación ML'], ['titulo', 'Título', 'h'], ['e_cod', '✏ Código inventario', 'ed'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML actual', 'n'], ['e_q', '✏ Stock ML nuevo', 'ed'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio Profit', 'n'], ['precio_usd', 'Precio ML actual', 'n'], ['e_p', '✏ Precio ML nuevo', 'ed'], ['estado_ml', 'Estado ML'], ['e_a', '✏ Pausar / activar', 'ed'], ['problema', 'Situación', 'h']],
-      npE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio Profit', 'n'], ['precio_min', 'Precio mínimo para ML', 'n'], ['e_pub', '✏ ¿Ya está en ML? Escriba su N.º MLV', 'ed']],
-      paE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['precio_lista', 'Precio Profit', 'n'], ['estado_ml', 'Publicación'], ['e_act', '✏ Reactivar', 'ed']],
+      pubE: [['item_id', 'N.º publicación ML'], ['titulo', 'Título', 'h'], ['e_cod', '✏ Código inventario', 'ed'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML actual', 'n'], ['e_q', '✏ Stock ML nuevo', 'ed'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['precio_usd', 'Precio ML actual', 'n'], ['e_p', '✏ Precio ML nuevo', 'ed'], ['estado_ml', 'Estado ML'], ['e_a', '✏ Pausar / activar', 'ed'], ['problema', 'Situación', 'h']],
+      npE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['e_pub', '✏ ¿Ya está en ML? Escriba su N.º MLV', 'ed']],
+      paE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['estado_ml', 'Publicación'], ['e_act', '✏ Reactivar', 'ed']],
     };
     const colsDe = (tipo, v) => { const m = st.modo || 'normal'; if (tipo === 'vt' || m === 'normal') return COLS[tipo]; if (m === 'cmp') return tipo === 'inv' ? COLS.invC : COLS.pubC; return tipo === 'inv' ? (v === 'pa' ? COLS.paE : COLS.npE) : COLS.pubE; };
     // ---------- comparación inventario vs ML: costo, precio de venta (Profit) y precio en ML ----------
     const INC = {
-      pc: ['bad', 'ML más barato que el costo'], pl: ['warn', 'ML más barato que la tienda'], pa: ['info', 'ML muy por encima de la tienda'], mm: ['warn', 'ML bajo el precio mínimo'],
+      pc: ['bad', 'ML más barato que el costo'], pl: ['warn', 'ML más barato que el precio al público'], pa: ['info', 'ML muy por encima del precio al público'],
       sx: ['bad', 'ML ofrece stock que no hay'], sm: ['warn', 'ML con menos stock'], sp: ['bad', 'Pausada con stock'], np: ['bad', 'Con stock sin publicar'],
-      nc: ['bad', 'Sin código'], nl: ['info', 'Sin precio de venta (Profit)'], ncst: ['info', 'Sin costo'],
+      nc: ['bad', 'Sin código'], nl: ['info', 'Sin precio de venta al público'], ncst: ['info', 'Sin costo'],
     };
     function comparar(r, A) {
       const L = r.precio_lista, c = r.costo, m = r.precio_usd, inc = [];
@@ -4194,7 +4194,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (r.tipo === 'pub') {
         if (!r.codigo) inc.push('nc');
         else {
-          if (m != null && c && m < c) inc.push('pc'); else if (m != null && r.precio_min && m < r.precio_min) inc.push('mm');
+          if (m != null && c && m < c) inc.push('pc');
           if (r.ml_vs_lista != null && r.ml_vs_lista < -0.005) inc.push('pl');
           if (r.ml_vs_lista != null && r.ml_vs_lista > 0.8) inc.push('pa');
           if (r.activa && r.dif_stock != null && r.dif_stock > 0) inc.push('sx');
@@ -4335,7 +4335,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (modo === 'edit' && st.soloPend) vista = vista.filter((r) => r.pend);
       pintarAyudaEdit(modo, tipo, v);
       document.querySelectorAll('#v-ml .ml-modo [data-modo]').forEach((b) => { b.classList.toggle('on', b.dataset.modo === modo); b.disabled = tipo === 'vt' && b.dataset.modo !== 'normal'; });
-      $('ml-expl').textContent = (EXPL[v] || '') + (modo === 'cmp' ? ' · Comparación: costo, precio de venta en la tienda (Profit) y precio en Mercado Libre, con las incidencias de cada fila.' : modo === 'edit' ? ' · Escriba en las columnas ✏: se guarda al salir de la casilla y queda pendiente para la planilla de Mercado Libre.' : '');
+      $('ml-expl').textContent = (EXPL[v] || '') + (modo === 'cmp' ? ' · Comparación: su costo, su precio de venta al público y el precio publicado en Mercado Libre, con las incidencias de cada fila.' : modo === 'edit' ? ' · Escriba en las columnas ✏: se guarda al salir de la casilla y queda pendiente para la planilla de Mercado Libre.' : '');
       const tbl = $('ml-tabla'), tr = tbl.querySelector('thead tr'); tr.replaceChildren();
       cols.forEach(([fld, lab, cl]) => { const th = document.createElement('th'); th.dataset.field = fld; if (cl) cl.split(' ').forEach((c) => th.classList.add(c === 'h' ? 'tt-hide-n' : c)); const b = document.createElement('button'); b.textContent = lab; th.appendChild(b); tr.appendChild(th); });
       if (!st.sort || !cols.some((c) => c[0] === st.sort)) { st.sort = tipo === 'inv' ? 'valor' : tipo === 'vt' ? 'fecha' : v === 'pz' ? 'stock' : 'precio_usd'; st.dir = -1; }
@@ -4365,7 +4365,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (st.inc && !cnt[st.inc]) st.inc = null;
       ks.forEach((x) => { const b = mk('button', INC[x][0] + (st.inc === x ? ' on' : ''), INC[x][1] + ' · ' + cnt[x]); b.type = 'button'; b.addEventListener('click', () => { st.inc = st.inc === x ? null : x; tabla(); }); el.appendChild(b); });
       if (st.inc) { const b = mk('button', 'info', '✖ Quitar filtro'); b.type = 'button'; b.addEventListener('click', () => { st.inc = null; tabla(); }); el.appendChild(b); }
-      const lg = mk('div', 'ml-cleg'); [['#c0182a', 'Costo'], ['#1d6f42', 'Precio de venta (Profit)'], ['#2d3277', 'Precio en ML'], ['#e8a400', 'Precio mínimo ML']].forEach(([c, t]) => { const s = mk('span'); const i = mk('i'); i.style.background = c; s.append(i, t); lg.appendChild(s); });
+      const lg = mk('div', 'ml-cleg'); [['#c0182a', 'Costo'], ['#1d6f42', 'Precio de venta al público'], ['#2d3277', 'Precio en Mercado Libre']].forEach(([c, t]) => { const s = mk('span'); const i = mk('i'); i.style.background = c; s.append(i, t); lg.appendChild(s); });
       lg.style.flexBasis = '100%'; el.appendChild(lg);
     }
     const PH = (r) => r.pend || {};
@@ -4404,10 +4404,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         td.appendChild(i);
       };
       const bar = (td, r) => {
-        const v = [['c', r.costo], ['l', r.precio_lista], [r.tipo === 'pub' ? 'm' : 'n', r.tipo === 'pub' ? r.precio_usd : r.precio_min]].filter((x) => x[1] != null && x[1] > 0);
+        const v = [['c', r.costo], ['l', r.precio_lista], ['m', r.tipo === 'pub' ? r.precio_usd : null]].filter((x) => x[1] != null && x[1] > 0);
         if (!v.length) { td.textContent = '—'; return; }
         const mx = Math.max(...v.map((x) => x[1])) * 1.08, b = mk('div', 'ml-cbar');
-        v.forEach(([k, x]) => { const i = mk('i', k); i.style.left = 'calc(' + (x / mx * 100) + '% - 2px)'; i.title = { c: 'Costo', l: 'Precio de venta (Profit)', m: 'Precio en ML', n: 'Precio mínimo ML' }[k] + ': ' + T.fmt.usd2(x); b.appendChild(i); });
+        v.forEach(([k, x]) => { const i = mk('i', k); i.style.left = 'calc(' + (x / mx * 100) + '% - 2px)'; i.title = { c: 'Costo', l: 'Precio de venta al público', m: 'Precio en Mercado Libre' }[k] + ': ' + T.fmt.usd2(x); b.appendChild(i); });
         td.appendChild(b);
       };
       return {
@@ -4417,7 +4417,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         cbar: { render: bar },
         inc_txt: { render: (td, r) => { td.style.minWidth = '14rem'; td.style.whiteSpace = 'normal'; if (!r.inc || !r.inc.length) { T.chip(td, 'Sin incidencias', 'ok'); return; } r.inc.forEach((x) => { T.chip(td, INC[x][1], INC[x][0] === 'info' ? '' : INC[x][0]); td.append(' '); }); } },
         e_q: { render: (td, r) => inp(td, r, 'stock_nuevo', 'number', r.codigo ? Math.max(0, Math.floor(r.stock || 0)) : '', PH(r).stock_nuevo) },
-        e_p: { render: (td, r) => inp(td, r, 'precio_nuevo', 'number', r.precio_min && r.precio_usd != null && r.precio_usd < r.precio_min ? Math.ceil(r.precio_min * 4) / 4 : '', PH(r).precio_nuevo) },
+        e_p: { render: (td, r) => inp(td, r, 'precio_nuevo', 'number', r.precio_lista && r.precio_usd != null && Math.abs(r.precio_usd - r.precio_lista) >= 0.01 ? r.precio_lista : '', PH(r).precio_nuevo) },
         e_a: { render: (td, r) => { ed(td); if (!puede()) return lectura(td, PH(r).accion);
           const sel = document.createElement('select'); sel.className = 'ml-ed' + (PH(r).accion ? ' pend' : ''); [['', '—'], ['PAUSAR', '⏸ Pausar'], ['ACTIVAR', '▶ Activar']].forEach(([v, t]) => sel.appendChild(new Option(t, v))); sel.value = PH(r).accion || '';
           sel.addEventListener('change', async () => { try { const a = sel.value || null, extra = a === 'ACTIVAR' && !(PH(r).stock_nuevo > 0) && r.stock > 0 ? { stock_nuevo: Math.floor(r.stock) } : {}; await guardarPend(r.item_id, { accion: a, ...extra }); sel.className = 'ml-ed' + (a ? ' pend' : ' okk'); avisa('✔ Guardado: ' + r.item_id + (a ? ' se ' + (a === 'PAUSAR' ? 'pausará' : 'activará') + ' con la planilla de Mercado Libre.' : ' sin acción.') + (extra.stock_nuevo ? ' Stock ' + extra.stock_nuevo + '.' : ''), ''); if (extra.stock_nuevo) tabla(); } catch (e) { sel.className = 'ml-ed err'; avisa('✖ No se pudo guardar: ' + e.message, 'err'); } });
@@ -4502,10 +4502,9 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         kp('Artículos', it(n), pc(n / conStock) + ' de los ' + it(R.k.conStock) + ' con stock', n ? (v === 'np' ? 'bad' : 'warn') : 'ok');
         kp('Unidades en stock', it(uds), 'sin vender por Mercado Libre');
         kp('Valor a costo', u0(val), 'capital detenido sin vitrina', val ? 'bad' : 'ok');
-        kp('Venta posible a precio mínimo ML', u0(pot), 'con margen de ' + Math.round(R.A.min * 100) + '% después de comisión', 'ok');
-        if (lista) { const cl = rows.filter((r) => r.precio_lista).length; kp('Venta a precio de lista', u0(lista), cl < n ? 'solo ' + it(cl) + ' de ' + it(n) + ' artículos tienen precio de lista' : 'según la lista de precios vigente', cl < n ? 'warn' : ''); }
+        if (lista) { const cl = rows.filter((r) => r.precio_lista).length; kp('Venta a precio al público', u0(lista), cl < n ? 'solo ' + it(cl) + ' de ' + it(n) + ' artículos tienen precio de lista' : 'según la lista de precios vigente', cl < n ? 'warn' : ''); }
         kp('Costo promedio por artículo', n ? u2(val / Math.max(uds, 1)) : '—', 'costo unitario promedio');
-        const sinCosto = rows.filter((r) => !r.costo).length; if (sinCosto) kp('Sin costo en el sistema', it(sinCosto), 'no se puede calcular el precio mínimo', 'warn');
+        const sinCosto = rows.filter((r) => !r.costo).length; if (sinCosto) kp('Sin costo en el sistema', it(sinCosto), 'no se puede calcular el margen', 'warn');
       } else if (tipo === 'pub') {
         const act = rows.filter((r) => r.activa).length, conCod = rows.filter((r) => r.codigo).length;
         const mg = rows.filter((r) => r.margen_ml != null && r.precio_usd), mProm = mg.length ? mg.reduce((s, r) => s + r.margen_ml * r.precio_usd, 0) / mg.reduce((s, r) => s + r.precio_usd, 0) : null;
@@ -4513,8 +4512,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         kp('Activas / inactivas', it(act) + ' / ' + it(n - act), act ? '' : 'ninguna se está mostrando a compradores', act < n ? 'warn' : 'ok');
         kp('Precio promedio en ML', mg.length || n ? u2(sum((r) => r.precio_usd) / Math.max(rows.filter((r) => r.precio_usd != null).length, 1)) : '—', 'US$ por unidad');
         kp('Margen ML promedio', mProm == null ? '—' : pc(mProm), 'ponderado por precio, después de ' + Math.round(R.A.com * 1000) / 10 + '% de comisión', mProm == null ? '' : mProm < 0 ? 'bad' : mProm < R.A.min ? 'warn' : 'ok');
-        if (v === 'bc' || v === 'mb') { const fal = sum((r) => (r.precio_min && r.precio_usd != null && r.precio_min > r.precio_usd ? r.precio_min - r.precio_usd : 0)); const per = sum((r) => (r.ganancia_unit != null && r.ganancia_unit < 0 ? -r.ganancia_unit * Math.max(r.stock || 0, 0) : 0));
-          kp('Aumento total para llegar al mínimo', u2(fal), 'suma de lo que falta por unidad', fal ? 'bad' : 'ok'); kp('Pérdida si se vende todo el stock', u0(per), 'al precio actual', per ? 'bad' : 'ok'); }
+        if (v === 'bc' || v === 'mb') { const fal = sum((r) => (r.costo && r.precio_usd != null && r.costo > r.precio_usd ? r.costo - r.precio_usd : 0)); const per = sum((r) => (r.ganancia_unit != null && r.ganancia_unit < 0 ? -r.ganancia_unit * Math.max(r.stock || 0, 0) : 0));
+          kp('Aumento total para cubrir el costo', u2(fal), 'suma de lo que falta por unidad', fal ? 'bad' : 'ok'); kp('Pérdida si se vende todo el stock', u0(per), 'al precio actual', per ? 'bad' : 'ok'); }
         if (v === 'pz') { const cs = rows.filter((r) => r.stock > 0); kp('Con stock en inventario', it(cs.length), it(cs.reduce((x, r) => x + r.stock, 0)) + ' unidades listas para volver a vender', cs.length ? 'warn' : 'ok'); kp('Sin stock en inventario', it(rows.length - cs.length), 'no hace falta reactivarlas'); }
         if (v === 'ss') kp('Unidades ofrecidas en ML', it(sum((r) => Math.max(r.stock_ml || 0, 0))), 'que no existen en el inventario', 'bad');
         if (v === 'sd') { const d = sum((r) => Math.abs((r.stock_ml || 0) - (r.stock || 0))); kp('Diferencia total de unidades', it(d), 'entre Mercado Libre y el inventario', d ? 'warn' : 'ok'); }
@@ -4785,12 +4784,12 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       $('ml-graf').hidden = !R.ventas.length;
     }
     // ---------- descargas ----------
-    const ETQ = { codigo: 'Código', descripcion: 'Descripción', familia: 'Familia', stock: 'Stock inventario', costo: 'Costo unit. US$', valor: 'Valor a costo US$', precio_lista: 'Precio de lista US$',
+    const ETQ = { codigo: 'Código', descripcion: 'Descripción', familia: 'Familia', stock: 'Stock inventario', costo: 'Costo unit. US$', valor: 'Valor a costo US$', precio_lista: 'Precio venta público US$',
       precio_min: 'Precio mínimo en ML US$', estado_ml: 'Estado en ML', item_id: 'Publicación ML', titulo: 'Título en ML', sku: 'SKU en ML', stock_ml: 'Stock en ML', precio_ml: 'Precio en ML', moneda: 'Moneda',
       precio_usd: 'Precio ML US$', neto_usd: 'Neto después de comisión US$', margen_ml: 'Margen ML %', ganancia_unit: 'Ganancia por unidad US$', vendidos: 'Vendidos en ML', via: 'Unido por',
       sugerido: 'Código sugerido', problema: 'Situación', permalink: 'Enlace', fecha: 'Fecha', venta_id: 'Venta ML', cantidad: 'Unidades', total_usd: 'Monto US$', costo_total: 'Costo US$', margen: 'Margen %', estado: 'Estado' };
-    const CAMPOS = { inv: ['codigo', 'descripcion', 'familia', 'stock', 'costo', 'valor', 'precio_lista', 'precio_min', 'estado_ml'],
-      pub: ['item_id', 'titulo', 'sku', 'codigo', 'sugerido', 'descripcion', 'via', 'stock', 'stock_ml', 'costo', 'precio_ml', 'moneda', 'precio_usd', 'neto_usd', 'margen_ml', 'ganancia_unit', 'precio_min', 'precio_lista', 'vendidos', 'estado_ml', 'problema', 'permalink'],
+    const CAMPOS = { inv: ['codigo', 'descripcion', 'familia', 'stock', 'costo', 'valor', 'precio_lista', 'estado_ml'],
+      pub: ['item_id', 'titulo', 'sku', 'codigo', 'sugerido', 'descripcion', 'via', 'stock', 'stock_ml', 'costo', 'precio_ml', 'moneda', 'precio_usd', 'neto_usd', 'margen_ml', 'ganancia_unit', 'precio_lista', 'vendidos', 'estado_ml', 'problema', 'permalink'],
       vt: ['fecha', 'venta_id', 'item_id', 'codigo', 'titulo', 'cantidad', 'total_usd', 'costo_total', 'margen', 'estado'] };
     const NOMBRE = { du: 'Publicaciones duplicadas', pz: 'Pausadas o inactivas', np: 'No publicados con stock', bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Publicados sin stock', sd: 'Stock distinto', pa: 'Pausadas con stock', sv: 'Sin código (vincular)', ok: 'Correctas', todas: 'Todas las publicaciones', vt: 'Ventas ML' };
     function hojaML(id, rows) {
@@ -4962,13 +4961,13 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
             q = Math.max(0, Math.floor((Number(p.stock) || 0) - reserva)); if (tope != null && q > tope) q = tope;
             if (qAnt !== q) c.q = q;
             const enUsd = /US/.test(String(f[iM] || p.moneda));
-            if (enUsd && modo === 'min' && p.precio_min && pAnt != null && pAnt < p.precio_min) c.p = Math.ceil(p.precio_min * 4) / 4;
+            if (enUsd && modo === 'pvp' && p.precio_lista > 0 && (pAnt == null || Math.abs(p.precio_lista - pAnt) >= 0.01)) c.p = p.precio_lista;
             if (enUsd && modo === 'recargo' && p.precio_lista > 0) { const np = Math.round(p.precio_lista * (1 + rec / 100) * 100) / 100; if (pAnt == null || Math.abs(np - pAnt) >= 0.01) c.p = np; }
           }
           // lo corregido a mano en el panel o en Excel manda sobre lo automático
           if (P) { if (P.q != null) { c.q = P.q; q = P.q; } if (P.p != null) c.p = P.p; if (P.sku) c.sku = P.sku; if (P.st) c.st = P.st; }
           if (c.q != null || c.p != null || c.sku || c.st) { cambios[it] = c; log.push({ 'Publicación ML': it, 'Código': p.codigo || '', 'Título': p.titulo || '', 'Estado ML': p.estado_ml || '', 'Stock ML antes': qAnt, 'Stock nuevo': c.q != null ? c.q : qAnt,
-            'Precio antes US$': pAnt, 'Precio nuevo US$': c.p != null ? c.p : pAnt, 'SKU nuevo': c.sku || '', 'Estado nuevo': c.st || '', 'Motivo': P ? 'Corregido en el panel / Excel' : [c.q != null ? (q === 0 ? 'Sin existencia: queda en 0 (ML la pausa)' : q > (qAnt || 0) ? 'Sube el stock al del inventario' : 'Baja el stock al del inventario') : '', c.p != null ? (modo === 'min' ? 'Precio bajo el mínimo' : 'Precio Profit + ' + rec + '%') : ''].filter(Boolean).join(' · '), 'Archivo': pl.nombre }); }
+            'Precio antes US$': pAnt, 'Precio nuevo US$': c.p != null ? c.p : pAnt, 'SKU nuevo': c.sku || '', 'Estado nuevo': c.st || '', 'Motivo': P ? 'Corregido en el panel / Excel' : [c.q != null ? (q === 0 ? 'Sin existencia: queda en 0 (ML la pausa)' : q > (qAnt || 0) ? 'Sube el stock al del inventario' : 'Baja el stock al del inventario') : '', c.p != null ? (modo === 'pvp' ? 'Precio de venta al público' : 'Precio al público + ' + rec + '%') : ''].filter(Boolean).join(' · '), 'Archivo': pl.nombre }); }
         });
       }
       return { cambios, log, rec };
@@ -5013,17 +5012,17 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (!L.length) return avisa('No hay filas en «' + (TRAB[id] || id) + '».', 'ok');
       const qOk = await reglasStock(), usd = (r) => /US/.test(String(r.moneda || 'US$')), inc = (r) => r.inc_txt || r.problema || '';
       let data;
-      if (id === 'np') data = L.map((r) => ({ 'Código inventario': r.codigo, 'Descripción': r.descripcion, 'Familia': r.familia, 'Stock inventario': r.stock, 'Costo US$': r.costo, 'Precio venta Profit US$': r.precio_lista, 'Margen tienda': r.margen_lista, 'Precio mínimo ML US$': r.precio_min, 'Incidencias': inc(r), [ED.m]: '', 'Notas': '' }));
+      if (id === 'np') data = L.map((r) => ({ 'Código inventario': r.codigo, 'Descripción': r.descripcion, 'Familia': r.familia, 'Stock inventario': r.stock, 'Costo US$': r.costo, 'Precio venta público US$': r.precio_lista, 'Margen al público': r.margen_lista, 'Incidencias': inc(r), [ED.m]: '', 'Notas': '' }));
       else data = L.map((r) => {
         const P = r.pend || {};
         const o = { 'Publicación ML': r.item_id, 'Código inventario': r.codigo || '', 'Título': r.titulo, 'Estado ML': r.estado_ml, 'Stock inventario': r.stock, 'Stock en ML': r.stock_ml, 'Dif. stock (ML − inv.)': r.dif_stock, 'Stock sugerido': r.codigo ? qOk(r.stock) : null,
-          'Costo US$': r.costo, 'Precio venta Profit US$': r.precio_lista, 'Precio en ML': r.precio_ml, 'Moneda': r.moneda, 'ML vs tienda': r.ml_vs_lista, 'Margen ML': r.margen_ml, 'Precio mínimo US$': r.precio_min, 'Incidencias': inc(r),
+          'Costo US$': r.costo, 'Precio venta público US$': r.precio_lista, 'Precio en ML': r.precio_ml, 'Moneda': r.moneda, 'ML vs público': r.ml_vs_lista, 'Margen ML': r.margen_ml, 'Incidencias': inc(r),
           [ED.q]: '', [ED.p]: '', [ED.s]: '', [ED.a]: '', 'Notas': '' };
         // propuesta del panel (se puede borrar o cambiar antes de subir)
         if (id === 'ss') o[ED.q] = 0;
         if ((id === 'sd' || id === 'pa') && r.codigo) o[ED.q] = qOk(r.stock);
         if (id === 'pa') o[ED.a] = 'ACTIVAR';
-        if ((id === 'bc' || id === 'mb') && r.precio_min && usd(r)) o[ED.p] = Math.ceil(r.precio_min * 4) / 4;
+        if ((id === 'bc' || id === 'mb') && r.precio_lista && usd(r)) o[ED.p] = r.precio_lista;
         if (id === 'sv' && r.sugerido) o[ED.s] = r.sugerido;
         // lo que ya está pendiente en el panel manda
         if (P.stock_nuevo != null) o[ED.q] = Number(P.stock_nuevo); if (P.precio_nuevo != null) o[ED.p] = Number(P.precio_nuevo); if (P.sku_nuevo) o[ED.s] = P.sku_nuevo; if (P.accion) o[ED.a] = P.accion;
@@ -5099,7 +5098,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           const iI = h.indexOf('ITEM_ID'), iQ = h.indexOf('QUANTITY'), iP = h.indexOf('PRICE'), iS = h.indexOf('SKU'), iE = h.indexOf('STATUS'), sub = {};
           F.slice(1).forEach((f) => { const it = String(f[iI] || ''), c = cambios[it]; if (!c || hechos.has(it)) return; hechos.add(it); const x = { ...c }; if (iS < 0) delete x.sku; sub[it] = x;
             const p = porItem[it] || {};
-            log.push({ 'Publicación ML': it, 'Código': p.codigo || '', 'Título': p.titulo || '', 'Costo US$': p.costo, 'Precio Profit US$': p.precio_lista, 'Stock inventario': p.stock, 'Stock antes': f[iQ], 'Stock nuevo': x.q != null ? x.q : f[iQ], 'Precio antes': f[iP], 'Precio nuevo': x.p != null ? x.p : f[iP], 'SKU antes': iS >= 0 ? f[iS] : '', 'SKU nuevo': iS >= 0 ? (x.sku || f[iS]) : (c.sku ? c.sku + ' (solo vinculado en el panel)' : ''), 'Estado antes': iE >= 0 ? f[iE] : '', 'Estado nuevo': iE >= 0 ? (x.st || f[iE]) : '', 'Archivo': pl.nombre }); });
+            log.push({ 'Publicación ML': it, 'Código': p.codigo || '', 'Título': p.titulo || '', 'Costo US$': p.costo, 'Precio venta público US$': p.precio_lista, 'Precio en ML US$': p.precio_usd, 'Stock inventario': p.stock, 'Stock antes': f[iQ], 'Stock nuevo': x.q != null ? x.q : f[iQ], 'Precio antes': f[iP], 'Precio nuevo': x.p != null ? x.p : f[iP], 'SKU antes': iS >= 0 ? f[iS] : '', 'SKU nuevo': iS >= 0 ? (x.sku || f[iS]) : (c.sku ? c.sku + ' (solo vinculado en el panel)' : ''), 'Estado antes': iE >= 0 ? f[iE] : '', 'Estado nuevo': iE >= 0 ? (x.st || f[iE]) : '', 'Archivo': pl.nombre }); });
           if (!Object.keys(sub).length) continue;
           const r = await parcharPlanilla(pl.buf, sub); const nom = pl.nombre.replace(/\.xlsx$/i, '') + ' - ACTUALIZADA ' + fecha + '.xlsx'; nombres.push(nom + ' (' + r.n + ')'); bajarBlob(r.blob, nom);
         }
@@ -5662,7 +5661,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
             <p class="tt-note" data-f="res"></p></section>
           <section class="mla-paso" data-paso="2"><span class="mla-num">2</span><h5>Preparar la planilla actualizada</h5>
             <p class="mla-arch"><b>Se descarga:</b> la misma planilla de Mercado Libre con el <b>stock del inventario</b> y los <b>cambios pendientes</b> que corrigió en el panel o en Excel (lo que no tiene existencia queda en 0 y Mercado Libre lo pausa) y una lista de cambios para revisar.</p>
-            <label class="mla-op">Precios: <select class="tt-in" data-f="modo"><option value="no">No cambiar precios (solo stock)</option><option value="min">Subir al mínimo los que están por debajo del costo + margen</option><option value="recargo">Poner precio de Profit + recargo de las reglas</option></select></label>
+            <label class="mla-op">Precios: <select class="tt-in" data-f="modo"><option value="no">No cambiar precios (solo stock)</option><option value="pvp">Poner el precio de venta al público del inventario</option><option value="recargo">Precio de venta al público + recargo de las reglas</option></select></label>
             <p class="tt-note" data-f="prec"></p>
             <div class="mla-b"><button class="sh-btn" type="button" data-a="preparar" data-req="plan">⬇ Descargar planilla lista para subir</button><button class="sh-btn lt" type="button" data-a="lista" data-req="plan">Solo ver la lista de cambios</button></div>
             <div class="mla-trab"><b>O corrija por partes en Excel:</b> baje una lista, cambie las columnas ✏ (stock, precio, código, pausar/activar) y súbala: el panel arma la planilla de Mercado Libre con esos cambios.
