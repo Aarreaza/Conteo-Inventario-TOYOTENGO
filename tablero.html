@@ -414,6 +414,10 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .tt-tab:focus-visible,.tt-btn:focus-visible,.tt-in:focus-visible{outline:2px solid var(--color-fg);outline-offset:2px}
 .ap-go{cursor:pointer;transition:border-color .15s,box-shadow .15s}.ap-go:hover,.ap-go:focus-visible{border-color:var(--cds-chart-status-critical,#c00);box-shadow:0 2px 8px rgba(0,0,0,.08);outline:none}.ap-go .k::after{content:' ›';opacity:.6}
 .ap-res{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:.2rem 0 .6rem;font-size:var(--cds-font-size-caption)}.ap-res div{display:flex;flex-direction:column}.ap-res span{color:var(--color-fg-muted)}.ap-res b{font-size:1rem;font-variant-numeric:tabular-nums}
+.fm-res,.fm-tr,.fm-acc{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.25rem 0 .5rem}.fm-c{font:600 .85rem inherit;border:1px solid var(--color-border-line);background:var(--color-panel);border-radius:999px;padding:.3rem .8rem;cursor:pointer}.fm-c.on{outline:2px solid currentColor;outline-offset:1px}.fm-c.pr{background:#e8f0ff;color:#173f8a;border-color:#a9c3f2}.fm-c.ac{background:#fff6dd;color:#7a4b00;border-color:#f0d27a}.fm-c.ok{background:#e7f6ec;color:#14532d;border-color:#9fd5b0}.fm-c.no{background:#f3f3f3;color:#555}.fm-c.bj{background:#efe9ff;color:#4b2a9a;border-color:#c9b8f5}
+.fm-tr .fm-t{font-size:.8rem;border:1px dashed #a9c3f2;background:#f7faff;border-radius:6px;padding:.2rem .5rem;cursor:pointer;color:#173f8a}.fm-tr .fm-t b{font-variant-numeric:tabular-nums}.fm-tr .fm-l{font-size:.8rem;color:var(--color-fg-muted)}
+.fm-a{font:600 .85rem inherit;border-radius:6px;padding:.4rem .8rem;cursor:pointer;border:1px solid var(--color-border-line);background:var(--color-panel)}.fm-a.si{background:#14532d;color:#fff;border-color:#14532d}.fm-a.xls{background:#1d6f42;color:#fff;border-color:#1d6f42}.fm-a:disabled{opacity:.5;cursor:default}
+.fm-d{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center}.fm-d button{font:600 .78rem inherit;border-radius:999px;padding:.2rem .6rem;cursor:pointer;border:1px solid #9fd5b0;background:#e7f6ec;color:#14532d}.fm-d button.n{border-color:#ddd;background:#f5f5f5;color:#555}.fm-d select{font-size:.78rem;max-width:11rem}.fm-p{font-weight:600;color:#173f8a}
 .tt-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:var(--cds-gap-md)}
 .tt-tile{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-md) var(--cds-pad-lg);display:flex;flex-direction:column;gap:var(--cds-gap-xs);min-width:0}
 .tt-tile .k{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
@@ -1239,6 +1243,34 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
               <th data-field="valor" class="n tt-hide-n"><button>Valor</button></th>
               <th data-field="accion" class="tt-hide-n"><button>Acción sugerida</button></th>
               <th data-field="responsable" class="tt-hide-n"><button>Responsable</button></th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tt-card" id="card-familias">
+        <h3>Revisión de familias</h3>
+        <p class="note">El tablero revisó la descripción de cada artículo y propone la familia que le corresponde. Acepte o rechace cada propuesta (o todas las que se ven de una vez) y baje el archivo <b>.xls</b> para cargar las familias en Profit.</p>
+        <div class="fm-res" id="fm-res"></div>
+        <div class="fm-tr" id="fm-tr"></div>
+        <div class="tt-tools">
+          <select class="tt-in" id="fm-v" aria-label="Qué ver"><option value="Propuesta">Con cambio propuesto (por decidir)</option><option value="Aceptada">Aceptadas (van para Profit)</option><option value="Bajada para Profit">Ya bajadas para Profit</option><option value="Rechazada">Rechazadas</option><option value="Correcta">Familia correcta</option><option value="">Todos los artículos</option></select>
+          <select class="tt-in" id="fm-f" aria-label="Familia actual"><option value="">Familia actual: todas</option></select>
+          <select class="tt-in" id="fm-p" aria-label="Familia propuesta"><option value="">Familia propuesta: todas</option></select>
+          <select class="tt-in" id="fm-s" aria-label="Stock"><option value="">Con y sin stock</option><option value="1">Solo con stock</option></select>
+          <span class="tt-status" id="fm-n"></span>
+        </div>
+        <div class="fm-acc" id="fm-acc"></div>
+        <div class="tt-scroll">
+          <table class="tt-t" id="t-fam" data-row-key="fila" data-noprofit>
+            <thead><tr>
+              <th data-field="estado"><button>Estado</button></th>
+              <th data-field="codigo"><button>Código</button></th>
+              <th data-field="descripcion"><button>Descripción</button></th>
+              <th data-field="stock" class="n"><button>Stock</button></th>
+              <th data-field="familia"><button>Familia actual</button></th>
+              <th data-field="propuesta"><button>Familia propuesta</button></th>
+              <th data-field="decision"><button>Decisión</button></th>
             </tr></thead>
             <tbody></tbody>
           </table>
@@ -2087,6 +2119,87 @@ window.TT = (() => {
   window.TT.filterEstado = (f) => go(() => { se.value = f; });
   window.TT.redraw = () => { window.TT.drawMain && window.TT.drawMain(); draw(); };
   dash.onData(draw);
+})();
+</script>
+
+<script>
+// ---------- revisión de familias ----------
+(() => {
+  const { fmt, table, chip } = window.TT;
+  const $ = (id) => document.getElementById(id);
+  const st = { sort: 'stock', dir: -1, limit: 500 };
+  const K = (c) => String(c).toUpperCase();
+  let PEND = {}, pedido = false;
+  const NO = () => { try { return new Set(JSON.parse(localStorage.getItem('tt_fam_no') || '[]')); } catch (e) { return new Set(); } };
+  const ponNO = (S) => { try { localStorage.setItem('tt_fam_no', JSON.stringify([...S])); } catch (e) {} };
+  const avisar = (t, k) => { if (window.TT_AVISO) window.TT_AVISO(t, k); else { const n = $('fm-n'); if (n) n.textContent = t; } };
+  async function traerPend() { if (window.TT_PROF && window.TT_PROF.famPend) { try { PEND = await window.TT_PROF.famPend(); } catch (e) { PEND = {}; } } draw(); }
+  function todas() {
+    const A = dash.data('articulos'); if (A.status !== 'ok') return null; const no = NO(), sug = window.TT_FAMSUG || ((d) => null);
+    return A.data.map((a) => { const prop = sug(a.descripcion) || a.familia, p = PEND[K(a.codigo)];
+      const estado = p ? (p.exportado_en ? 'Bajada para Profit' : 'Aceptada') : prop === a.familia ? 'Correcta' : no.has(K(a.codigo)) ? 'Rechazada' : 'Propuesta';
+      return { fila: a.fila, codigo: a.codigo, descripcion: a.descripcion, stock: Number(a.stock) || 0, familia: a.familia, propuesta: p ? p.familia_nueva : prop, sugerida: prop, estado, decision: estado }; });
+  }
+  const puede = () => !!(window.TT_PROF && window.TT_PROF.familias);
+  async function aceptar(L, nueva) {
+    if (!puede()) return avisar('✖ Su usuario no puede corregir familias.', 'err');
+    const n = await window.TT_PROF.familias(L.map((r) => ({ codigo: r.codigo, descripcion: r.descripcion, familia: r.familia, nueva: nueva || r.sugerida })), 'Revisión de familias');
+    const S = NO(); L.forEach((r) => S.delete(K(r.codigo))); ponNO(S);
+    avisar('✔ ' + n + ' familias aceptadas: quedan listas para el archivo de Profit.', 'ok'); await traerPend();
+  }
+  async function quitar(L) { await window.TT_PROF.familias(L.map((r) => ({ codigo: r.codigo, descripcion: r.descripcion, familia: r.familia, nueva: null }))); avisar('↺ Se quitaron ' + L.length + ' familias aceptadas.', 'ok'); await traerPend(); }
+  function rechazar(L) { const S = NO(); L.forEach((r) => S.add(K(r.codigo))); ponNO(S); draw(); }
+  const opts = (sel, vals, lab) => { const cur = sel.value; sel.replaceChildren(new Option(lab, '')); vals.forEach((v) => sel.appendChild(new Option(v, v))); sel.value = vals.includes(cur) ? cur : ''; };
+  const draw = () => {
+    if (window.TT.page !== 'calidad') return;
+    if (!pedido) { pedido = true; traerPend(); return; }
+    const T = todas(); if (!T) return;
+    const FAMS = window.TT_FAMS ? window.TT_FAMS() : [...new Set(T.map((r) => r.familia))].sort();
+    opts($('fm-f'), [...new Set(T.map((r) => r.familia))].sort(), 'Familia actual: todas'); opts($('fm-p'), [...new Set(T.map((r) => r.propuesta))].sort(), 'Familia propuesta: todas');
+    const V = $('fm-v').value, F = $('fm-f').value, P = $('fm-p').value, S = $('fm-s').value;
+    const base = T.filter((r) => (!F || r.familia === F) && (!P || r.propuesta === P) && (!S || r.stock > 0));
+    const rows = base.filter((r) => !V || r.estado === V);
+    // resumen por estado (botones)
+    const C = {}; T.forEach((r) => { C[r.estado] = (C[r.estado] || 0) + 1; });
+    const res = $('fm-res'); res.replaceChildren();
+    [['Propuesta', 'pr', 'por decidir'], ['Aceptada', 'ac', 'aceptadas'], ['Bajada para Profit', 'bj', 'ya bajadas para Profit'], ['Rechazada', 'no', 'rechazadas'], ['Correcta', 'ok', 'con familia correcta']].forEach(([e, c, t]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-c ' + c + (V === e ? ' on' : ''); b.textContent = fmt.int(C[e] || 0) + ' ' + t; b.addEventListener('click', () => { $('fm-v').value = e; $('fm-f').value = ''; $('fm-p').value = ''; draw(); }); res.appendChild(b); });
+    const t0 = document.createElement('span'); t0.className = 'fm-l'; t0.textContent = 'de ' + fmt.int(T.length) + ' artículos revisados'; res.appendChild(t0);
+    // cambios propuestos agrupados: de qué familia a cuál
+    const tr = $('fm-tr'); tr.replaceChildren(); const G = {};
+    base.filter((r) => r.estado === 'Propuesta').forEach((r) => { const k = r.familia + ' → ' + r.propuesta; (G[k] = G[k] || []).push(r); });
+    const gs = Object.entries(G).sort((a, b) => b[1].length - a[1].length);
+    if (gs.length) { const l = document.createElement('span'); l.className = 'fm-l'; l.textContent = 'Cambios propuestos (toque para ver):'; tr.appendChild(l); }
+    gs.slice(0, 14).forEach(([k, L]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-t'; b.innerHTML = ''; b.append(k + ' '); const n = document.createElement('b'); n.textContent = '(' + L.length + ')'; b.appendChild(n); b.title = 'Ver solo estos ' + L.length + ' artículos';
+      b.addEventListener('click', () => { $('fm-v').value = 'Propuesta'; $('fm-f').value = L[0].familia; $('fm-p').value = L[0].propuesta; draw(); }); tr.appendChild(b); });
+    // tabla
+    const n = table($('t-fam'), rows, {
+      estado: { render: (td, r) => chip(td, r.estado, r.estado === 'Correcta' ? 'ok' : r.estado === 'Propuesta' ? 'warn' : r.estado === 'Rechazada' ? '' : 'warn') },
+      codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num },
+      propuesta: { render: (td, r) => { td.textContent = r.propuesta; if (r.propuesta !== r.familia) td.className = 'fm-p'; } },
+      decision: { render: (td, r) => {
+        const w = document.createElement('div'); w.className = 'fm-d'; const btn = (t, c, f) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; if (c) b.className = c; b.addEventListener('click', async () => { b.disabled = true; try { await f(); } catch (e) { avisar('✖ ' + e.message, 'err'); } }); return b; };
+        if (r.estado === 'Propuesta' || r.estado === 'Rechazada') { w.appendChild(btn('✔ Aceptar', '', () => aceptar([r]))); if (r.estado === 'Propuesta') w.appendChild(btn('✕ No', 'n', async () => rechazar([r]))); }
+        if (r.estado === 'Aceptada' || r.estado === 'Bajada para Profit') w.appendChild(btn('↺ Deshacer', 'n', () => quitar([r])));
+        const sel = document.createElement('select'); sel.className = 'tt-in'; sel.appendChild(new Option('Otra familia…', '')); FAMS.filter((f) => f !== r.familia).forEach((f) => sel.appendChild(new Option(f, f)));
+        sel.title = 'Escoger otra familia para este artículo'; sel.addEventListener('change', () => { if (sel.value) aceptar([r], sel.value).catch((e) => avisar('✖ ' + e.message, 'err')); }); w.appendChild(sel);
+        td.appendChild(w); } },
+    }, (r) => r.fila, st);
+    $('fm-n').textContent = fmt.int(n) + ' artículos' + (n > st.limit ? ' · se muestran ' + st.limit : '');
+    // acciones masivas sobre lo que se ve (incluye la búsqueda de la barra de la tabla)
+    const TF = window.TT_TF && window.TT_TF.get($('t-fam')), vis = (TF && TF.vis) || rows;
+    const prop = vis.filter((r) => r.estado === 'Propuesta' || r.estado === 'Rechazada'), acep = vis.filter((r) => r.estado === 'Aceptada');
+    const nPend = Object.values(PEND).length, acc = $('fm-acc'); acc.replaceChildren();
+    const A = (t, c, dis, f, tip) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-a ' + c; b.textContent = t; b.disabled = dis; if (tip) b.title = tip; b.addEventListener('click', async () => { if (c === 'si' && !b.dataset.k) { b.dataset.k = '1'; b.textContent = '¿Seguro? toque otra vez (' + fmt.int(prop.length) + ')'; return; } b.disabled = true; try { await f(); } catch (e) { avisar('✖ ' + e.message, 'err'); } b.disabled = false; }); acc.appendChild(b); };
+    A('✔ Aceptar todas las propuestas que se ven (' + fmt.int(prop.length) + ')', 'si', !prop.length || !puede(), () => aceptar(prop), 'Acepta la familia propuesta de todas las filas que se ven con el filtro puesto');
+    if (acep.length) A('↺ Quitar las aceptadas que se ven (' + fmt.int(acep.length) + ')', '', false, () => quitar(acep));
+    A('⬇ Bajar familias para Profit (.xls)' + (nPend ? ' · ' + fmt.int(nPend) : ''), 'xls', !nPend, async () => { await window.TT_PROF.exportar({ solo: 'familias', xls: true }); await traerPend(); }, 'Archivo .xls con Código, Descripción, Familia actual y Familia nueva de todas las familias aceptadas');
+  };
+  ['fm-v', 'fm-f', 'fm-p', 'fm-s'].forEach((i) => $(i).addEventListener('change', () => draw()));
+  st.redraw = draw;
+  dash.onData(draw);
+  document.querySelectorAll('.tt-tab').forEach((t) => t.addEventListener('click', () => setTimeout(draw, 0))); if (window.TT.page === 'calidad') setTimeout(draw, 50);
+  window.TT_FAMREV = { draw, traerPend };
 })();
 </script>
 
@@ -3136,17 +3249,32 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   const familia = (d) => { d = ' ' + String(d || '').toUpperCase(); for (const [f, re] of FAM) if (re.test(d)) return f; return 'Otros'; };
   // familia sugerida: reglas por prioridad (lo específico manda: «BOMBA DE FRENO» es Frenos, «TAPA CADENA» es Motor, «FILTRO DE ACEITE» es Filtros)
   const SUGF = [
-    ['Filtros', 'FILTRO'],
-    ['Lubricantes y químicos', null, /^ ?(ACEITE|LIQUIDO|REFRIGERANTE|COOLANT|GRASA|WD ?-?40|ADITIVO|DESENGRASANTE|LIMPIADOR|SILICON|PERMATEX|SPRAY|LUBRICANTE|ATF|ELEVADOR DE OCTANAJE|H7 (?!.*(BOMBILLO|LED|LUZ|LUCES|HALOG|XENON|FARO)))|DESENGRASANTE|CU[ÑN]ETE|GARRAFA|AEROSOL|(^|[^0-9])(0|5|10|15|20|25)W-?(20|30|40|50|60)([^0-9]|$)/],
-    ['Motor y transmisión', 'EMBRAGUE|CLUTCH|CROCHE'],
-    ['Frenos', 'FRENO|PASTILLA|ZAPATA|BOMBIN|CALIPER|MORDAZA|TAMBOR|DISCO|LIGA DE F'],
-    ['Iluminación', 'BOMBILLO|FARO|STOP|LED|H\\d+\\b|T10|LUZ|LUCES|MICA|CRUCE'],
-    ['Encendido y eléctrico', 'BUJIA|BOBINA|BATERIA|ALTERNADOR|ARRANQUE|SENSOR|RELE|RELAY|FUSIBLE|SWITCH|INTERRUPTOR|ACTUADOR|AIRBAG|ANTENA|TACOMETRO|CONECTOR|SOCKET|FLOTANTE|PILA'],
-    ['Suspensión y dirección', 'AMORTIGUADOR|COILOVER|ROTULA|TERMINAL|MESETA|BUJE|BUCHE|ESPIRAL|RESORTE|BARRA|LINK|BRAZO|CAJETIN|CREMALLERA|MUÑON|PUNTA|TRIPOIDE|CRUCETA|ROLINERA|MOZO|CUBO|DIRECCION|DIRECCIÓN|COPA|GUARDAPOLVO'],
-    ['Motor y transmisión', 'EMBRAGUE|CLUTCH|CADENA|TIEMPO|EMPACADURA|ESTOPERA|PISTON|ANILLO|VALVULA|CORREA|TENSOR|TERMOSTATO|GASOLINA|INYECTOR|RADIADOR|MOTOR|CAJA|DIFERENCIAL|CARDAN|PLATO|COLLARIN|SELLO|MANGUERA|BOMBA|CAMARA|PIÑON|RODAMIENTO|ACOPLADOR|CIGUEÑAL|ARBOL DE LEVA|CULATA|CABEZA'],
-    ['Carrocería y accesorios', 'CAUCHO|RIN|TAPA|PARACHOQUE|ESPEJO|RETROVISOR|MANILLA|EMBLEMA|PARR?ILLA|CHARNEL|GOMA|PLUMILLA|LIMPIA|ASIENTO|ALFOMBRA|CARELOS|PLATINA|SNORKEL|VOLANTE|REJILLA|CHAPALETA|STICKER|AMBIENTADOR|POMO|ESCAFANDRA|GUARDAFANGO|CUERO|LAME|CENTRO DE RIN'],
+    ['Otros', null, /^ ?(POLIZA|MICROSEGURO|INSTALACION|MANTENIMIENTO|REPARACION ENVASE|PRUEBA|NO USAR)/],
+    ['Filtros', 'FILTRO|MICROFILTRO|ELEMENTO ?DE ?AIRE'],
+    ['Lubricantes y químicos', null, /^ ?(ACEITE|LIQUIDO|REFRIGERANTE|COOLANT|GRASA|WD ?-?40|ADITIVO|DESENGRASANTE|LIMPIADOR|SILICON|PERMATEX|SPRAY|LUBRICANTE|ATF|ELEVADOR DE OCTANAJE|AUMENTADOR DE OCTANAJE|AMOR ALL|CREMA PARA PULITURA|PINTURA|GOMA LACA|SHAMPOO|CERA |H7 (?!.*(BOMBILLO|LED|LUZ|LUCES|HALOG|XENON|FARO)))|DESENGRASANTE|PERMATEX|AMOR ALL|CU[ÑN]ETE|GARRAFA|AEROSOL|(^|[^0-9])(0|5|10|15|20|25)W-?(20|30|40|50|60)([^0-9]|$)/],
+    ['Motor y transmisión', 'EMBRAGUE|EMBRIAGUE|CLUTCH|CLUCTH|CROCHE'],
+    ['Frenos', 'FRENO|PASTILLA|ZAPATA|BOMBIN|CALIPER|MORDAZA|TAMBOR|DISCO|LIGA DE F|HIDROVAC|COMPENSADOR DE LIGA|MODULO DE ABS'],
+    ['Iluminación', null, /^ ?(BOMBILLO|FOCO|FARO|STOP|LAMPARA|COCUYO|BALITA|SIDELAMP|\d+ ?CONTACTO|CONTACTO|AMBAR|DUAL COLOR|LUCES|LUZ|LED|T ?10|T ?15|T ?20|DS1|CONJUNTO DE LAMPARA)/],
+    ['Encendido y eléctrico', 'TERMINAL (POSITIVO|NEGATIVO)|SUJETA BATERIA|ENCENDIDO|FUSIBLE|MOTOR ENVASE|MOTOR (DE )?WIPER|MOTOR LIMPIA|RELAY|RELE|SWITCH|SWTCHIERA|INTERRUPTOR|CABLE ESPIRAL|MEDIDOR|VOLTIMETRO|COMPUTADORA|FUSILERA|CLAXON|BOCINA|INVERTER|BORNE|LLAVE ENCENDIDO|DISTRIBUIDOR|RESISTENCIA|AMPLIFICADO|CINTA ADHESIVA NEGRA AISLANTE|CINTA AISLANTE|RELOJ TABLERO|BOTON (AIRE|ON|LUCES|DOBLE TANQUE|LO\\b)|CONTROLADOR DE AIRE|PERILLA AIRE|MODULO INFERIOR LUCES|SENSOR'],
+    ['Iluminación', 'BOMBILLO|FARO|STOP|LED|H\\d+\\b|T10|LUZ|LUCES|MICA|CRUCE|LAMPARA'],
+    ['Encendido y eléctrico', 'BUJIA|BOBINA|BATERIA|ALTERNADOR|ARRANQUE|ACTUADOR|AIRBAG|ANTENA|TACOMETRO|CONECTOR|SOCKET|SOCATE|FLOTANTE|PILA'],
+    ['Carrocería y accesorios', 'TAPA (DE )?GASOLINA|GUAYA|SOPORTE.*PARACHOQUE|BASE PARACHOQUE|CINTURON|ASIENTO(?!S? (BUJE|DE FLAUTA))|PORTA ?VASO|SAPITO|AGARRA|RETROVISOR|CHAPALETA|SNORKEL|PARR?ILLA|REJILLA|GUARDA POLVO|SOPORTE GOMA CAPOT|SOPORTE MANILLA|BASE TAPA CONSOLA|CLIP(?! (MANGUERA|RETENEDOR TUBO))|TUERCA DE RIN|TUERCA RUEDA|RIN\\b|VIGA DE IMPACTO|TASA TABLERO|REGISTRO DEL TABLERO|SELECTORA WIPER'],
+    ['Carrocería y accesorios', null, /^ ?TAPON (?!.*(TRANSMISION|DRENAJE|BOBIN|CARTER))/],
+    ['Motor y transmisión', 'TUBO|ADMISION|VARILLA|TOMA DE AGUA|TUBERIA|TRAMPA DE AGUA|VVTI|ELECTROVENTILADOR|SOPLADOR|CALEFACCION|TAPON|BOBIN INFERIOR|ESCAPE|TENSOR|BASE (DE )?CAJA|BASE (DE )?MOTOR|TANQUE|REGULADOR|BOMBA DE ACEITE|COMPRESOR|CONDENSADOR'],
+    ['Suspensión y dirección', 'AMORTIGUADOR|COILOVER|ROTULA|TERMINAL|MESETA|BUJE|BUCHE|ESPIRAL|RESORTE|BARRA|LINK|BRAZO|CAJETIN|CREMALLERA|MUÑON|MUNON|PUNTA|TRIPOIDE|CRUCETA|ROLINERA|MOZO|CUBO|DIRECCION|DIRECCIÓN|COPA|GUARDAPOLVO|ESPARRAGO|EXC?ENTRICA|EXENTRICA|BP-51|BALLESTA|AXIALES|KIT AJUSTE ARA[NÑ]A|BRACKET RUEDA|SUSPENCION|SUSPENSION'],
+    ['Motor y transmisión', 'EMBRAGUE|CLUTCH|CADENA|TIEMPO|EMPACADURA|EMPECADURA|ESTOPERA|ESTPERA|PISTON|ANILLO|VALVULA|CORREA|TERMOSTATO|GASOLINA|INYECTOR|RADIADOR|MOTOR|CAJA|DIFERENCIAL|CARDAN|PLATO|COLLARIN|SELLO|MANGUERA|MAGUERA|BOMBA|CAMARA|PIÑON|PINON|RODAMIENTO|ACOPLADOR|CIGUEÑAL|CIGUENAL|ARBOL DE LEVA|CULATA|CABEZA|ASPA|CAMISA|CANISTER|COLAPSABLE|CONOS DE TRANSMISION|DUCTO|ESPACIADOR|FAN CLU|HORQUILLA|RACHE|CARBURADOR|VENTILADOR|RESPIRADOR|ARA[NÑ]A|PATIN|ABRAZADERA|ENFRIADOR|AIRE ACONDICIONADO|A/A|A/C|O ?RING|TORNILLO|ARANDELA|JUNTA|RETEN|CONCHA|POLEA'],
+    ['Carrocería y accesorios', 'CAUCHO|TAPA|PARACHOQUE|ESPEJO|MANILLA|EMBLEMA|EMPLEMA|CHARNEL|GOMA|PLUMILLA|LIMPIA|ALFOMBRA|CARELO|PLATINA|VOLANTE|REJILLA|STICKER|STCKER|AMBIENT|AREON|GRANADA DE OLOR|POMO|ESCAFANDRA|GUARDAFANGO|GUARDA ?BARRO|CUERO|LAME|CENTRO DE RIN|AISLANTE|ARO DEL ENCENDEDOR|BOLSO|BOTON|BRACKET|CANAL DE AGUA|CAPOT|CIGARRERA|CLICK?|COBERTOR|COMPUERTA|COVER|CURVA|ENVASE WIPER|FILLER|FORRO|GARNISH|GRILLE|HUESITOS|LOGO|MARCO|PANEL|PARABRISA|PERCHERO|PERILLA|PORTA|PUERTA|PULSADOR|SEGURO|SKID PLATE|WIPER|SOPORTE|BASE'],
   ].map(([f, rx, re]) => [f, re || new RegExp('(?:^|[^A-Z0-9_ÑÁÉÍÓÚ])(?:' + rx + ')', 'u')]);
-  const familiaSugerida = (d) => { d = ' ' + String(d || '').toUpperCase(); for (const [f, re] of SUGF) if (re.test(d)) return f; return familia(d); };
+  // se elige la palabra que manda en la descripción: la que aparece primero, pero las genéricas (TAPA, KIT, BASE, GOMA, BOMBA…) ceden ante una más específica
+  const SUGF_G = SUGF.map(([f, re]) => [f, new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g')]);
+  const DEBIL = /^\W*(TAPA|KIT|CONJUNTO|BASE|SOPORTE|GOMA|CLIP|CLICK|CLIC|ABRAZADERA|TORNILLO|ARANDELA|O ?RING|SELLO|ESTOPERA|ESTPERA|RETEN|MANGUERA|MAGUERA|CABLE|BOMBIN|BOMBA|ENVASE|TANQUE|DISCO|RODAMIENTO|JUNTA|PROTECTOR|CUBIERTA|GUIA|TUERCA|EMPACADURA|EMPECADURA|BRACKET)\W*$/;
+  const familiaSugerida = (d0) => {
+    let d = ' ' + String(d0 || '').toUpperCase().replace(/^\s*[0-9A-Z]{4,6}-[0-9A-Z]{4,6}(-[0-9A-Z]{1,3})?\s+/, '');
+    d = d.replace(/(^|\s)\d ?BOBINAS?\b/g, ' ').replace(/MOTOR \d\.\d(?![\d.])/g, ' ').replace(/\s+/g, ' ');
+    let mejor = null;
+    SUGF_G.forEach(([f, re], i) => { re.lastIndex = 0; for (const m of d.matchAll(re)) { const sc = m.index + (DEBIL.test(m[0]) ? 500 : 0); if (!mejor || sc < mejor[0] || (sc === mejor[0] && i < mejor[1])) mejor = [sc, i, f]; } });
+    return mejor ? mejor[2] : familia(d);
+  };
   window.TT_FAMS = () => [...FAM.map((x) => x[0]), 'Otros'];
   window.TT_FAMSUG = familiaSugerida;
   const linea = (d) => { d = ' ' + String(d || '').toUpperCase(); const t = TOY.test(d), n = NIS.test(d); return t && !n ? 'Toyota' : n && !t ? 'Nissan' : t && n ? 'Toyota y Nissan' : 'Sin modelo en descripción'; };
@@ -3704,6 +3832,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     catch (e) { await sb.from('listas_precios').delete().eq('id', lista.id); throw new Error('No se pudo guardar la lista de precios (' + e.message + '). Se deshizo la carga.'); }
   }
   // aviso visible en cualquier pantalla (éxito o error al subir)
+  window.TT_AVISO = (t, k) => avisoCarga(t, k);
   function avisoCarga(t, k) {
     let d = document.getElementById('sh-aviso');
     if (!d) { d = document.createElement('div'); d.id = 'sh-aviso'; d.setAttribute('role', 'alert'); document.body.appendChild(d); d.addEventListener('click', () => { d.hidden = true; }); }
@@ -6860,7 +6989,7 @@ function zoomEn(box){
       cur[campo] = valor; cur.por = quien(); cur.en = new Date().toISOString(); cur.origen = origen || cur.origen || ''; cur.exportado_en = null; cur.exportado_por = null;
       if (campo === 'familia_nueva') cur.familia_antes = cur.familia_antes || a.familia || r.familia || null;
       const vacio = cur.costo_nuevo == null && cur.precio_nuevo == null && cur.stock_contado == null && !cur.familia_nueva;
-      if (lote) { if (!vacio) { PP[k] = cur; lote.set(k, cur); } return; }
+      if (lote) { if (vacio) { delete PP[k]; lote.set(k, { borrar: r.codigo }); } else { PP[k] = cur; lote.set(k, cur); } return; }
       if (enDB) { if (vacio) ok(await sb.from('profit_pendientes').delete().eq('empresa_id', EMPRESA).eq('codigo', r.codigo)); else ok(await sb.from('profit_pendientes').upsert(cur, { onConflict: 'empresa_id,codigo' })); }
       if (vacio) delete PP[k]; else PP[k] = cur; if (!enDB) local();
       botones();
@@ -6972,24 +7101,38 @@ function zoomEn(box){
         avisoCarga((tot ? '✔ ' + L.length + ' artículos quedan con corrección pendiente para Profit (' + [[cuenta.precio, 'de precio'], [cuenta.costo, 'de costo'], [cuenta.familia, 'de familia'], [cuenta.stock, 'de stock contado']].filter((x) => x[0]).map((x) => x[0] + ' ' + x[1]).join(' · ') + '). Ahora baje «⬇ Excel para Profit».' : 'No encontré cambios nuevos en las columnas ✏ de «' + f.name + '».') + (err.length ? ' ⚠ ' + err.length + ' no se tomaron: ' + err.slice(0, 5).join(' · ') + (err.length > 5 ? '…' : '') : ''), err.length && !tot ? 'err' : 'ok');
       } finally { btn.disabled = false; }
     }
-    async function exportar() {
-      await cargar(); const L = Object.values(PP).sort((a, b) => String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true })); if (!L.length) return avisoCarga('No hay correcciones pendientes.', 'ok');
+    async function guardarLote(lote) {
+      const up = [...lote.values()].filter((x) => !x.borrar), del = [...lote.values()].filter((x) => x.borrar).map((x) => x.borrar);
+      if (enDB) { for (let i = 0; i < up.length; i += 300) ok(await sb.from('profit_pendientes').upsert(up.slice(i, i + 300), { onConflict: 'empresa_id,codigo' }));
+        for (let i = 0; i < del.length; i += 200) ok(await sb.from('profit_pendientes').delete().eq('empresa_id', EMPRESA).in('codigo', del.slice(i, i + 200))); }
+      else local();
+      botones(); BARRAS.forEach((G) => G.redraw && G.redraw());
+    }
+    // familias: aceptar (o quitar) muchas propuestas de una vez
+    async function familias(lista, origen) {   // lista: [{codigo, descripcion, familia (actual), nueva (null = quitar)}]
+      await cargar(); const lote = new Map();
+      for (const x of lista) await guardar({ codigo: x.codigo, descripcion: x.descripcion, familia: x.familia }, 'familia_nueva', x.nueva && x.nueva !== x.familia ? x.nueva : null, origen || 'Revisión de familias', lote);
+      await guardarLote(lote); return lote.size;
+    }
+    const famPend = async () => { await cargar(); const o = {}; Object.values(PP).forEach((p) => { if (p.familia_nueva) o[String(p.codigo).toUpperCase()] = p; }); return o; };
+    async function exportar(op) {
+      op = op || {}; await cargar(); const L = Object.values(PP).filter((p) => !op.solo || (op.solo === 'familias' && p.familia_nueva)).sort((a, b) => String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true })); if (!L.length) return avisoCarga(op.solo === 'familias' ? 'No hay familias aceptadas para Profit.' : 'No hay correcciones pendientes.', 'ok');
       const wb = XLSX.utils.book_new(), hoja = (fm, rows) => { const ws = XLSX.utils.aoa_to_sheet([fm.cols.map((c) => c[0]), ...rows.map((p) => fm.cols.map((c) => { const v = c[1](p); return v == null ? '' : v; }))]); ws['!cols'] = fm.cols.map((c) => ({ wch: /Descrip/.test(c[0]) ? 45 : 14 }));
         for (let r = 1; r <= rows.length; r++) { const cel = ws[XLSX.utils.encode_cell({ r, c: 0 })]; if (cel) { cel.t = 's'; cel.v = String(cel.v); } } return ws; };
-      const pr = L.filter((p) => p.precio_nuevo != null), co = L.filter((p) => p.costo_nuevo != null), st = L.filter((p) => p.stock_contado != null), fa = L.filter((p) => p.familia_nueva);
+      const solo = op.solo === 'familias', pr = solo ? [] : L.filter((p) => p.precio_nuevo != null), co = solo ? [] : L.filter((p) => p.costo_nuevo != null), st = solo ? [] : L.filter((p) => p.stock_contado != null), fa = L.filter((p) => p.familia_nueva);
       if (pr.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.precios, pr), FMT.precios.hoja);
       if (co.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.costos, co), FMT.costos.hoja);
       if (st.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.ajuste, st), FMT.ajuste.hoja);
       if (fa.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.familias, fa), FMT.familias.hoja);
       const det = XLSX.utils.json_to_sheet(L.map((p) => ({ 'Código': String(p.codigo), 'Descripción': p.descripcion, 'Costo antes': p.costo_antes, 'Costo nuevo': p.costo_nuevo, 'Precio antes': p.precio_antes, 'Precio nuevo': p.precio_nuevo, 'Margen nuevo': p.precio_nuevo && (p.costo_nuevo || p.costo_antes) ? Math.round((1 - (p.costo_nuevo || p.costo_antes) / p.precio_nuevo) * 1000) / 1000 : null, 'Stock antes': p.stock_antes, 'Stock contado': p.stock_contado, 'Familia antes': p.familia_antes, 'Familia nueva': p.familia_nueva, 'Corregido en': p.origen, 'Por': p.por, 'Fecha': String(p.en || '').slice(0, 16).replace('T', ' ') })));
       det['!cols'] = [{ wch: 14 }, { wch: 45 }, ...Array(7).fill({ wch: 12 }), { wch: 22 }, { wch: 22 }, { wch: 28 }, { wch: 30 }, { wch: 16 }]; XLSX.utils.book_append_sheet(wb, det, 'Detalle (control)');
-      const f = new Date().toLocaleDateString('en-CA'), nom = 'TOYOTENGO_Correcciones_para_Profit_' + f + '.xlsx'; XLSX.writeFile(wb, nom);
-      const ahora = new Date().toISOString(), yo = quien(); L.forEach((p) => { p.exportado_en = ahora; p.exportado_por = yo; });
-      if (enDB) { for (let i = 0; i < L.length; i += 300) ok(await sb.from('profit_pendientes').upsert(L.slice(i, i + 300), { onConflict: 'empresa_id,codigo' })); } else local();
+      const xls = op.xls !== false, ext = xls ? '.xls' : '.xlsx', f = new Date().toLocaleDateString('en-CA'), nom = (solo ? 'TOYOTENGO_Familias_para_Profit_' : 'TOYOTENGO_Correcciones_para_Profit_') + f + ext; XLSX.writeFile(wb, nom, xls ? { bookType: 'biff8' } : undefined);
+      const ahora = new Date().toISOString(), yo = quien(), M = solo ? L.filter((p) => p.precio_nuevo == null && p.costo_nuevo == null && p.stock_contado == null) : L; M.forEach((p) => { p.exportado_en = ahora; p.exportado_por = yo; });
+      if (enDB) { for (let i = 0; i < M.length; i += 300) ok(await sb.from('profit_pendientes').upsert(M.slice(i, i + 300), { onConflict: 'empresa_id,codigo' })); } else local();
       bitacora('EXCEL PARA PROFIT', nom + ' · ' + pr.length + ' precios · ' + co.length + ' costos · ' + st.length + ' ajustes de stock · ' + fa.length + ' familias'); botones();
       avisoCarga('✔ Descargado ' + nom + ': ' + [pr.length ? pr.length + ' precios' : '', co.length ? co.length + ' costos' : '', st.length ? st.length + ' ajustes de stock' : '', fa.length ? fa.length + ' familias' : ''].filter(Boolean).join(' · ') + '. Cárguelo en Profit; al subir los reportes nuevos se cierran solos (o toque «Ya cargué en Profit»).', 'ok');
     }
-    return { enganchar, cargar, exportar, FMT };
+    return { enganchar, cargar, exportar, FMT, familias, famPend };
   })();
   // ---------- ficha del artículo ----------
   const FICHA = (() => {
