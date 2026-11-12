@@ -4648,7 +4648,20 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       bts2.append(
         btn('Esta lista (' + T0().fmt.int(n) + ')', () => { const m = usar(); return m == null ? null : margenALista(m, false); }), btn('Todas las publicaciones (' + T0().fmt.int(N) + ')', () => { const m = usar(); return m == null ? null : margenALista(m, true); }, 'all'));
       const man = mk('div', 'mm-man'); man.append(mk('span', null, '✏ Cambiar manualmente el % final:'), i, mk('span', null, '%'), acp, vuelve); f2.appendChild(man);
-      const grid = mk('div', 'mm-izq'); grid.append(f1, f2);
+      // activar en ML las pausadas/inactivas que ya tienen stock disponible y precio listo
+      const candAct = (L) => { const m = recargoUsado(), ok = [], sinPrecio = []; L.forEach((r) => { if (r.tipo !== 'pub' || r.activa || !r.item_id || !r.codigo) return; const pd = r.pend || {}; if (pd.accion === 'ACTIVAR') return; const q = qSinc(r); if (!(q > 0)) return; const pr = m == null ? null : precioPorMargen(r, m); const listo = pd.precio_nuevo != null || (pr != null && r.precio_ml != null && Math.abs(pr - r.precio_ml) < 0.01); (listo ? ok : sinPrecio).push(r); }); return { ok, sinPrecio }; };
+      const activarLista = async (todas) => {
+        const { ok, sinPrecio } = candAct(todas ? R.pubs : vista);
+        if (!ok.length) return avisa(sinPrecio.length ? '✖ Hay ' + sinPrecio.length + ' pausadas con stock, pero todavía no tienen el precio nuevo: aplique primero el recargo (💲) y luego toque activar.' : '✔ No hay publicaciones pausadas o inactivas con stock disponible por activar en ' + (todas ? 'la cuenta' : 'esta lista') + '.', sinPrecio.length ? 'err' : 'ok');
+        await guardarPendLote(ok.map((r) => ({ item_id: r.item_id, accion: 'ACTIVAR', stock_nuevo: r.pend && r.pend.stock_nuevo > 0 ? r.pend.stock_nuevo : qSinc(r) })), 'PANEL');
+        avisa('✔ ' + ok.length + ' publicaciones quedan para ACTIVAR con su stock disponible y el precio nuevo' + (sinPrecio.length ? ' · ' + sinPrecio.length + ' con stock no se tocaron porque aún no tienen precio nuevo' : '') + '. Baje la 🛒 planilla para Mercado Libre: saldrán en estado Activa.', 'ok'); tabla();
+      };
+      const cL = candAct(vista), cT = candAct(R.pubs);
+      const f3 = mk('div', 'mm-f'), bts3 = mk('div', 'mm-bts');
+      f3.append(mk('span', 'mm-l', '▶ Activar pausadas o inactivas con stock y precio nuevo'), bts3);
+      bts3.append(btn('Esta lista (' + T0().fmt.int(cL.ok.length) + ')', () => activarLista(false)), btn('Todas las publicaciones (' + T0().fmt.int(cT.ok.length) + ')', () => activarLista(true), 'all'));
+      f3.appendChild(mk('small', 'mm-s', 'Solo las que tienen stock disponible en el inventario (sin comprometido) y ya tienen el precio nuevo pendiente o correcto' + (cT.sinPrecio.length ? ' · ' + T0().fmt.int(cT.sinPrecio.length) + ' con stock esperan precio nuevo: aplique primero el recargo 💲' : '') + '. Las inactivas por revisión o por políticas de Mercado Libre pueden necesitar corrección allá.'));
+      const grid = mk('div', 'mm-izq'); grid.append(f1, f2, f3);
       el.append(grid, mk('small', 'mm-n', 'Todo queda como cambio pendiente: revíselo en la tabla, bájelo con 🛒 Planilla para Mercado Libre o descártelo en la barra amarilla.'));
     }
     const T0 = () => window.TT;
