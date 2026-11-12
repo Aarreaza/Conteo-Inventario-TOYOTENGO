@@ -4628,7 +4628,9 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       avisa('✔ Stock del inventario aplicado a ' + (todas ? 'TODAS las publicaciones' : 'esta lista') + ': ' + cam.length + ' publicaciones cambian de stock' + (ceros ? ' · ' + ceros + ' activas quedan en 0 (Mercado Libre las pausa)' : '') + (L.length < base.length ? ' · ' + (base.length - L.length) + ' sin código no se tocaron' : '') + '. Quedan pendientes para la 🛒 Planilla para Mercado Libre.', 'ok'); tabla();
     }
     function pintarMasivo(tipo) {
-      const el = $('ml-masivo'); if (!el) return; el.replaceChildren(); el.hidden = tipo !== 'pub' || !puede() || !R || !R.k.hay; if (el.hidden) return;
+      const el = $('ml-masivo'); if (!el) return; el.replaceChildren();
+      if (tipo === 'inv' && $('ml-ver').value === 'np' && R && R.k.hay) { el.hidden = false; pintarPublicar(el); return; }
+      el.hidden = tipo !== 'pub' || !puede() || !R || !R.k.hay; if (el.hidden) return;
       const n = vista.length, N = R.pubs.length;
       const btn = (t, f, k) => { const b = mk('button', 'mm-b' + (k ? ' ' + k : ''), t); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; try { await f(); } catch (e) { avisa('✖ ' + e.message, 'err'); } b.disabled = false; }); return b; };
       el.appendChild(mk('b', 'mm-t', '⚡ Cambios masivos para la planilla de Mercado Libre'));
@@ -4669,6 +4671,18 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       f3.appendChild(mk('small', 'mm-s', 'Solo las que tienen stock disponible en el inventario (sin comprometido) y ya tienen el precio nuevo pendiente o correcto' + (cT.sinPrecio.length ? ' · ' + T0().fmt.int(cT.sinPrecio.length) + ' con stock esperan precio nuevo: aplique primero el recargo 💲' : '') + '. Las inactivas por revisión o por políticas de Mercado Libre pueden necesitar corrección allá.'));
       const grid = mk('div', 'mm-izq'); grid.append(f1, f2, f3);
       el.append(grid, mk('small', 'mm-n', 'Todo queda como cambio pendiente: revíselo en la tabla, bájelo con 🛒 Planilla para Mercado Libre o descártelo en la barra amarilla.'));
+    }
+    // «Con stock y NO publicados»: preparar en lote el Excel para publicarlos (precio = precio al público + recargo, stock = disponible)
+    function pintarPublicar(el) {
+      const F = T0().fmt.int, L = vista.filter((r) => r.codigo && Number(r.stock) > 0), conP = L.filter((r) => Number(r.precio_lista) > 0).length, m = recargoUsado();
+      el.appendChild(mk('b', 'mm-t', '🚀 Publicar en lote los que faltan'));
+      el.appendChild(mk('div', 'mm-s', F(L.length) + ' artículos en esta lista' + (L.length === R.k.np.length ? '' : ' (filtrada)') + ' · ' + F(conP) + ' tienen precio de venta al público · primero los que tienen precio al público, del mayor al menor valor a costo. Precio = precio al público + recargo ' + (m == null ? '' : T0().fmt.pct(m) + ' ') + 'ya libre de comisión, redondeado · stock = disponible (sin comprometido).'));
+      const fila = mk('div', 'mm-bts'), n = document.createElement('input'); n.className = 'ml-ed'; n.type = 'number'; n.min = 1; n.max = 500; n.value = Math.min(100, L.length || 1); n.style.width = '4.5rem';
+      const b = mk('button', 'mm-b all', '⬇ Bajar Excel para publicar'); b.type = 'button';
+      b.addEventListener('click', async () => { b.disabled = true; const t0 = b.textContent; b.textContent = 'Preparando… (busca categoría y fotos)'; try { const q = Math.max(1, Math.min(500, Number(n.value) || 100)); const r = await window.TT_MLA._bajarPorPublicar(L, q); if (!r.n) avisa('No hay artículos con código y stock en esta lista.', 'err'); else avisa('✔ Descargado: ' + r.n + ' artículos · ' + r.ok + ' listos para publicar (hoja «Listos para publicar»)' + (Object.keys(r.fal).length ? ' · les falta: ' + Object.entries(r.fal).map(([k, v]) => v + ' ' + k).join(', ') : '') + '. Para subirlo a Mercado Libre use Archivos → paso 4 «Llenar plantilla de publicación» con la plantilla de publicar en Excel que baja de Mercado Libre.', 'ok'); } catch (e) { avisa('✖ ' + e.message, 'err'); } b.textContent = t0; b.disabled = false; });
+      const p4 = mk('button', 'mm-b', 'Archivos → paso 4 (llenar plantilla de ML)'); p4.type = 'button'; p4.addEventListener('click', () => { const t = document.querySelector('#ml-tabs [data-mt=archivos]'); if (t) t.click(); setTimeout(() => { const x = document.querySelector('.mla-paso[data-paso="4"]'); if (x) x.scrollIntoView({ behavior: 'smooth' }); }, 200); });
+      fila.append(mk('span', 'mm-l', 'Cuántos (máx. 500):'), n, b, p4);
+      el.append(fila, mk('small', 'mm-n', 'Consejo: filtre por familia o busque (aceites, bujías…) y baje por grupos: Mercado Libre pide datos distintos por categoría. Los que dicen «Falta: foto» no se pueden publicar sin al menos una foto.'));
     }
     const T0 = () => window.TT;
     // recargo sobre el precio al público: brecha cambiaria (Binance vs BCV) + 2 puntos, o el % que se ponga a mano
@@ -5744,7 +5758,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     $('ml-v-bajar').addEventListener('click', bajarVentas);
     $('ml-bajar-todo').addEventListener('click', bajarTodo);
     dash.onData(() => { if (!SERVER) return; if (!$('v-ml').hidden) pintar(); else contador(); });
-    return { pintar, contador, recargar, leerML, _leerHoja: leerHoja, _conciliar: conciliar, _planillas: () => { leerPlanillasGuardadas(); return PLANILLAS; }, _preparar: prepararPlanillas, _calcular: (m) => calcularCambios(m), _trabajo: bajarTrabajo };
+    return { pintar, contador, recargar, leerML, _leerHoja: leerHoja, _conciliar: conciliar, _precioRecargo: (r) => { const m = recargoUsado(); return m == null ? null : precioPorMargen(r, m); }, _recargo: () => recargoUsado(), _vista: () => vista, _planillas: () => { leerPlanillasGuardadas(); return PLANILLAS; }, _preparar: prepararPlanillas, _calcular: (m) => calcularCambios(m), _trabajo: bajarTrabajo };
   })();
 
   // ---------- Mercado Libre: conexión directa, estadísticas y acciones aprobadas por el usuario ----------
@@ -6102,16 +6116,16 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (p) Object.keys(M).forEach((k) => { const f = p[k]; if (f && String(f.foto_id || f).startsWith('sb:')) { const u = FOTOS + String(f.foto_id || f).slice(3) + '.jpg'; M[k] = [u].concat(M[k].filter((x) => x !== u)); } });
       return M;
     }
-    async function porPublicar(max) {
+    async function porPublicar(max, lista) {
       const R = window.TT_ML && window.TT_ML._conciliar(); if (!R) return [];
       const c = await config();
-      const L = R.k.np.slice().sort((a, b) => (b.valor || 0) - (a.valor || 0)).slice(0, max);
+      const L = (lista || R.k.np).filter((a) => a.codigo && Number(a.stock) > 0).slice().sort((a, b) => ((Number(b.precio_lista) > 0) - (Number(a.precio_lista) > 0)) || (b.valor || 0) - (a.valor || 0)).slice(0, max);
       const F = await fotosDe(L.map((r) => r.codigo));
       const out = [];
       for (let i = 0; i < L.length; i += 6) {
         const lote = await Promise.all(L.slice(i, i + 6).map(async (a) => {
           const t = titulo(a.descripcion, a.codigo), cat = await categoria(t.replace(a.codigo, '').trim() || t), fotos = (F[String(a.codigo).toUpperCase()] || []).slice(0, 6);
-          const so = stockObj(c, a.stock), po = precioObj(c, a.precio_lista), falta = [];
+          const so = stockObj(c, a.stock), pr = Number(a.precio_lista) > 0 && window.TT_ML._precioRecargo ? window.TT_ML._precioRecargo(a) : null, po = Number(a.precio_lista) > 0 ? (pr != null ? pr : precioObj(c, a.precio_lista)) : null, falta = [];
           if (!fotos.length) falta.push('foto'); if (po == null) falta.push('precio en Profit'); if (!cat) falta.push('categoría'); if (!(so > 0)) falta.push('stock');
           return { 'Código (SKU)': a.codigo, 'Título (máx. 60)': t, 'Letras': t.length, 'Categoría sugerida': cat ? cat.nombre : '', 'Código de categoría': cat ? cat.id : '', 'Precio US$': po == null ? '' : po,
             'Precio Profit US$': a.precio_lista == null ? '' : a.precio_lista, 'Stock a publicar': so, 'Condición': 'Nuevo', 'Marca': marca(a.descripcion), 'Modelo': modelo(a.descripcion), 'Número de pieza': a.codigo,
@@ -6122,6 +6136,17 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         out.push(...lote); nota('Preparando publicaciones… ' + Math.min(i + 6, L.length) + ' de ' + L.length);
       }
       return out;
+    }
+    // baja el Excel de artículos por publicar (lista opcional: la que se ve en la tabla)
+    async function bajarPorPublicar(lista, max) {
+      const F = await porPublicar(max || 500, lista); if (!F.length) return { n: 0, ok: 0 };
+      const wb = XLSX.utils.book_new(), ws = XLSX.utils.json_to_sheet(F); ws['!cols'] = [{ wch: 18 }, { wch: 60 }, { wch: 6 }, { wch: 28 }, { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 8 }, { wch: 9 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 14 }, { wch: 50 }];
+      XLSX.utils.book_append_sheet(wb, ws, 'Por publicar');
+      const lis = F.filter((x) => x.Listo === 'SÍ'); if (lis.length && lis.length < F.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(lis), 'Listos para publicar');
+      XLSX.writeFile(wb, 'TOYOTENGO_ML_por_publicar_' + hoy() + '.xlsx');
+      bitacora('DESCARGA MERCADO LIBRE', 'Artículos por publicar · ' + F.length + ' (' + lis.length + ' listos)');
+      const fal = {}; F.forEach((x) => String(x.Falta || '').split(', ').filter(Boolean).forEach((k) => { fal[k] = (fal[k] || 0) + 1; }));
+      return { n: F.length, ok: lis.length, fal };
     }
     // si el usuario sube la plantilla de "publicar en Excel" de Mercado Libre, se llenan las columnas que se reconocen
     function llenarPlantillaPub(wb, filas) {
@@ -6234,7 +6259,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       estado();
       return w;
     }
-    return { abrir, estado, _cambios: cambios, _porPublicar: porPublicar, _llenarPlantilla: llenarPlantilla, _llenarPlantillaPub: llenarPlantillaPub };
+    return { abrir, estado, _cambios: cambios, _porPublicar: porPublicar, _bajarPorPublicar: bajarPorPublicar, _llenarPlantilla: llenarPlantilla, _llenarPlantillaPub: llenarPlantillaPub };
   })();
 
   // ---------- descargar en Excel lo que el usuario elija ----------
