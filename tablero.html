@@ -4724,6 +4724,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     function estadoFila(r, m) {
       if (r.tipo !== 'pub') return null; if (r.pend) return 'pe'; if (!r.codigo) return 'sc';
       const q = qSinc(r), pr = m == null ? null : precioPorMargen(r, m);
+      if (!r.activa && q > 0) return 'rv';   // tiene stock pero no se vende: falta activarla
       return q != null && Number(r.stock_ml) === q && pr != null && r.precio_ml != null && Math.abs(pr - r.precio_ml) < 0.01 ? 'ok' : 'rv';
     }
     // lo que el panel sugiere para una fila por revisar: stock = disponible (con reglas) y precio = recargo vigente
@@ -4752,7 +4753,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
             (() => { const b = mk('button', 'mr-c all' + (!st.estado ? ' on' : ''), 'Todas (' + F(P.length) + ')'); b.type = 'button'; b.addEventListener('click', () => { st.estado = null; tabla(); }); return b; })(),
             chip('ok', '✔ ' + F(N.ok) + ' al día', 'Stock y precio de Mercado Libre ya son los correctos: no hay nada que hacer.'),
             chip('pe', '🟡 ' + F(N.pe) + ' con cambios pendientes', 'Ya tienen un cambio guardado que sale en la planilla para Mercado Libre.'),
-            chip('rv', '🔵 ' + F(N.rv) + ' por revisar', 'El stock o el precio de Mercado Libre no coincide con lo que calcula el panel. Corríjalos en la tabla o use «Aplicar lo sugerido».'));
+            chip('rv', '🔵 ' + F(N.rv) + ' por revisar', 'El stock o el precio de Mercado Libre no coincide con lo que calcula el panel, o está pausada/inactiva teniendo stock (falta activarla). Corríjalos en la tabla, use «Aplicar lo sugerido» o ▶ Activar en los cambios masivos.'));
           if (N.sc) top.appendChild(chip('sc', '⚪ ' + F(N.sc) + ' sin código', 'No están unidas a un código del inventario: escriba el código en «✏ Código inventario» para poder calcular stock y precio.'));
           res.appendChild(top);
           if (puede()) {
