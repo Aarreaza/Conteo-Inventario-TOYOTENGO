@@ -124,9 +124,10 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-b-baj{background:#fff!important;color:#1d6f42!important;border:1.5px solid #1d6f42!important}.ml-b-sub{background:#1d6f42!important;color:#fff!important;border-color:#1d6f42!important}.ml-b-ml{background:#ffe600!important;color:#2d3277!important;border:1.5px solid #e6cf00!important;font-weight:700}.ml-b-ml:disabled{opacity:.5}
 .ml-pend{background:#fff8e6;border:1px solid #f0c060;border-left:5px solid #e8a400;border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;font-size:.88rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}.ml-pend b{color:#7a4b00}.ml-pend button{font:600 .8rem inherit;border-radius:6px;padding:.3rem .65rem;cursor:pointer;border:1px solid #c9a24a;background:#fff}
 .ml-inc{display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0 .6rem;align-items:center}.ml-inc>span{font-size:.82rem;color:#555;margin-right:.2rem}.ml-inc button{font:600 .8rem inherit;border-radius:999px;padding:.3rem .7rem;cursor:pointer;border:1px solid transparent}.ml-inc button.bad{background:#fde8ea;color:#a3121f}.ml-inc button.warn{background:#fff3d6;color:#7a4b00}.ml-inc button.info{background:#e8eefc;color:#173f8a}.ml-inc button.on{outline:2px solid #1f2a44}
-#ml-tabla th.ed{background:#fff3d6}#ml-tabla th.cmp{background:#efeafd}#ml-tabla td.ed{background:#fffaf0}.ml-ed{width:6.2rem;font:inherit;padding:.25rem .35rem;border:1px solid #d7b46a;border-radius:6px;background:#fff}.ml-ed.cod{width:8.5rem}.ml-ed.pub{width:9rem}.ml-ed.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.ml-ed.okk{background:#dff5e6;border-color:#1d6f42}.ml-ed.err{background:#fde8ea;border-color:#c0182a}
+#ml-tabla th.ed{background:#fff3d6}#ml-tabla th.cmp{background:#efeafd}#ml-tabla td.ed{background:#fffaf0}.ml-ed{width:5.4rem;font:inherit;padding:.25rem .35rem;border:1px solid #d7b46a;border-radius:6px;background:#fff}.ml-ed.cod{width:7.6rem}.ml-ed.pub{width:9rem}.ml-ed.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.ml-ed.okk{background:#dff5e6;border-color:#1d6f42}.ml-ed.err{background:#fde8ea;border-color:#c0182a}
 .ml-cbar{position:relative;height:.9rem;width:9rem;background:#f1f3f7;border-radius:4px}.ml-cbar i{position:absolute;top:0;bottom:0;width:3px;border-radius:2px}.ml-cbar i.c{background:#c0182a}.ml-cbar i.l{background:#1d6f42}.ml-cbar i.m{background:#2d3277;width:5px}.ml-cbar i.n{background:#e8a400}.ml-cleg{font-size:.75rem;color:#555;display:flex;gap:.8rem;flex-wrap:wrap;margin:.2rem 0}.ml-cleg i{display:inline-block;width:.7rem;height:.7rem;border-radius:2px;margin-right:.25rem;vertical-align:middle}
 .ml-dif.wa{color:#b26a00;font-weight:600}.ml-dif.ig{color:#1d6f42}#ml-tabla td .tt-chip{display:inline-block;margin:.1rem 0}.ml-dif.dn{color:#c0182a;font-weight:600}
+.ml-edhint{background:#eef4ff;border:1px solid #b9cdf5;border-left:5px solid #2d5bd0;border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;font-size:.88rem;line-height:1.45}.ml-edhint b{color:#173f8a}.ml-edhint .ir{display:inline-flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}.ml-edhint button{font:600 .8rem inherit;border-radius:999px;padding:.3rem .75rem;cursor:pointer;border:1px solid #2d5bd0;background:#fff;color:#173f8a}.ml-edhint button:hover{background:#2d5bd0;color:#fff}.ml-sug{font:600 .75rem inherit;border:1px dashed #1d6f42;background:#eaf7ef;color:#14532d;border-radius:6px;padding:.15rem .45rem;margin:.15rem .25rem 0 0;cursor:pointer}
 .ml-al-x{white-space:nowrap;font:600 .78rem inherit;border:1px solid #1d6f42;color:#1d6f42;background:#fff;border-radius:6px;padding:.15rem .5rem;cursor:pointer;margin-left:.4rem}.ml-al-x:hover{background:#1d6f42;color:#fff}.ml-al-up{margin-left:auto;font:600 .8rem inherit;background:#1d6f42;color:#fff;border:0;border-radius:6px;padding:.35rem .7rem;cursor:pointer}.ml-al-up:hover{filter:brightness(1.1)}.ml-al-ayuda{font-size:.8rem;color:#555;margin:.3rem 0 .5rem}.mla-trab{margin-top:.7rem;padding-top:.6rem;border-top:1px dashed #ccd;font-size:.85rem}.mla-trab select{max-width:15rem}
 .ml-al-i{display:inline-flex;margin-top:.1rem}.ml-al-t{flex:1}.ml-al-a{white-space:nowrap;font-weight:600;font-size:.82rem;text-decoration:none}
 .ml-al.mal{background:#fff1f2;border-left-color:var(--color-bad)}.ml-al.mal .ml-al-i{color:var(--color-bad)}.ml-al.mal .ml-al-a{color:var(--color-bad)}
@@ -769,6 +770,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="ml-flujo" id="ml-flujo">
         <span class="ml-fp a"><b>1</b> Descargue la lista en Excel</span><span class="ml-fp b"><b>2</b> Corríjala (o use ✏️ Corregir aquí)</span><span class="ml-fp c"><b>3</b> Súbala al panel</span><span class="ml-fp d"><b>4</b> Baje la planilla para Mercado Libre y súbala allá</span>
       </div>
+      <div class="ml-edhint" id="ml-edhint" hidden></div>
       <div class="ml-pend" id="ml-pend" hidden></div>
       <div class="sh-row" style="justify-content:space-between;align-items:center;margin:.25rem 0 .5rem;flex-wrap:wrap;gap:.5rem">
         <span class="tt-status" id="ml-n"></span>
@@ -4167,14 +4169,14 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     };
     const COLS = {
       inv: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['familia', 'Familia', 'h'], ['stock', 'Stock', 'n'], ['costo', 'Costo unit.', 'n'], ['valor', 'Valor a costo', 'n'], ['precio_lista', 'Precio lista', 'n h'], ['precio_min', 'Precio mínimo en ML', 'n'], ['estado_ml', 'Publicación', 'h']],
-      pub: [['item_id', 'Publicación'], ['titulo', 'Título'], ['codigo', 'Código'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML', 'n'], ['costo', 'Costo unit.', 'n'], ['precio_usd', 'Precio ML', 'n'], ['margen_ml', 'Margen ML', 'n'], ['precio_min', 'Precio mínimo', 'n h'], ['estado_ml', 'Estado', 'h'], ['problema', 'Situación']],
+      pub: [['item_id', 'N.º publicación ML'], ['titulo', 'Título'], ['codigo', 'Código'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML', 'n'], ['costo', 'Costo unit.', 'n'], ['precio_usd', 'Precio ML', 'n'], ['margen_ml', 'Margen ML', 'n'], ['precio_min', 'Precio mínimo', 'n h'], ['estado_ml', 'Estado', 'h'], ['problema', 'Situación']],
       vt: [['fecha', 'Fecha'], ['venta_id', 'Venta'], ['codigo', 'Código'], ['titulo', 'Título'], ['cantidad', 'Unid.', 'n'], ['total_usd', 'Monto', 'n'], ['costo_total', 'Costo', 'n h'], ['margen', 'Margen', 'n']],
       // comparar inventario vs Mercado Libre
-      pubC: [['item_id', 'Publicación'], ['codigo', 'Código'], ['titulo', 'Título', 'h'], ['stock', 'Stock inv.', 'n cmp'], ['stock_ml', 'Stock ML', 'n cmp'], ['dif_stock', 'Dif. stock', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta (Profit)', 'n cmp'], ['precio_usd', 'Precio ML', 'n cmp'], ['ml_vs_lista', 'ML vs tienda', 'n cmp'], ['margen_ml', 'Margen ML', 'n cmp'], ['cbar', 'Costo · tienda · ML', 'cmp'], ['inc_txt', 'Incidencias']],
+      pubC: [['item_id', 'N.º publicación ML'], ['codigo', 'Código'], ['titulo', 'Título', 'h'], ['stock', 'Stock inv.', 'n cmp'], ['stock_ml', 'Stock ML', 'n cmp'], ['dif_stock', 'Dif. stock', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta (Profit)', 'n cmp'], ['precio_usd', 'Precio ML', 'n cmp'], ['ml_vs_lista', 'ML vs tienda', 'n cmp'], ['margen_ml', 'Margen ML', 'n cmp'], ['cbar', 'Costo · tienda · ML', 'cmp'], ['inc_txt', 'Incidencias']],
       invC: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock inv.', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta (Profit)', 'n cmp'], ['margen_lista', 'Margen tienda', 'n cmp'], ['precio_min', 'Precio mínimo ML', 'n cmp'], ['cbar', 'Costo · tienda · mínimo ML', 'cmp'], ['inc_txt', 'Incidencias']],
       // corregir directo en el panel
-      pubE: [['item_id', 'Publicación'], ['titulo', 'Título', 'h'], ['e_cod', '✏ Código', 'ed'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML', 'n'], ['e_q', '✏ Stock nuevo', 'ed'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio Profit', 'n'], ['precio_usd', 'Precio ML', 'n'], ['e_p', '✏ Precio nuevo', 'ed'], ['estado_ml', 'Estado'], ['e_a', '✏ Pausar / activar', 'ed'], ['problema', 'Situación', 'h']],
-      npE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio Profit', 'n'], ['precio_min', 'Precio mínimo ML', 'n'], ['e_pub', '✏ ¿Ya publicado? N.º de publicación', 'ed']],
+      pubE: [['item_id', 'N.º publicación ML'], ['titulo', 'Título', 'h'], ['e_cod', '✏ Código inventario', 'ed'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML actual', 'n'], ['e_q', '✏ Stock ML nuevo', 'ed'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio Profit', 'n'], ['precio_usd', 'Precio ML actual', 'n'], ['e_p', '✏ Precio ML nuevo', 'ed'], ['estado_ml', 'Estado ML'], ['e_a', '✏ Pausar / activar', 'ed'], ['problema', 'Situación', 'h']],
+      npE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio Profit', 'n'], ['precio_min', 'Precio mínimo para ML', 'n'], ['e_pub', '✏ ¿Ya está en ML? Escriba su N.º MLV', 'ed']],
       paE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['precio_lista', 'Precio Profit', 'n'], ['estado_ml', 'Publicación'], ['e_act', '✏ Reactivar', 'ed']],
     };
     const colsDe = (tipo, v) => { const m = st.modo || 'normal'; if (tipo === 'vt' || m === 'normal') return COLS[tipo]; if (m === 'cmp') return tipo === 'inv' ? COLS.invC : COLS.pubC; return tipo === 'inv' ? (v === 'pa' ? COLS.paE : COLS.npE) : COLS.pubE; };
@@ -4331,6 +4333,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       pintarIncidencias(modo === 'cmp' ? vista : null);
       if (modo === 'cmp' && st.inc) vista = vista.filter((r) => r.inc && r.inc.includes(st.inc));
       if (modo === 'edit' && st.soloPend) vista = vista.filter((r) => r.pend);
+      pintarAyudaEdit(modo, tipo, v);
       document.querySelectorAll('#v-ml .ml-modo [data-modo]').forEach((b) => { b.classList.toggle('on', b.dataset.modo === modo); b.disabled = tipo === 'vt' && b.dataset.modo !== 'normal'; });
       $('ml-expl').textContent = (EXPL[v] || '') + (modo === 'cmp' ? ' · Comparación: costo, precio de venta en la tienda (Profit) y precio en Mercado Libre, con las incidencias de cada fila.' : modo === 'edit' ? ' · Escriba en las columnas ✏: se guarda al salir de la casilla y queda pendiente para la planilla de Mercado Libre.' : '');
       const tbl = $('ml-tabla'), tr = tbl.querySelector('thead tr'); tr.replaceChildren();
@@ -4366,6 +4369,21 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       lg.style.flexBasis = '100%'; el.appendChild(lg);
     }
     const PH = (r) => r.pend || {};
+    function pintarAyudaEdit(modo, tipo, v) {
+      const el = $('ml-edhint'); el.replaceChildren(); el.hidden = modo !== 'edit'; if (el.hidden) return;
+      const ir = (id, t) => { const b = mk('button', null, t); b.type = 'button'; b.addEventListener('click', () => { $('ml-ver').value = id; st.sort = null; pintar(); }); return b; };
+      const fila = mk('div', 'ir');
+      if (tipo === 'inv') {
+        el.append(mk('b', null, v === 'pa' ? 'Estos artículos tienen stock pero su publicación está pausada. ' : 'Estos artículos NO están publicados en Mercado Libre: por eso aquí no hay precio ni número de Mercado Libre. '),
+          v === 'pa' ? 'Use «▶ Activar» para que vuelvan a mostrarse con el stock del inventario.' : 'Si alguno sí está publicado, escriba su número (MLV…) en la columna amarilla y queda unido; si el panel encontró una publicación parecida, aparece como sugerencia para tocar. Para publicar los que faltan use Archivos → paso 4.');
+        el.append(mk('div', null, 'Para corregir PRECIO, STOCK, CÓDIGO o PAUSAR/ACTIVAR en Mercado Libre, abra una lista de publicaciones:'));
+        fila.append(ir('todas', 'Todas las publicaciones'), ir('bc', 'Precio bajo el costo'), ir('mb', 'Margen bajo'), ir('sd', 'Stock distinto'), ir('ss', 'Publicadas sin stock'), ir('sv', 'Sin código'));
+      } else {
+        el.append(mk('b', null, 'Corrija en las columnas amarillas ✏: '), '«N.º publicación ML» es el número de Mercado Libre (MLV…, toque para abrirla) · «✏ Código inventario» une la publicación con su código · «✏ Stock ML nuevo» y «✏ Precio ML nuevo» cambian lo que se muestra en Mercado Libre · «✏ Pausar / activar». Se guarda al salir de la casilla y queda pendiente para la 🛒 Planilla para Mercado Libre.');
+        if (v === 'todas' || v === 'ok' || v === 'pz') fila.append(mk('span', null, 'Ir a:'), ir('bc', 'Precio bajo el costo'), ir('mb', 'Margen bajo'), ir('sd', 'Stock distinto'), ir('ss', 'Publicadas sin stock'));
+      }
+      if (fila.childNodes.length) el.appendChild(fila);
+    }
     // columnas extra: comparación y edición en línea
     function colsExtra(T) {
       const u2 = (x) => (x == null ? '—' : T.fmt.usd2(x));
@@ -4399,7 +4417,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         cbar: { render: bar },
         inc_txt: { render: (td, r) => { td.style.minWidth = '14rem'; td.style.whiteSpace = 'normal'; if (!r.inc || !r.inc.length) { T.chip(td, 'Sin incidencias', 'ok'); return; } r.inc.forEach((x) => { T.chip(td, INC[x][1], INC[x][0] === 'info' ? '' : INC[x][0]); td.append(' '); }); } },
         e_q: { render: (td, r) => inp(td, r, 'stock_nuevo', 'number', r.codigo ? Math.max(0, Math.floor(r.stock || 0)) : '', PH(r).stock_nuevo) },
-        e_p: { render: (td, r) => inp(td, r, 'precio_nuevo', 'number', r.precio_min ? Math.ceil(r.precio_min * 4) / 4 : '', PH(r).precio_nuevo) },
+        e_p: { render: (td, r) => inp(td, r, 'precio_nuevo', 'number', r.precio_min && r.precio_usd != null && r.precio_usd < r.precio_min ? Math.ceil(r.precio_min * 4) / 4 : '', PH(r).precio_nuevo) },
         e_a: { render: (td, r) => { ed(td); if (!puede()) return lectura(td, PH(r).accion);
           const sel = document.createElement('select'); sel.className = 'ml-ed' + (PH(r).accion ? ' pend' : ''); [['', '—'], ['PAUSAR', '⏸ Pausar'], ['ACTIVAR', '▶ Activar']].forEach(([v, t]) => sel.appendChild(new Option(t, v))); sel.value = PH(r).accion || '';
           sel.addEventListener('change', async () => { try { const a = sel.value || null, extra = a === 'ACTIVAR' && !(PH(r).stock_nuevo > 0) && r.stock > 0 ? { stock_nuevo: Math.floor(r.stock) } : {}; await guardarPend(r.item_id, { accion: a, ...extra }); sel.className = 'ml-ed' + (a ? ' pend' : ' okk'); avisa('✔ Guardado: ' + r.item_id + (a ? ' se ' + (a === 'PAUSAR' ? 'pausará' : 'activará') + ' con la planilla de Mercado Libre.' : ' sin acción.') + (extra.stock_nuevo ? ' Stock ' + extra.stock_nuevo + '.' : ''), ''); if (extra.stock_nuevo) tabla(); } catch (e) { sel.className = 'ml-ed err'; avisa('✖ No se pudo guardar: ' + e.message, 'err'); } });
@@ -4415,6 +4433,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         e_pub: { render: (td, r) => { ed(td); if (!puede()) return lectura(td, '');
           const i = document.createElement('input'); i.className = 'ml-ed pub'; i.placeholder = 'MLV…'; i.title = 'Si este artículo ya está publicado, escriba el número de publicación y queda vinculado';
           i.addEventListener('keydown', (e) => { if (e.key === 'Enter') i.blur(); });
+          const sug = R.pubs.filter((p) => !p.codigo && p.sugerido && norm(p.sugerido) === norm(r.codigo)).slice(0, 3);
+          sug.forEach((p) => { const b = mk('button', 'ml-sug', '¿' + p.item_id + '? unir'); b.type = 'button'; b.title = p.titulo + ' · ' + (p.precio_usd != null ? 'US$ ' + p.precio_usd : ''); b.addEventListener('click', async () => { try { await vincular(p.item_id, r.codigo); avisa('✔ ' + r.codigo + ' quedó unido a ' + p.item_id + '.', 'ok'); await recargar(); } catch (e) { avisa('✖ ' + e.message, 'err'); } }); td.appendChild(b); });
           i.addEventListener('change', async () => { const t = i.value.trim(); if (!t) return; if (!esId(t)) { i.className = 'ml-ed pub err'; return avisa('✖ «' + t + '» no parece un número de publicación (MLV seguido de números).', 'err'); }
             try { await vincular(idML(t), r.codigo); avisa('✔ ' + r.codigo + ' quedó vinculado a ' + idML(t) + '.', 'ok'); await recargar(); } catch (e) { i.className = 'ml-ed pub err'; avisa('✖ No se pudo vincular: ' + e.message, 'err'); } });
           td.appendChild(i); } },
