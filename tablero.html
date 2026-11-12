@@ -128,6 +128,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-cbar{position:relative;height:.9rem;width:9rem;background:#f1f3f7;border-radius:4px}.ml-cbar i{position:absolute;top:0;bottom:0;width:3px;border-radius:2px}.ml-cbar i.c{background:#c0182a}.ml-cbar i.l{background:#1d6f42}.ml-cbar i.m{background:#2d3277;width:5px}.ml-cbar i.n{background:#e8a400}.ml-cleg{font-size:.75rem;color:#555;display:flex;gap:.8rem;flex-wrap:wrap;margin:.2rem 0}.ml-cleg i{display:inline-block;width:.7rem;height:.7rem;border-radius:2px;margin-right:.25rem;vertical-align:middle}
 .ml-dif.wa{color:#b26a00;font-weight:600}.ml-dif.ig{color:#1d6f42}#ml-tabla td .tt-chip{display:inline-block;margin:.1rem 0}.ml-dif.dn{color:#c0182a;font-weight:600}
 .ml-edhint{background:#eef4ff;border:1px solid #b9cdf5;border-left:5px solid #2d5bd0;border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;font-size:.88rem;line-height:1.45}.ml-edhint b{color:#173f8a}.ml-edhint .ir{display:inline-flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}.ml-edhint button{font:600 .8rem inherit;border-radius:999px;padding:.3rem .75rem;cursor:pointer;border:1px solid #2d5bd0;background:#fff;color:#173f8a}.ml-edhint button:hover{background:#2d5bd0;color:#fff}.ml-sug{font:600 .75rem inherit;border:1px dashed #1d6f42;background:#eaf7ef;color:#14532d;border-radius:6px;padding:.15rem .45rem;margin:.15rem .25rem 0 0;cursor:pointer}
+.ml-mbtn{cursor:pointer}.ml-mbtn:hover{outline:2px solid #2d5bd0;outline-offset:1px}.ml-mbtn::after{content:" ✏";font-size:.75em;opacity:.65}.ml-mnew{font-size:.72rem;color:#7a4b00;background:#fff1b8;border-radius:4px;padding:0 .3rem;margin-top:.15rem;display:inline-block}.ml-medit{display:flex;align-items:center;gap:.2rem;justify-content:flex-end}.ml-mprev{font-size:.72rem;color:#173f8a;margin-top:.15rem}.ml-mok,.ml-mno{font:600 .8rem inherit;border:1px solid #ccd;border-radius:5px;background:#fff;cursor:pointer;padding:.1rem .35rem}.ml-mok{background:#1d6f42;color:#fff;border-color:#1d6f42}.ml-mall{display:inline-flex;align-items:center;gap:.3rem;background:#fff;border:1px solid #b9cdf5;border-radius:999px;padding:.2rem .3rem .2rem .7rem;font-size:.82rem}
 .ml-al-x{white-space:nowrap;font:600 .78rem inherit;border:1px solid #1d6f42;color:#1d6f42;background:#fff;border-radius:6px;padding:.15rem .5rem;cursor:pointer;margin-left:.4rem}.ml-al-x:hover{background:#1d6f42;color:#fff}.ml-al-up{margin-left:auto;font:600 .8rem inherit;background:#1d6f42;color:#fff;border:0;border-radius:6px;padding:.35rem .7rem;cursor:pointer}.ml-al-up:hover{filter:brightness(1.1)}.ml-al-ayuda{font-size:.8rem;color:#555;margin:.3rem 0 .5rem}.mla-trab{margin-top:.7rem;padding-top:.6rem;border-top:1px dashed #ccd;font-size:.85rem}.mla-trab select{max-width:15rem}
 .ml-al-i{display:inline-flex;margin-top:.1rem}.ml-al-t{flex:1}.ml-al-a{white-space:nowrap;font-weight:600;font-size:.82rem;text-decoration:none}
 .ml-al.mal{background:#fff1f2;border-left-color:var(--color-bad)}.ml-al.mal .ml-al-i{color:var(--color-bad)}.ml-al.mal .ml-al-a{color:var(--color-bad)}
@@ -4175,7 +4176,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       pubC: [['item_id', 'N.º publicación ML'], ['codigo', 'Código'], ['titulo', 'Título', 'h'], ['stock', 'Stock inv.', 'n cmp'], ['stock_ml', 'Stock ML', 'n cmp'], ['dif_stock', 'Dif. stock', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta público', 'n cmp'], ['precio_usd', 'Precio en ML', 'n cmp'], ['ml_vs_lista', 'ML vs público', 'n cmp'], ['margen_ml', 'Margen ML', 'n cmp'], ['cbar', 'Costo · público · ML', 'cmp'], ['inc_txt', 'Incidencias']],
       invC: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock inv.', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta público', 'n cmp'], ['margen_lista', 'Margen al público', 'n cmp'], ['cbar', 'Costo · público', 'cmp'], ['inc_txt', 'Incidencias']],
       // corregir directo en el panel
-      pubE: [['item_id', 'N.º publicación ML'], ['titulo', 'Título', 'h'], ['e_cod', '✏ Código inventario', 'ed'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML actual', 'n'], ['e_q', '✏ Stock ML nuevo', 'ed'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['precio_usd', 'Precio ML actual', 'n'], ['e_p', '✏ Precio ML nuevo', 'ed'], ['estado_ml', 'Estado ML'], ['e_a', '✏ Pausar / activar', 'ed'], ['problema', 'Situación', 'h']],
+      pubE: [['item_id', 'N.º publicación ML'], ['titulo', 'Título', 'h'], ['e_cod', '✏ Código inventario', 'ed'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML actual', 'n'], ['e_q', '✏ Stock ML nuevo', 'ed'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['precio_usd', 'Precio ML actual', 'n'], ['e_p', '✏ Precio ML nuevo', 'ed'], ['margen_ml', '✏ Margen ML', 'n ed'], ['estado_ml', 'Estado ML'], ['e_a', '✏ Pausar / activar', 'ed'], ['problema', 'Situación', 'h']],
       npE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['e_pub', '✏ ¿Ya está en ML? Escriba su N.º MLV', 'ed']],
       paE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['estado_ml', 'Publicación'], ['e_act', '✏ Reactivar', 'ed']],
     };
@@ -4346,7 +4347,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         item_id: { render: (td, r) => { if (!r.item_id) { td.textContent = '—'; return; } const a = document.createElement('a'); a.href = r.permalink || ('https://articulo.mercadolibre.com.ve/' + String(r.item_id).replace(/^MLV-?/i, 'MLV-')); a.target = '_blank'; a.rel = 'noopener'; a.textContent = r.item_id; td.appendChild(a); } },
         stock: { num: true, fmt: nn }, stock_ml: { num: true, fmt: nn }, costo: { num: true, fmt: u2 }, valor: { num: true, fmt: (x) => (x == null ? '—' : T.fmt.usd0(x)) },
         precio_lista: { num: true, fmt: u2 }, precio_min: { num: true, fmt: u2 }, precio_usd: { num: true, fmt: (x, r) => (x == null ? (r.precio_ml != null ? r.precio_ml + ' ' + r.moneda + ' (falta tasa)' : '—') : T.fmt.usd2(x)) },
-        margen_ml: { num: true, render: (td, r) => { if (r.margen_ml == null) { td.textContent = '—'; return; } T.chip(td, T.fmt.pct(r.margen_ml), r.margen_ml < 0 ? 'bad' : r.margen_ml < R.A.min ? 'warn' : 'ok'); } },
+        margen_ml: { num: true, render: (td, r) => margenEditable(td, r, T) },
         problema: { render: (td, r) => (r.problema ? T.chip(td, r.problema, r.cat.some((c) => c === 'bc' || c === 'ss' || c === 'sv') ? 'bad' : r.cat.includes('ok') ? 'ok' : 'warn') : (td.textContent = '')) },
         ...colsExtra(T),
         estado_ml: { fmt: (x) => ({ active: 'Activa', paused: 'Pausada', closed: 'Finalizada', restricted: 'Inactiva', under_review: 'En revisión', inactive: 'Inactiva' }[String(x || '').toLowerCase()] || x || '—') }, cantidad: { num: true, fmt: nn }, total_usd: { num: true, fmt: u2 }, costo_total: { num: true, fmt: u2 }, margen: { num: true, fmt: pc },
@@ -4369,6 +4370,50 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       lg.style.flexBasis = '100%'; el.appendChild(lg);
     }
     const PH = (r) => r.pend || {};
+    // precio en ML para lograr un margen (después de la comisión), en la moneda de la publicación
+    const fMon = (r) => (r.precio_ml && r.precio_usd ? r.precio_ml / r.precio_usd : 1);
+    function precioPorMargen(r, m) {
+      if (!r.costo || m >= 1 || R.A.com >= 1) return null;
+      return Math.round(r.costo / ((1 - m) * (1 - R.A.com)) * fMon(r) * 100) / 100;
+    }
+    const margenDe = (r, precio) => { const neto = precio / fMon(r) * (1 - R.A.com); return r.costo && neto ? (neto - r.costo) / neto : null; };
+    function margenEditable(td, r, T) {
+      td.style.whiteSpace = 'nowrap';
+      const P = PH(r), mN = P.precio_nuevo != null ? margenDe(r, Number(P.precio_nuevo)) : null;
+      const pinta = () => {
+        td.replaceChildren();
+        if (r.margen_ml == null) { td.textContent = r.costo ? '—' : 'sin costo'; return; }
+        T.chip(td, T.fmt.pct(r.margen_ml), r.margen_ml < 0 ? 'bad' : r.margen_ml < R.A.min ? 'warn' : 'ok');
+        const ch = td.lastElementChild;
+        if (mN != null) { const n = mk('div', 'ml-mnew', '→ ' + T.fmt.pct(mN) + ' · ' + T.fmt.usd2(Number(P.precio_nuevo) / fMon(r))); n.title = 'Precio nuevo pendiente para la planilla de Mercado Libre'; td.appendChild(n); }
+        if (!puede() || !r.item_id || !r.costo || !ch) return;
+        ch.classList.add('ml-mbtn'); ch.title = 'Toque para cambiar el margen: el panel calcula el precio en Mercado Libre'; ch.tabIndex = 0;
+        ch.addEventListener('click', edita); ch.addEventListener('keydown', (e) => { if (e.key === 'Enter') edita(); });
+      };
+      const edita = () => {
+        td.replaceChildren();
+        const w = mk('div', 'ml-medit'), i = document.createElement('input'); i.className = 'ml-ed'; i.style.width = '3.6rem'; i.inputMode = 'decimal';
+        i.value = String(Math.round((mN != null ? mN : r.margen_ml) * 1000) / 10).replace('.', ','); const pc = mk('span', null, '%'), out = mk('div', 'ml-mprev');
+        const leer = () => { const m = Number(i.value.replace(',', '.').replace('%', '').trim()) / 100; return i.value.trim() !== '' && isFinite(m) && m >= 0 && m < 0.95 ? m : null; };
+        const prev = () => { const m = leer(), pr = m == null ? null : precioPorMargen(r, m); out.textContent = pr == null ? 'margen entre 0 y 94%' : '= precio ML ' + T.fmt.usd2(pr / fMon(r)) + (/US/.test(String(r.moneda || 'US')) ? '' : ' (' + pr + ' ' + r.moneda + ')'); };
+        const ok2 = mk('button', 'ml-mok', '✔'), no = mk('button', 'ml-mno', '✖'); ok2.type = no.type = 'button'; ok2.title = 'Guardar como precio nuevo'; no.title = 'Cancelar';
+        const guardar = async () => { const m = leer(), pr = m == null ? null : precioPorMargen(r, m); if (pr == null) return avisa('✖ Escriba un margen entre 0 y 94%.', 'err');
+          try { await guardarPend(r.item_id, { precio_nuevo: pr }); avisa('✔ ' + r.item_id + ': margen ' + T.fmt.pct(m) + ' → precio nuevo en ML ' + T.fmt.usd2(pr / fMon(r)) + '. Queda pendiente para la 🛒 Planilla para Mercado Libre.', 'ok'); tabla(); }
+          catch (e) { avisa('✖ No se pudo guardar: ' + e.message, 'err'); } };
+        i.addEventListener('input', prev); i.addEventListener('keydown', (e) => { if (e.key === 'Enter') guardar(); if (e.key === 'Escape') pinta(); });
+        ok2.addEventListener('click', guardar); no.addEventListener('click', pinta);
+        w.append(i, pc, ok2, no); td.append(w, out); prev(); i.focus(); i.select();
+      };
+      pinta();
+    }
+    // aplicar un mismo margen a toda la lista que se está viendo
+    async function margenALista(m) {
+      const L = vista.filter((r) => r.tipo === 'pub' && r.item_id && r.costo), cam = [];
+      L.forEach((r) => { const pr = precioPorMargen(r, m); if (pr != null && Math.abs(pr - (r.precio_ml || 0)) >= 0.01) cam.push({ item_id: r.item_id, precio_nuevo: pr }); });
+      if (!cam.length) return avisa('No hay publicaciones con costo para cambiar en esta lista.', 'ok');
+      const P0 = {}; L.forEach((r) => { P0[r.item_id] = r; }); const baja = cam.filter((c) => { const r = P0[c.item_id]; return c.precio_nuevo < (r.precio_ml || 0); }).length, bajoPub = cam.filter((c) => { const r = P0[c.item_id]; return r.precio_lista && c.precio_nuevo / fMon(r) < r.precio_lista; }).length;
+      await guardarPendLote(cam, 'PANEL'); avisa('✔ Margen ' + Math.round(m * 1000) / 10 + '% aplicado: ' + cam.length + ' precios nuevos quedan pendientes (' + (cam.length - baja) + ' suben, ' + baja + ' bajan)' + (bajoPub ? ' · ⚠ ' + bajoPub + ' quedan por debajo del precio de venta al público' : '') + (L.length < vista.length ? ' · ' + (vista.length - L.length) + ' sin costo no se tocaron' : '') + '. Revíselos antes de bajar la planilla; puede descartarlos en la barra amarilla.', bajoPub ? 'err' : 'ok'); tabla();
+    }
     function pintarAyudaEdit(modo, tipo, v) {
       const el = $('ml-edhint'); el.replaceChildren(); el.hidden = modo !== 'edit'; if (el.hidden) return;
       const ir = (id, t) => { const b = mk('button', null, t); b.type = 'button'; b.addEventListener('click', () => { $('ml-ver').value = id; st.sort = null; pintar(); }); return b; };
@@ -4379,7 +4424,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         el.append(mk('div', null, 'Para corregir PRECIO, STOCK, CÓDIGO o PAUSAR/ACTIVAR en Mercado Libre, abra una lista de publicaciones:'));
         fila.append(ir('todas', 'Todas las publicaciones'), ir('bc', 'Precio bajo el costo'), ir('mb', 'Margen bajo'), ir('sd', 'Stock distinto'), ir('ss', 'Publicadas sin stock'), ir('sv', 'Sin código'));
       } else {
-        el.append(mk('b', null, 'Corrija en las columnas amarillas ✏: '), '«N.º publicación ML» es el número de Mercado Libre (MLV…, toque para abrirla) · «✏ Código inventario» une la publicación con su código · «✏ Stock ML nuevo» y «✏ Precio ML nuevo» cambian lo que se muestra en Mercado Libre · «✏ Pausar / activar». Se guarda al salir de la casilla y queda pendiente para la 🛒 Planilla para Mercado Libre.');
+        el.append(mk('b', null, 'Corrija en las columnas amarillas ✏: '), '«N.º publicación ML» es el número de Mercado Libre (MLV…, toque para abrirla) · «✏ Código inventario» une la publicación con su código · «✏ Stock ML nuevo» y «✏ Precio ML nuevo» cambian lo que se muestra en Mercado Libre · «✏ Pausar / activar» · toque el % de «Margen ML» para cambiarlo y el panel calcula el precio. Se guarda al salir de la casilla y queda pendiente para la 🛒 Planilla para Mercado Libre.');
+        if (puede()) { const box = mk('span', 'ml-mall'), i = document.createElement('input'), b = mk('button', null, 'Aplicar a toda esta lista'); i.className = 'ml-ed'; i.style.width = '3.6rem'; i.inputMode = 'decimal'; i.value = String(Math.round(R.A.min * 1000) / 10).replace('.', ','); b.type = 'button';
+          b.addEventListener('click', () => { const m = Number(i.value.replace(',', '.')) / 100; if (!(m >= 0 && m < 0.95)) return avisa('✖ Escriba un margen entre 0 y 94%.', 'err'); margenALista(m).catch((e) => avisa('✖ ' + e.message, 'err')); });
+          box.append('Margen ML deseado ', i, ' % ', b); fila.append(box); }
         if (v === 'todas' || v === 'ok' || v === 'pz') fila.append(mk('span', null, 'Ir a:'), ir('bc', 'Precio bajo el costo'), ir('mb', 'Margen bajo'), ir('sd', 'Stock distinto'), ir('ss', 'Publicadas sin stock'));
       }
       if (fila.childNodes.length) el.appendChild(fila);
