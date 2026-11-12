@@ -130,6 +130,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-edhint{background:#eef4ff;border:1px solid #b9cdf5;border-left:5px solid #2d5bd0;border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;font-size:.88rem;line-height:1.45}.ml-edhint b{color:#173f8a}.ml-edhint .ir{display:inline-flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}.ml-edhint button{font:600 .8rem inherit;border-radius:999px;padding:.3rem .75rem;cursor:pointer;border:1px solid #2d5bd0;background:#fff;color:#173f8a}.ml-edhint button:hover{background:#2d5bd0;color:#fff}.ml-sug{font:600 .75rem inherit;border:1px dashed #1d6f42;background:#eaf7ef;color:#14532d;border-radius:6px;padding:.15rem .45rem;margin:.15rem .25rem 0 0;cursor:pointer}
 .ml-mbtn{cursor:pointer}.ml-mbtn:hover{outline:2px solid #2d5bd0;outline-offset:1px}.ml-mbtn::after{content:" ✏";font-size:.75em;opacity:.65}.ml-mnew{font-size:.72rem;color:#7a4b00;background:#fff1b8;border-radius:4px;padding:0 .3rem;margin-top:.15rem;display:inline-block}.ml-medit{display:flex;align-items:center;gap:.2rem;justify-content:flex-end}.ml-mprev{font-size:.72rem;color:#173f8a;margin-top:.15rem}.ml-mok,.ml-mno{font:600 .8rem inherit;border:1px solid #ccd;border-radius:5px;background:#fff;cursor:pointer;padding:.1rem .35rem}.ml-mok{background:#1d6f42;color:#fff;border-color:#1d6f42}.ml-mall{display:inline-flex;align-items:center;gap:.3rem;background:#fff;border:1px solid #b9cdf5;border-radius:999px;padding:.2rem .3rem .2rem .7rem;font-size:.82rem}
 .pf-b.xl{background:#eef7f0;border-color:#9fd5b0;color:#14532d}.pf-b.xl.up{background:#14532d;color:#fff;border-color:#14532d}
+.pf-top{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;background:#fff8e6;border:1px solid #f0c060;border-radius:10px;padding:.7rem 1rem}.pf-top .sh-btn{margin-left:auto}.pf-card{border:1px solid #ddd;border-radius:10px;padding:.8rem 1rem;background:#fff}.pf-card.hay{border-left:5px solid #1d6f42}.pf-h{display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline}.pf-h b{font-size:1.05rem}.pf-cnt{font-weight:700;color:#1d6f42}.pf-h small{color:#666;width:100%}.pf-fmt,.pf-ej{font-size:.8rem;color:#555;margin:.35rem 0}.pf-bts{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}.pf-b.xls{background:#1d6f42;color:#fff;border-color:#1d6f42}.pf-b.mod{background:#f4f6fb}.pf-b.ok{background:#e7f6ec;color:#14532d;border-color:#9fd5b0}.pf-b:disabled{opacity:.5}.pf-nota{font-size:.82rem;color:#666}
 .pf-bar{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.5rem 0 .4rem}.pf-bar.on{background:#fff8e6;border:1px solid #f0c060;border-left:5px solid #e8a400;border-radius:8px;padding:.45rem .6rem}.pf-b{font:600 .86rem inherit;border-radius:8px;padding:.45rem .85rem;cursor:pointer;border:1.5px solid transparent}.pf-b.ed{background:#fff;color:#7a4b00;border-color:#e8a400}.pf-b.ed.on{background:#b26a00;color:#fff;border-color:#b26a00}.pf-b.x{background:#1d6f42;color:#fff;border-color:#1d6f42}.pf-b.x:disabled{background:#fff;color:#1d6f42;opacity:.55;cursor:default}.pf-b.c{background:#e8eefc;color:#173f8a;border-color:#b9cdf5}.pf-n{font-size:.82rem;color:#7a4b00;font-weight:600}td.pf-td{background:#fffaf0}.pf-ed{width:6.4rem;font:inherit;text-align:right;padding:.25rem .35rem;border:1px solid #d7b46a;border-radius:6px;background:#fff}.pf-ed.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-ed.okk{background:#dff5e6;border-color:#1d6f42}.pf-ed.err{background:#fde8ea;border-color:#c0182a}.pf-m{display:block;font-size:.7rem;color:#555}.pf-m.bad{color:#c0182a}
 .ml-mprev{min-width:15rem;text-align:left;white-space:normal}.ml-pl{display:flex;justify-content:space-between;gap:.6rem;font-size:.74rem;color:#333;border-bottom:1px dotted #e3e6ee;padding:.05rem 0}.ml-pl b{font-weight:600}.ml-pl.ok b{color:#1d6f42}.ml-pl.bad b{color:#c0182a}.ml-pl.muted{color:#777;border:0}.ml-gan{font-weight:600;color:#1d6f42}.ml-gan.bad{color:#c0182a}
 .pf-fam{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem;margin-top:.3rem}.pf-fl{font-size:.72rem;color:#777}.pf-fs{font:inherit;font-size:.78rem;padding:.12rem .3rem;border:1px solid #d7b46a;border-radius:6px;background:#fff;max-width:13rem}.pf-fs.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-fs.okk{background:#dff5e6;border-color:#1d6f42}.pf-fs.err{background:#fde8ea;border-color:#c0182a}.pf-sug{font:600 .74rem inherit;border:1px dashed #2d5bd0;background:#eef4ff;color:#173f8a;border-radius:6px;padding:.1rem .45rem;cursor:pointer}.pf-sug:hover{background:#2d5bd0;color:#fff}
@@ -589,6 +590,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         <div class="sh-pop" role="menu">
           <button id="n-usuarios" role="menuitem"><b>Usuarios y permisos<span class="sh-badge" id="n-pend" hidden></span></b><small>Crear usuarios, claves y perfiles</small></button>
           <button id="n-cargar" role="menuitem"><b>Cargar datos</b><small>Inventario, precios y ventas de Profit</small></button>
+          <button id="n-profit" role="menuitem"><b>Descargar datos para Profit<span class="sh-badge" id="n-pfb" hidden></span></b><small>Archivos listos para la carga masiva en Profit</small></button>
           <button id="n-bitacora" role="menuitem"><b>Bitácora</b><small>Quién hizo qué y cuándo</small></button>
         </div>
       </div>
@@ -898,6 +900,13 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="sh-row"><button class="sh-btn" id="x-bajar">Descargar Excel</button></div>
       <div class="sh-msg" id="x-msg" role="status"></div>
     </div>
+  </section>
+
+  <!-- DESCARGAR PARA PROFIT -->
+  <section class="sh-view" id="v-profit" hidden>
+    <h2 class="sh-h2">Descargar datos para Profit</h2>
+    <p class="sh-sub">Todo lo que se corrige en el tablero (precios, costos, stock contado y familias, desde cualquier tabla, el Excel subido o la revisión de familias) se junta aquí. Cada tipo de cambio sale en <b>su propio archivo .xls</b>, separado tal cual se carga en Profit, para hacer la actualización masiva allá. Si Profit pide columnas distintas, suba una vez un archivo modelo de Profit en cada tipo y el tablero usará ese mismo formato.</p>
+    <div id="pf-box" style="display:flex;flex-direction:column;gap:1rem;max-width:1000px"></div>
   </section>
 
   <!-- CARGAR -->
@@ -2821,13 +2830,14 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   const bitacora = (accion, detalle) => sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MODULO, p_accion: accion, p_detalle: detalle || null }).then(() => {}, () => {});
 
   // ---------- vistas ----------
-  const VISTAS = ['v-login', 'v-tablero', 'v-conteos', 'v-compras', 'v-ml', 'v-regularizar', 'v-exportar', 'v-cargar', 'v-usuarios', 'v-bitacora', 'v-clave'];
-  const NAV = { 'v-tablero': 'n-tablero', 'v-conteos': 'n-conteos', 'v-compras': 'n-compras', 'v-ml': 'n-ml', 'v-regularizar': 'n-regularizar', 'v-exportar': 'n-exportar', 'v-cargar': 'n-cargar', 'v-usuarios': 'n-usuarios', 'v-bitacora': 'n-bitacora', 'v-clave': 'n-clave' };
+  const VISTAS = ['v-login', 'v-tablero', 'v-conteos', 'v-compras', 'v-ml', 'v-regularizar', 'v-exportar', 'v-cargar', 'v-profit', 'v-usuarios', 'v-bitacora', 'v-clave'];
+  const NAV = { 'v-tablero': 'n-tablero', 'v-conteos': 'n-conteos', 'v-compras': 'n-compras', 'v-ml': 'n-ml', 'v-regularizar': 'n-regularizar', 'v-exportar': 'n-exportar', 'v-cargar': 'n-cargar', 'v-profit': 'n-profit', 'v-usuarios': 'n-usuarios', 'v-bitacora': 'n-bitacora', 'v-clave': 'n-clave' };
   function ver(v) {
     VISTAS.forEach((x) => { $(x).hidden = x !== v; });
     Object.entries(NAV).forEach(([k, b]) => $(b).setAttribute('aria-current', k === v ? 'true' : 'false'));
     $('sh-nav').hidden = v === 'v-login';
-    $('n-admin').classList.toggle('on', ['v-cargar', 'v-usuarios', 'v-bitacora'].includes(v));
+    $('n-admin').classList.toggle('on', ['v-cargar', 'v-profit', 'v-usuarios', 'v-bitacora'].includes(v));
+    if (v === 'v-profit' && window.TT_PROF) window.TT_PROF.vista().catch((e) => { const b = $('pf-box'); if (b) b.textContent = '✖ ' + e.message; });
     if (v === 'v-cargar') setTimeout(() => { try { pintarControl(); } catch (e) {} }, 0);
     $('n-user').classList.toggle('on', v === 'v-clave');
     cerrarMenus();
@@ -7152,7 +7162,87 @@ function zoomEn(box){
       bitacora('EXCEL PARA PROFIT', nom + ' · ' + pr.length + ' precios · ' + co.length + ' costos · ' + st.length + ' ajustes de stock · ' + fa.length + ' familias'); botones();
       avisoCarga('✔ Descargado ' + nom + ': ' + [pr.length ? pr.length + ' precios' : '', co.length ? co.length + ' costos' : '', st.length ? st.length + ' ajustes de stock' : '', fa.length ? fa.length + ' familias' : ''].filter(Boolean).join(' · ') + '. Cárguelo en Profit; al subir los reportes nuevos se cierran solos (o toque «Ya cargué en Profit»).', 'ok');
     }
-    return { enganchar, cargar, exportar, FMT, familias, famPend };
+    // ---------- vista «Descargar datos para Profit»: un archivo por tipo de cambio ----------
+    const TIPOS = [
+      { id: 'precios', t: 'Precios de venta', d: 'Lista de precios con el Precio 1 nuevo (el Precio 2 se mantiene)', campo: 'precio_nuevo',
+        cols: [['#', (p, i) => i + 1], ['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Modelo', (p) => (lp(p.codigo) || {}).modelo || ''], ['Precio 1', (p) => p.precio_nuevo], ['Precio 2', (p) => { const x = lp(p.codigo); return x && Number(x.precio_2) ? Number(x.precio_2) : ''; }]] },
+      { id: 'costos', t: 'Costos', d: 'Costo unitario corregido de cada artículo', campo: 'costo_nuevo', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Costo', (p) => p.costo_nuevo]] },
+      { id: 'ajuste', t: 'Ajuste de inventario', d: 'Stock contado contra el del sistema; un archivo por almacén', campo: 'stock_contado', porAlm: true,
+        cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Almacén', (p) => p.almacen || 'PRINCIPAL'], ['Stock sistema', (p) => p.stock_antes], ['Stock contado', (p) => p.stock_contado], ['Ajuste', (p) => (p.stock_contado != null && p.stock_antes != null ? Math.round((p.stock_contado - p.stock_antes) * 100) / 100 : '')], ['Costo unitario', (p) => p.costo_nuevo ?? p.costo_antes ?? '']] },
+      { id: 'familias', t: 'Familias', d: 'Familia nueva de cada artículo (de la revisión de familias o de las tablas)', campo: 'familia_nueva', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Familia', (p) => p.familia_nueva], ['Código familia', (p) => CODFAM[p.familia_nueva] || ''], ['Familia anterior', (p) => p.familia_antes || '']] },
+    ];
+    const lp = (c) => ((SERVER && SERVER.precios) || []).find((x) => String(x.codigo).toUpperCase() === String(c).toUpperCase()) || null;
+    // formato de Profit aprendido de un archivo modelo: se guarda la(s) fila(s) de cabecera y qué columna lleva cada dato
+    const MOD = () => { try { return JSON.parse(localStorage.getItem('tt_pf_modelos') || '{}'); } catch (e) { return {}; } };
+    const ponMOD = (o) => { try { localStorage.setItem('tt_pf_modelos', JSON.stringify(o)); } catch (e) {} };
+    const n0 = (x) => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    const RECON = [['codigo', /^(c(o|ó)d(igo)?\.?( del)?( art(iculo)?)?|co_art|articulo|item|sku)$/], ['descripcion', /desc|art_des/], ['modelo', /modelo|^ref/], ['precio1', /precio ?(de venta )?1|prec_vta1|^precio( venta)?$|^monto|^pvp/], ['precio2', /precio ?2|prec_vta2/],
+      ['costo', /costo|cos_pro|cos_un|^ult\.? ?costo/], ['almacen', /almac|co_alma|deposito/], ['stock', /contad|cantidad|^cant|existencia|stock nuevo|stock contado|fisico/], ['ajuste', /^ajuste|diferencia/], ['codfam', /cod.*famil|^co_lin|^co_cat|^co_subl|cod.*linea/], ['familia', /famil|^linea|categ/], ['n', /^#$|^item$|^renglon|^reng/]];
+    const VAL = { codigo: (p) => p.codigo, descripcion: (p) => p.descripcion, modelo: (p) => (lp(p.codigo) || {}).modelo || '', precio1: (p) => p.precio_nuevo, precio2: (p) => { const x = lp(p.codigo); return x && Number(x.precio_2) ? Number(x.precio_2) : ''; },
+      costo: (p) => p.costo_nuevo ?? p.costo_antes ?? '', almacen: (p) => p.almacen || 'PRINCIPAL', stock: (p) => p.stock_contado, ajuste: (p) => (p.stock_contado != null && p.stock_antes != null ? Math.round((p.stock_contado - p.stock_antes) * 100) / 100 : ''),
+      familia: (p) => p.familia_nueva, codfam: (p) => CODFAM[p.familia_nueva] || p.familia_nueva, n: (p, i) => i + 1 };
+    function leerModelo(wb) {
+      const nm = wb.SheetNames[0], A = XLSX.utils.sheet_to_json(wb.Sheets[nm], { header: 1, defval: '' });
+      let fi = -1, best = 0; for (let i = 0; i < Math.min(20, A.length); i++) { const k = (A[i] || []).filter((x) => RECON.some(([, re]) => re.test(n0(x)))).length; if (k > best) { best = k; fi = i; } }
+      if (best < 2) throw new Error('no encuentro la fila de títulos (Código, Descripción, Precio…) en la primera hoja');
+      const cab = A[fi].map((x) => String(x)), mapa = cab.map((h) => { const r = RECON.find(([, re]) => re.test(n0(h))); return r ? r[0] : null; });
+      // si hay columna de código de familia y de familia, la de familia por nombre queda como «familia»
+      return { hoja: nm, arriba: A.slice(0, fi).map((r) => r.map(String)), cab, mapa };
+    }
+    function hojaDe(T, rows) {
+      const M = MOD()[T.id];
+      if (M && M.cab) { const aoa = [...M.arriba, M.cab, ...rows.map((p, i) => M.mapa.map((k) => { if (!k) return ''; const v = VAL[k](p, i); return v == null ? '' : v; }))]; return { ws: XLSX.utils.aoa_to_sheet(aoa), hoja: M.hoja || T.t, ini: M.arriba.length + 1, colCod: M.mapa.indexOf('codigo') }; }
+      return { ws: XLSX.utils.aoa_to_sheet([T.cols.map((c) => c[0]), ...rows.map((p, i) => T.cols.map((c) => { const v = c[1](p, i); return v == null ? '' : v; }))]), hoja: T.t, ini: 1, colCod: T.cols.findIndex((c) => c[0] === 'Código') };
+    }
+    async function bajarTipo(T, alm) {
+      await cargar(); let rows = Object.values(PP).filter((p) => p[T.campo] != null && p[T.campo] !== '').sort((a, b) => String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true }));
+      if (alm) rows = rows.filter((p) => (p.almacen || 'PRINCIPAL') === alm); if (!rows.length) return avisoCarga('No hay cambios de ' + T.t.toLowerCase() + ' pendientes.', 'ok');
+      const { ws, hoja, ini, colCod } = hojaDe(T, rows);
+      if (colCod >= 0) for (let r = ini; r < ini + rows.length; r++) { const c = ws[XLSX.utils.encode_cell({ r, c: colCod })]; if (c) { c.t = 's'; c.v = String(c.v); } }
+      ws['!cols'] = (XLSX.utils.decode_range(ws['!ref']).e.c >= 0 ? Array(XLSX.utils.decode_range(ws['!ref']).e.c + 1).fill(0) : []).map((_, i) => ({ wch: i === 1 ? 45 : 14 }));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, String(hoja).slice(0, 31));
+      const nom = 'PROFIT_' + T.t.replace(/\s+/g, '_') + (alm ? '_' + alm : '') + '_' + new Date().toLocaleDateString('en-CA') + '.xls';
+      XLSX.writeFile(wb, nom, { bookType: 'biff8' });
+      const ahora = new Date().toISOString(), yo = quien(); rows.forEach((p) => { p.exportado_en = ahora; p.exportado_por = yo; });
+      if (enDB) { for (let i = 0; i < rows.length; i += 300) ok(await sb.from('profit_pendientes').upsert(rows.slice(i, i + 300), { onConflict: 'empresa_id,codigo' })); } else local();
+      bitacora('ARCHIVO PARA PROFIT', nom + ' · ' + rows.length + ' artículos'); botones();
+      return { nom, n: rows.length };
+    }
+    // ya cargado en Profit: se quita ese dato de los pendientes (las familias quedan registradas)
+    async function cerrarTipo(T) {
+      await cargar(); const rows = Object.values(PP).filter((p) => p[T.campo] != null && p.exportado_en); if (!rows.length) return 0;
+      const lote = new Map(); for (const p of rows) await guardar({ codigo: p.codigo, descripcion: p.descripcion }, T.campo, null, 'Cargado en Profit', lote); await guardarLote(lote); return rows.length;
+    }
+    async function vista() {
+      const box = document.getElementById('pf-box'); if (!box) return; await cargar(); box.replaceChildren();
+      const L = Object.values(PP), mk2 = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+      const total = L.length, nb = document.getElementById('n-pfb'); if (nb) { nb.hidden = !total; nb.textContent = total; }
+      const top = mk2('div', 'pf-top');
+      top.append(mk2('b', null, total ? total + ' artículos con cambios para Profit' : 'No hay cambios pendientes para Profit'), mk2('span', null, enDB ? ' · guardados en el servidor' : ' · ⚠ guardados solo en este navegador (falta autorizar la tabla de Profit en el servidor)'));
+      const all = mk2('button', 'sh-btn', '⬇ Bajar todos los archivos'); all.type = 'button'; all.disabled = !total;
+      all.addEventListener('click', async () => { all.disabled = true; const hechos = []; try { for (const T of TIPOS) { const alms = T.porAlm ? [...new Set(L.filter((p) => p[T.campo] != null).map((p) => p.almacen || 'PRINCIPAL'))] : [null]; for (const a of alms) { const r = await bajarTipo(T, a); if (r && r.n) { hechos.push(r.nom); await new Promise((ok3) => setTimeout(ok3, 600)); } } } avisoCarga(hechos.length ? '✔ Descargados ' + hechos.length + ' archivos: ' + hechos.join(' · ') : 'No hay cambios pendientes.', 'ok'); } catch (e) { avisoCarga('✖ ' + e.message, 'err'); } vista(); });
+      top.appendChild(all); box.appendChild(top);
+      const M = MOD();
+      TIPOS.forEach((T) => {
+        const rows = L.filter((p) => p[T.campo] != null && p[T.campo] !== ''), baj = rows.filter((p) => p.exportado_en).length;
+        const c = mk2('div', 'pf-card' + (rows.length ? ' hay' : ''));
+        const h = mk2('div', 'pf-h'); h.append(mk2('b', null, T.t), mk2('span', 'pf-cnt', rows.length + ' artículos'), mk2('small', null, T.d)); c.appendChild(h);
+        const m = M[T.id]; c.appendChild(mk2('div', 'pf-fmt', m ? '📄 Formato de Profit: columnas ' + m.cab.map((x, i) => x + (m.mapa[i] ? '' : ' (vacía)')).join(' · ') : '📄 Formato: ' + T.cols.map((x) => x[0]).join(' · ') + ' (estándar del tablero)'));
+        if (rows.length) { const ej = mk2('div', 'pf-ej'); ej.textContent = 'Ej.: ' + rows.slice(0, 3).map((p) => p.codigo + ' → ' + (T.campo === 'familia_nueva' ? p.familia_nueva : String(p[T.campo]).replace('.', ','))).join(' · ') + (rows.length > 3 ? ' …' : ''); c.appendChild(ej); }
+        const bt = mk2('div', 'pf-bts'), b = (t, cl, f, dis) => { const x = mk2('button', 'pf-b ' + cl, t); x.type = 'button'; x.disabled = !!dis; x.addEventListener('click', async () => { x.disabled = true; try { await f(x); } catch (e) { if (e.quiet) return; avisoCarga('✖ ' + e.message, 'err'); } x.disabled = false; vista(); }); bt.appendChild(x); return x; };
+        const alms = T.porAlm && rows.length ? [...new Set(rows.map((p) => p.almacen || 'PRINCIPAL'))] : [null];
+        alms.forEach((a) => b('⬇ Bajar ' + T.t.toLowerCase() + (a ? ' · ' + a : '') + ' (.xls)', 'xls', async () => { const r = await bajarTipo(T, a); if (r && r.n) avisoCarga('✔ Descargado ' + r.nom + ' (' + r.n + ' artículos). Cárguelo en Profit con la actualización masiva.', 'ok'); }, !rows.length));
+        b(m ? '📄 Cambiar formato de Profit' : '📄 Usar formato de Profit (subir modelo)', 'mod', async () => {
+          const f = await new Promise((ok2) => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.xls,.xlsx'; i.addEventListener('change', () => ok2(i.files[0] || null)); i.click(); }); if (!f) return;
+          const mo = leerModelo(XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: 'array' })), O = MOD(); O[T.id] = { ...mo, archivo: f.name }; ponMOD(O);
+          avisoCarga('✔ Formato de «' + f.name + '» guardado para ' + T.t + ': ' + mo.cab.filter((x, i) => mo.mapa[i]).length + ' de ' + mo.cab.length + ' columnas reconocidas.', 'ok'); });
+        if (m) b('↺ Formato estándar', 'mod', async () => { const O = MOD(); delete O[T.id]; ponMOD(O); });
+        if (baj && T.id !== 'familias') { const k = b('✔ Ya lo cargué en Profit (' + baj + ')', 'ok', async (x) => { if (!x.dataset.k) { x.dataset.k = '1'; x.textContent = '¿Seguro? toque otra vez'; x.disabled = false; throw Object.assign(new Error(''), { quiet: true }); } const n = await cerrarTipo(T); avisoCarga('✔ ' + n + ' cambios de ' + T.t.toLowerCase() + ' marcados como cargados en Profit.', 'ok'); }); k.title = 'Quita de los pendientes los cambios de este tipo que ya se bajaron'; }
+        c.appendChild(bt); box.appendChild(c);
+      });
+      box.appendChild(mk2('p', 'pf-nota', 'Al subir de nuevo los reportes de Profit en «Cargar datos», los precios y costos que ya coinciden se cierran solos. Las familias quedan registradas como «ya bajadas para Profit» en la revisión de familias.'));
+    }
+    return { enganchar, cargar, exportar, FMT, familias, famPend, vista };
   })();
   // ---------- ficha del artículo ----------
   const FICHA = (() => {
