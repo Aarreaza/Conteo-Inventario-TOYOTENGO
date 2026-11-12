@@ -4402,7 +4402,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const sobrePub = (r) => r.precio_lista > 0;
     function precioPorMargen(r, m) {
       const b = baseDe(r); if (!b || m >= 1 || R.A.com >= 1) return null;
-      return Math.round(b * (1 + m) / (1 - R.A.com) * fMon(r) * 100) / 100;
+      return redPrecio(b * (1 + m) / (1 - R.A.com) * fMon(r));
     }
     const pctSobreBase = (r, precio) => { const b = baseDe(r), neto = precio / fMon(r) * (1 - R.A.com); return b && neto ? neto / b - 1 : null; };
     const margenDe = (r, precio) => { const neto = precio / fMon(r) * (1 - R.A.com); return r.costo && neto ? (neto - r.costo) / neto : null; };
@@ -4450,7 +4450,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       L.forEach((r) => { const pr = precioPorMargen(r, m); if (pr != null && Math.abs(pr - (r.precio_ml || 0)) >= 0.01) cam.push({ item_id: r.item_id, precio_nuevo: pr }); });
       if (!cam.length) return avisa('No hay publicaciones con costo para cambiar en esta lista.', 'ok');
       const P0 = {}; L.forEach((r) => { P0[r.item_id] = r; }); const baja = cam.filter((c) => { const r = P0[c.item_id]; return c.precio_nuevo < (r.precio_ml || 0); }).length, bajoPub = cam.filter((c) => { const r = P0[c.item_id]; return r.precio_lista && c.precio_nuevo / fMon(r) < r.precio_lista; }).length;
-      await guardarPendLote(cam, 'PANEL'); avisa('✔ Recargo ' + Math.round(m * 1000) / 10 + '% sobre el precio al público aplicado a ' + (todas ? 'TODAS las publicaciones' : 'esta lista') + ': ' + cam.length + ' precios nuevos quedan pendientes (' + (cam.length - baja) + ' suben, ' + baja + ' bajan)' + (bajoPub ? ' · ⚠ ' + bajoPub + ' quedan por debajo del precio de venta al público' : '') + (L.length < base.length ? ' · ' + (base.length - L.length) + ' sin precio ni costo no se tocaron' : '') + (L.some((r) => !sobrePub(r)) ? ' · ' + L.filter((r) => !sobrePub(r)).length + ' sin precio al público se calcularon sobre el costo' : '') + '. Revíselos antes de bajar la planilla; puede descartarlos en la barra amarilla.', bajoPub ? 'err' : 'ok'); tabla();
+      await guardarPendLote(cam, 'PANEL'); avisa('✔ Recargo ' + String(Math.round(m * 1000) / 10).replace('.', ',') + '% sobre el precio al público aplicado a ' + (todas ? 'TODAS las publicaciones' : 'esta lista') + ': ' + cam.length + ' precios nuevos quedan pendientes (' + (cam.length - baja) + ' suben, ' + baja + ' bajan)' + (bajoPub ? ' · ⚠ ' + bajoPub + ' quedan por debajo del precio de venta al público' : '') + (L.length < base.length ? ' · ' + (base.length - L.length) + ' sin precio ni costo no se tocaron' : '') + (L.some((r) => !sobrePub(r)) ? ' · ' + L.filter((r) => !sobrePub(r)).length + ' sin precio al público se calcularon sobre el costo' : '') + '. Revíselos antes de bajar la planilla; puede descartarlos en la barra amarilla.', bajoPub ? 'err' : 'ok'); tabla();
     }
     async function stockALista(todas) {
       const qOk = await reglasStock(), base = todas ? R.pubs : vista, L = base.filter((r) => r.tipo === 'pub' && r.item_id && r.codigo), cam = [];
@@ -4510,12 +4510,13 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       // ejemplo con un artículo
       const ej = R.pubs.find((r) => String(r.codigo).toUpperCase() === '68920-49135' && r.precio_lista > 0) || vista.find((r) => r.tipo === 'pub' && r.precio_lista > 0) || R.pubs.find((r) => r.precio_lista > 0);
       if (ej && rU != null) {
-        const pv = ej.precio_lista, rec = pv * (1 + rU), pml = rec / (1 - com), cm = pml * com, gan = ej.costo ? rec - ej.costo : null;
+        const pv = ej.precio_lista, rec0 = pv * (1 + rU), pml = redPrecio(rec0 / (1 - com)), cm = pml * com, rec = pml - cm, gan = ej.costo ? rec - ej.costo : null;
         box.appendChild(mk('small', 'mm-ej', 'Ejemplo: ' + ej.codigo + ' · ' + String(ej.titulo || '').slice(0, 40)));
         const t2 = document.createElement('table'); t2.className = 'mm-tb'; const fl = (a, b, k) => { const tr = document.createElement('tr'); if (k) tr.className = k; const x = document.createElement('td'), y = document.createElement('td'); x.textContent = a; y.textContent = b; tr.append(x, y); t2.appendChild(tr); };
         fl('Precio de venta al público', T.fmt.usd2(pv));
-        fl('× (1 + ' + T.fmt.pct(rU) + ') = lo que quiere recibir', T.fmt.usd2(rec));
-        fl('÷ (1 − ' + Math.round(com * 1000) / 10 + '% comisión) = precio en ML', T.fmt.usd2(pml), 'tot');
+        fl('× (1 + ' + T.fmt.pct(rU) + ') = lo que quiere recibir', T.fmt.usd2(rec0));
+        fl('÷ (1 − ' + Math.round(com * 1000) / 10 + '% comisión) = ' + T.fmt.usd2(rec0 / (1 - com)), '');
+        fl('Precio en ML redondeado (hacia arriba)', T.fmt.usd0 ? T.fmt.usd0(pml) : T.fmt.usd2(pml), 'tot');
         fl('− comisión de Mercado Libre', T.fmt.usd2(cm));
         fl('= le llega', T.fmt.usd2(rec));
         if (gan != null) fl('− costo ' + T.fmt.usd2(ej.costo) + ' = ganancia por unidad', T.fmt.usd2(gan), gan < 0 ? 'bad' : 'ok');
@@ -4526,6 +4527,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       [['¿Por qué la brecha?', 'Muchos clientes de Mercado Libre pagan en bolívares a tasa BCV. Ese dinero, cambiado a dólares a tasa Binance, rinde ' + (g == null ? 'menos' : (1 / (1 + g)).toFixed(3).replace('.', ',') + ' US$ por cada US$') + '. Subir el precio en el mismo % de la brecha compensa esa pérdida.'],
        ['¿Por qué +' + PTS + ' puntos?', 'Es un margen de seguridad: la tasa Binance se mueve todos los días y el precio publicado no cambia solo. Lo que sobre es ganancia adicional.'],
        ['¿Por qué se divide entre (1 − comisión)?', 'Mercado Libre cobra su ' + Math.round(com * 1000) / 10 + '% sobre el precio final, no sobre su precio. Al dividir, la comisión sale del precio publicado y a usted le llega completo «lo que quiere recibir».'],
+       ['¿Por qué redondeado?', 'Los precios en Mercado Libre se publican en dólares enteros (sin céntimos) para que sean fáciles de leer y de cambiar a bolívares. Siempre se redondea hacia arriba, así nunca recibe menos de lo calculado.'],
        ['¿Qué es la ganancia por unidad?', 'Lo que le llega después de la comisión menos el costo del artículo en el inventario.']].forEach(([q, a]) => { const d = mk('p'); d.append(mk('b', null, q + ' '), a); exp.appendChild(d); });
       box.appendChild(exp);
       return box;
@@ -4570,7 +4572,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         i.addEventListener('keydown', (e) => { if (e.key === 'Enter') i.blur(); });
         i.addEventListener('change', async () => {
           const t = i.value.trim(); let v = t === '' ? null : t;
-          if (v != null && tipo === 'number') { v = Number(String(v).replace(',', '.')); if (!isFinite(v) || v < 0 || (campo === 'precio_nuevo' && v === 0)) { i.className = 'ml-ed err ' + (cls || ''); return avisa('✖ Valor no válido en ' + r.item_id + '.', 'err'); } if (campo === 'stock_nuevo') v = Math.floor(v); }
+          if (v != null && tipo === 'number') { v = Number(String(v).replace(',', '.')); if (!isFinite(v) || v < 0 || (campo === 'precio_nuevo' && v === 0)) { i.className = 'ml-ed err ' + (cls || ''); return avisa('✖ Valor no válido en ' + r.item_id + '.', 'err'); } if (campo === 'stock_nuevo') v = Math.floor(v); if (campo === 'precio_nuevo') { v = redPrecio(v); i.value = String(v); } }
           try { await guardarPend(r.item_id, { [campo]: v }); i.className = 'ml-ed ' + (cls || '') + (v != null ? ' pend' : ' okk');
             if (campo === 'precio_nuevo' && v != null && r.costo && v < r.costo) avisa('⚠ Guardado, pero ' + v + ' queda por debajo del costo (' + T.fmt.usd2(r.costo) + ').', ''); else avisa('✔ Guardado: ' + r.item_id + ' queda pendiente para la planilla de Mercado Libre.', ''); }
           catch (e) { i.className = 'ml-ed err ' + (cls || ''); avisa('✖ No se pudo guardar: ' + e.message, 'err'); }
@@ -4647,7 +4649,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (SERVER.ml.pendOk) for (let i = 0; i < ids.length; i += 200) ok(await sb.from('ml_pendientes').delete().eq('empresa_id', EMPRESA).in('item_id', ids.slice(i, i + 200)));
       const S = new Set(ids); SERVER.ml.pend = (SERVER.ml.pend || []).filter((x) => !S.has(x.item_id)); if (!SERVER.ml.pendOk) pendLocal();
     }
-    const cambiosDePend = () => { const C = {}; (SERVER.ml.pend || []).forEach((x) => { const c = {}; if (x.stock_nuevo != null) c.q = Number(x.stock_nuevo); if (x.precio_nuevo != null) c.p = Number(x.precio_nuevo); if (x.sku_nuevo) c.sku = x.sku_nuevo; if (x.accion) c.st = x.accion === 'PAUSAR' ? 'Inactiva' : 'Activa'; if (Object.keys(c).length) C[x.item_id] = c; }); return C; };
+    const redPrecio = (x) => (x == null || !isFinite(Number(x)) ? x : Math.ceil(Number(x) - 1e-9));
+    const cambiosDePend = () => { const C = {}; (SERVER.ml.pend || []).forEach((x) => { const c = {}; if (x.stock_nuevo != null) c.q = Number(x.stock_nuevo); if (x.precio_nuevo != null) c.p = redPrecio(x.precio_nuevo); if (x.sku_nuevo) c.sku = x.sku_nuevo; if (x.accion) c.st = x.accion === 'PAUSAR' ? 'Inactiva' : 'Activa'; if (Object.keys(c).length) C[x.item_id] = c; }); return C; };
     function pintarPend() {
       const el = $('ml-pend'), bp = $('ml-planilla-pend'); if (!el || !SERVER || !SERVER.ml) return;
       const L = SERVER.ml.pend || [], n = L.length; bp.textContent = '🛒 Planilla para Mercado Libre' + (n ? ' (' + n + ')' : ''); bp.disabled = !n;
@@ -4955,6 +4958,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const A = aj(); $('ml-com').value = Math.round(A.com * 1000) / 10; $('ml-min').value = Math.round(A.min * 1000) / 10; $('ml-tasa').value = A.tasa || '';
       if (!famLlena && SERVER.articulos.length) { famLlena = true; [...new Set(SERVER.articulos.map((a) => a.familia))].sort((a, b) => a.localeCompare(b, 'es')).forEach((f) => $('ml-fam').appendChild(new Option(f, f))); }
       if (!document.getElementById('ml-codigos') && SERVER.articulos.length) { const dl = document.createElement('datalist'); dl.id = 'ml-codigos'; SERVER.articulos.forEach((a) => dl.appendChild(new Option(a.descripcion || '', a.codigo))); document.body.appendChild(dl); }
+      if (!pintar._red && SERVER.ml && (SERVER.ml.pend || []).some((x) => x.precio_nuevo != null && Number(x.precio_nuevo) !== redPrecio(x.precio_nuevo))) {
+        pintar._red = true; const L = SERVER.ml.pend.filter((x) => x.precio_nuevo != null && Number(x.precio_nuevo) !== redPrecio(x.precio_nuevo)).map((x) => ({ item_id: x.item_id, precio_nuevo: redPrecio(x.precio_nuevo) }));
+        guardarPendLote(L, 'PANEL').then(() => { avisa('✔ ' + L.length + ' precios pendientes se redondearon a dólares enteros. Vuelva a bajar la 🛒 Planilla para Mercado Libre.', 'ok'); tabla(); }).catch(() => {});
+      }
       estadoTxt(); ctrl(); alertas(); tiles(); tabla(); vendedor(); resumenVentas(); pintarPlanillas();
       pintarInsignias();
       $('ml-graf').hidden = !R.ventas.length;
@@ -5137,11 +5144,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
             q = Math.max(0, Math.floor((Number(p.stock) || 0) - reserva)); if (tope != null && q > tope) q = tope;
             if (qAnt !== q) c.q = q;
             const enUsd = /US/.test(String(f[iM] || p.moneda));
-            if (enUsd && modo === 'pvp' && p.precio_lista > 0 && (pAnt == null || Math.abs(p.precio_lista - pAnt) >= 0.01)) c.p = p.precio_lista;
-            if (enUsd && modo === 'recargo' && p.precio_lista > 0) { const np = Math.round(p.precio_lista * (1 + rec / 100) * 100) / 100; if (pAnt == null || Math.abs(np - pAnt) >= 0.01) c.p = np; }
+            if (enUsd && modo === 'pvp' && p.precio_lista > 0 && (pAnt == null || Math.abs(p.precio_lista - pAnt) >= 0.01)) c.p = redPrecio(p.precio_lista);
+            if (enUsd && modo === 'recargo' && p.precio_lista > 0) { const np = redPrecio(p.precio_lista * (1 + rec / 100)); if (pAnt == null || Math.abs(np - pAnt) >= 0.01) c.p = np; }
           }
           // lo corregido a mano en el panel o en Excel manda sobre lo automático
-          if (P) { if (P.q != null) { c.q = P.q; q = P.q; } if (P.p != null) c.p = P.p; if (P.sku) c.sku = P.sku; if (P.st) c.st = P.st; }
+          if (P) { if (P.q != null) { c.q = P.q; q = P.q; } if (P.p != null) c.p = redPrecio(P.p); if (P.sku) c.sku = P.sku; if (P.st) c.st = P.st; }
           if (c.q != null || c.p != null || c.sku || c.st) { cambios[it] = c; log.push({ 'Publicación ML': it, 'Código': p.codigo || '', 'Título': p.titulo || '', 'Estado ML': p.estado_ml || '', 'Stock ML antes': qAnt, 'Stock nuevo': c.q != null ? c.q : qAnt,
             'Precio antes US$': pAnt, 'Precio nuevo US$': c.p != null ? c.p : pAnt, 'SKU nuevo': c.sku || '', 'Estado nuevo': c.st || '', 'Motivo': P ? 'Corregido en el panel / Excel' : [c.q != null ? (q === 0 ? 'Sin existencia: queda en 0 (ML la pausa)' : q > (qAnt || 0) ? 'Sube el stock al del inventario' : 'Baja el stock al del inventario') : '', c.p != null ? (modo === 'pvp' ? 'Precio de venta al público' : 'Precio al público + ' + rec + '%') : ''].filter(Boolean).join(' · '), 'Archivo': pl.nombre }); }
         });
@@ -5240,7 +5247,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           const it = idML(f['Publicación ML'] || ''); if (!/^MLV\d+$/.test(it)) return;
           const c = {}, q = num(f[ED.q]), p = num(f[ED.p]), s = String(f[ED.s] == null ? '' : f[ED.s]).trim(), a = String(f[ED.a] == null ? '' : f[ED.a]).trim().toUpperCase();
           if (q != null) { if (isNaN(q) || q < 0 || q > 99999) errores.push(nombre + ' fila ' + fila + ' (' + it + '): stock «' + f[ED.q] + '» no válido'); else c.stock_nuevo = Math.floor(q); }
-          if (p != null) { if (isNaN(p) || p <= 0) errores.push(nombre + ' fila ' + fila + ' (' + it + '): precio «' + f[ED.p] + '» no válido'); else { c.precio_nuevo = Math.round(p * 100) / 100; const pb = porItem[it]; if (pb && pb.costo && /US/.test(String(pb.moneda || 'US')) && c.precio_nuevo < pb.costo) errores.push('⚠ ' + it + ': el precio nuevo ' + c.precio_nuevo + ' queda bajo el costo (' + pb.costo + ')'); } }
+          if (p != null) { if (isNaN(p) || p <= 0) errores.push(nombre + ' fila ' + fila + ' (' + it + '): precio «' + f[ED.p] + '» no válido'); else { c.precio_nuevo = redPrecio(p); const pb = porItem[it]; if (pb && pb.costo && /US/.test(String(pb.moneda || 'US')) && c.precio_nuevo < pb.costo) errores.push('⚠ ' + it + ': el precio nuevo ' + c.precio_nuevo + ' queda bajo el costo (' + pb.costo + ')'); } }
           if (s) { const cod = inv[norm(s)]; if (!cod) errores.push(nombre + ' fila ' + fila + ' (' + it + '): el código «' + s + '» no existe en el inventario'); else { vinc[it] = cod; const pb = porItem[it]; if (!pb || norm(pb.sku) !== norm(cod)) c.sku_nuevo = cod; } }
           if (a) { if (/^PAUS|^INACT|^DESACT/.test(a)) c.accion = 'PAUSAR'; else if (/^ACTIV|^REACT/.test(a)) c.accion = 'ACTIVAR'; else errores.push(nombre + ' fila ' + fila + ' (' + it + '): acción «' + f[ED.a] + '» (use PAUSAR o ACTIVAR)'); }
           if (Object.keys(c).length) nuevos[it] = Object.assign(nuevos[it] || { item_id: it }, c);
