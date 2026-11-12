@@ -136,6 +136,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .mm-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(16rem,1fr);gap:.8rem;align-items:start}@media (max-width:900px){.mm-grid{grid-template-columns:1fr}}.mm-izq{display:flex;flex-direction:column;gap:.55rem}.mm-r{font-size:1.15rem;color:#3d2a9a;background:#efeafd;border-radius:6px;padding:.05rem .45rem}.mm-r.man{color:#7a4b00;background:#fff1b8}.mm-s{font-size:.75rem;color:#666}.mm-man{flex-basis:100%;display:flex;align-items:center;gap:.35rem;font-size:.82rem;color:#555;margin-left:16.4rem}@media (max-width:900px){.mm-man{margin-left:0}}.mm-x{font:600 .75rem inherit;border:1px solid #ccd;background:#fff;border-radius:6px;padding:.15rem .45rem;cursor:pointer}.mm-cuadro{background:#fff;border:1px solid #d9d0f7;border-radius:8px;padding:.55rem .7rem;font-size:.8rem}.mm-ct{display:block;color:#3d2a9a;margin-bottom:.3rem}.mm-tb{width:100%;border-collapse:collapse;margin:.15rem 0 .35rem}.mm-tb td{padding:.12rem .2rem;border-bottom:1px dotted #e3e6ee}.mm-tb td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.mm-tb tr.tot td{font-weight:700;color:#3d2a9a;border-bottom:1.5px solid #c9b8f5}.mm-tb tr.man td{color:#7a4b00}.mm-tb tr.ok td:last-child{color:#1d6f42;font-weight:700}.mm-tb tr.bad td:last-child{color:#c0182a;font-weight:700}.mm-tb tr.muted td{color:#888;border:0}.mm-ej{display:block;color:#666;margin-top:.2rem}
 .mm-bts{flex-basis:100%;display:flex;flex-wrap:wrap;gap:.4rem;padding-left:1.5rem}.mm-man{margin-left:0!important;padding-left:1.5rem}.mm-ok{font:600 .8rem inherit;border:0;border-radius:6px;padding:.3rem .75rem;cursor:pointer;background:#1d6f42;color:#fff}.mm-ok:hover{filter:brightness(1.1)}
 .mm-info{position:relative;display:inline-flex}.mm-ib{font:600 .78rem inherit;border:1px dashed #5b3fd0;background:#fff;color:#3d2a9a;border-radius:999px;padding:.2rem .6rem;cursor:help}.mm-ib.on,.mm-ib:hover{background:#efeafd}.mm-pop{position:absolute;z-index:40;top:calc(100% + .35rem);left:0;width:min(30rem,88vw);box-shadow:0 10px 30px rgba(30,20,80,.18)}.mm-pop::before{content:"";position:absolute;top:-.4rem;left:1.2rem;width:.7rem;height:.7rem;background:#fff;border-left:1px solid #d9d0f7;border-top:1px solid #d9d0f7;transform:rotate(45deg)}.mm-exp{border-top:1px solid #e3e6ee;margin-top:.35rem;padding-top:.3rem}.mm-exp p{margin:.2rem 0;color:#444;line-height:1.35}.mm-exp b{color:#3d2a9a}
+.cc-box{border:1px solid #e3e6ee;border-radius:10px;padding:.7rem .9rem;background:#fff}.cc-h{font-weight:700;margin-bottom:.45rem}.cc-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.4rem}.cc-i{border-radius:8px;padding:.4rem .6rem;display:flex;flex-direction:column;font-size:.82rem;border:1px solid #e3e6ee;border-left-width:5px}.cc-i b{font-size:.86rem}.cc-i.ok{border-left-color:#1d6f42;background:#f1faf4}.cc-i.ok span{color:#1d6f42}.cc-i.mal{border-left-color:#c0182a;background:#fdf1f2}.cc-i.mal span{color:#a3121f;font-weight:600}.cc-i.aviso{border-left-color:#e8a400;background:#fffaf0}.cc-i.aviso span{color:#7a4b00}.cc-i.gris span{color:#666}.cc-n{margin:.5rem 0 0;font-size:.84rem;color:#7a4b00}
 .ml-al-x{white-space:nowrap;font:600 .78rem inherit;border:1px solid #1d6f42;color:#1d6f42;background:#fff;border-radius:6px;padding:.15rem .5rem;cursor:pointer;margin-left:.4rem}.ml-al-x:hover{background:#1d6f42;color:#fff}.ml-al-up{margin-left:auto;font:600 .8rem inherit;background:#1d6f42;color:#fff;border:0;border-radius:6px;padding:.35rem .7rem;cursor:pointer}.ml-al-up:hover{filter:brightness(1.1)}.ml-al-ayuda{font-size:.8rem;color:#555;margin:.3rem 0 .5rem}.mla-trab{margin-top:.7rem;padding-top:.6rem;border-top:1px dashed #ccd;font-size:.85rem}.mla-trab select{max-width:15rem}
 .ml-al-i{display:inline-flex;margin-top:.1rem}.ml-al-t{flex:1}.ml-al-a{white-space:nowrap;font-weight:600;font-size:.82rem;text-decoration:none}
 .ml-al.mal{background:#fff1f2;border-left-color:var(--color-bad)}.ml-al.mal .ml-al-i{color:var(--color-bad)}.ml-al.mal .ml-al-a{color:var(--color-bad)}
@@ -902,6 +903,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="sh-row">
         <div class="sh-f"><label for="c-corte">Fecha de corte del inventario</label><input type="date" id="c-corte"></div>
       </div>
+      <div class="cc-box" id="c-check"></div>
       <div class="sh-subir" id="c-barra">
         <div class="sh-subir-t"><b id="c-estado">Paso 1: elija los archivos en las casillas de arriba</b><span id="c-estado2">Faltan los 4 reportes de inventario y la lista de precios</span></div>
         <div class="sh-subir-b">
@@ -2631,6 +2633,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     Object.entries(NAV).forEach(([k, b]) => $(b).setAttribute('aria-current', k === v ? 'true' : 'false'));
     $('sh-nav').hidden = v === 'v-login';
     $('n-admin').classList.toggle('on', ['v-cargar', 'v-usuarios', 'v-bitacora'].includes(v));
+    if (v === 'v-cargar') setTimeout(() => { try { pintarControl(); } catch (e) {} }, 0);
     $('n-user').classList.toggle('on', v === 'v-clave');
     cerrarMenus();
     if (v === 'v-tablero') setTimeout(() => dash._redraw(), 0);
@@ -3185,6 +3188,36 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
     return null;
   }
+  const cabecerasDe = (wb) => { try { const A = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' }); const r = A.slice(0, 20).find((x) => x.filter((v) => String(v).trim()).length >= 3) || []; return r.filter((v) => String(v).trim()).slice(0, 10).join(', ') || '(vacío)'; } catch (e) { return '?'; } };
+  // lista de control: qué archivos alimentan el panel, cuáles vienen en esta carga y cuándo se cargó cada uno por última vez
+  function controlCarga() {
+    const S = SERVER || {}, fc = S.corte ? String(S.corte.fecha_corte).slice(0, 10) : null, ff = (d) => (d ? String(d).slice(0, 10).split('-').reverse().join('/') : '');
+    const almsCorte = (() => { const a = (S.articulos || []); if (!a.some((x) => x.alm)) return {}; const o = {}; [['principal', 'st_principal'], ['tienda', 'st_tienda'], ['consignacion', 'st_consignacion'], ['transito', 'transito']].forEach(([k, f]) => { o[k] = a.some((x) => Number(x[f])); }); return o; })();
+    const compCorte = (S.articulos || []).some((x) => Number(x.comprometido) > 0);
+    const mesV = (S.ventas || []).reduce((m, v) => (v.mes > m ? v.mes : m), '');
+    const hoy = $('c-corte').value;
+    const it = [
+      ...ALM.map(([k, n]) => ({ k, n, en: LOTE.some((l) => l.tipo === 'alm' && l.alm === k), ult: almsCorte[k] ? fc : null, inv: true })),
+      { k: 'stocks', n: 'Comprometido (por facturar)', en: LOTE.some((l) => l.tipo === 'stk'), ult: compCorte ? fc : null, inv: true },
+      { k: 'precios', n: 'Precios de venta', en: LOTE.some((l) => l.tipo === 'precios'), ult: S.lista ? String(S.lista.fecha).slice(0, 10) : null },
+      { k: 'ventas', n: 'Ventas del mes', en: LOTE.some((l) => l.tipo === 'ventas'), ult: mesV ? mesV : null, mes: true },
+    ];
+    const hayInv = LOTE.some((l) => l.tipo === 'alm' || l.tipo === 'articulos');
+    it.forEach((x) => { x.falta = !x.en && (hayInv && x.inv ? true : !x.ult); x.viejo = !x.en && !!x.ult && !x.mes && hoy && x.ult < hoy; });
+    return { it, hayInv, ff };
+  }
+  function pintarControl() {
+    const box = $('c-check'); if (!box) return; const { it, hayInv, ff } = controlCarga(); box.replaceChildren();
+    const h = document.createElement('div'); h.className = 'cc-h'; h.textContent = '📋 Archivos que alimentan el panel'; box.appendChild(h);
+    const ul = document.createElement('div'); ul.className = 'cc-l';
+    it.forEach((x) => { const d = document.createElement('div'); const cls = x.en ? 'ok' : x.falta ? 'mal' : x.viejo ? 'aviso' : 'gris'; d.className = 'cc-i ' + cls;
+      const est = x.en ? '✔ viene en esta carga' : x.falta ? (hayInv && x.inv ? '✖ FALTA: el corte nuevo quedará sin este dato' : '✖ nunca se ha cargado') : x.mes ? 'último: ' + nomMes(x.ult) : 'último: ' + ff(x.ult) + (x.viejo ? ' · ⚠ desactualizado' : '');
+      const b = document.createElement('b'); b.textContent = x.n; const s = document.createElement('span'); s.textContent = est; d.append(b, s); ul.appendChild(d); });
+    box.appendChild(ul);
+    const falt = it.filter((x) => !x.en && (x.falta || x.viejo));
+    const n = document.createElement('p'); n.className = 'cc-n'; n.textContent = falt.length ? '⚠ Recuerde cargar: ' + falt.map((x) => x.n).join(', ') + '. Mientras la carga sea manual, el panel solo es tan actual como el último archivo de cada tipo.' : '✔ Están todos los archivos.'; box.appendChild(n);
+    return falt;
+  }
   function conciliarComp(x) {
     const U = LOTE.some((l) => l.tipo === 'alm') ? unirAlmacenes() : null;
     const base = U ? U.art : ((SERVER && SERVER.articulos) || []), M = {}; base.forEach((a) => { M[String(a.codigo).toUpperCase().trim()] = a; });
@@ -3375,10 +3408,14 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           if (v) { LOTE = LOTE.filter((x) => !(x.tipo === 'ventas' && x.archivo === f.name)); LOTE.push({ tipo: 'ventas', archivo: f.name, ...v, filas: armarVentas(v.filas) }); continue; }
           error = true; msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo de ventas. Debe traer las columnas Fecha, Código de artículo, Cantidad y Total. Vuelva a elegirlo o súbalo en PDF.', 'err'); continue;
         }
-        if (forzado !== 'precios' && (forzado === 'stocks' || !forzado)) {
+        if (forzado !== 'precios') {
+          // el archivo de comprometido se reconoce en cualquier casilla (si se eligió en otra, se acomoda solo)
           const sk = leerStocks(wb);
-          if (sk && sk.filas.length) { LOTE = LOTE.filter((x) => x.tipo !== 'stk'); LOTE.push({ tipo: 'stk', archivo: f.name, ...sk }); continue; }
-          if (forzado === 'stocks') { error = true; msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo. El archivo de comprometido de Profit debe traer las columnas Código y COM. (Comprometido). Vuelva a elegirlo.', 'err'); continue; }
+          if (sk && sk.filas.length) { LOTE = LOTE.filter((x) => x.tipo !== 'stk'); LOTE.push({ tipo: 'stk', archivo: f.name, ...sk }); if (forzado && forzado !== 'stocks') avisoCarga('ℹ ' + f.name + ' es el archivo de stock comprometido: se puso en su casilla «Comprometido».', 'ok'); continue; }
+          if (forzado === 'stocks') {
+            if (leerAlmacen(wb)) { forzado = null; avisoCarga('ℹ ' + f.name + ' es un reporte de inventario a costo, no el de comprometido: se puso en la casilla de su almacén.', 'ok'); }
+            else { error = true; msg($('c-msg'), '✖ ' + f.name + ': no encuentro las columnas del comprometido. Debe ser el reporte de Profit con Código y COM. (también sirve «Comprometido»). Columnas que trae: ' + cabecerasDe(wb) + '.', 'err'); continue; }
+          }
         }
         if (forzado !== 'precios') {
           const r = leerAlmacen(wb);
@@ -3466,6 +3503,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const k = c.dataset.alm, vs = LOTE.filter((l) => l.tipo === 'ventas'), x = k === 'ventas' ? vs[0] : k === 'precios' ? LOTE.find((l) => l.tipo === 'precios') : k === 'stocks' ? LOTE.find((l) => l.tipo === 'stk') : LOTE.find((l) => l.tipo === 'alm' && l.alm === k);
       c.classList.toggle('ok', !!x); c.querySelector('.st').textContent = x ? '✔ ' + (k === 'ventas' ? vs.map((v) => v.archivo).join(', ') : x.archivo) : 'Sin archivo'; c.querySelector('.sh-elegir').textContent = x ? '🔄 Cambiar archivo' : '📂 Elegir archivo';
     });
+    const faltCtl = pintarControl() || [];
     const pend = LOTE.some((x) => x.tipo === 'alm' && !x.alm);
     $('c-ver').disabled = $('c-guardar').disabled = !LOTE.length || pend;
     // barra de subir: qué falta y qué sigue
@@ -3482,7 +3520,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         const hayS = LOTE.some((x) => x.tipo === 'stk');
         const sube = [...(hayA ? ['inventario' + (hayS ? ' con comprometido' : '')] : hayS ? ['comprometido (se pone en el último corte cargado)'] : []), ...(hayP ? ['lista de precios'] : []), ...(hayV ? ['ventas'] : [])];
         const f = (hayA && faltanA.length ? ' · Atención: falta inventario de ' + faltanA.join(', ') : '') + (hayA && !hayS ? ' · ⚠ sin el reporte de Stocks no se separa lo comprometido' : '');
-        est2.textContent = 'Se subirá: ' + sube.join(', ') + f;
+        est2.textContent = 'Se subirá: ' + sube.join(', ') + f + (faltCtl.length ? ' · ⚠ falta: ' + faltCtl.map((x) => x.n).join(', ') : '');
       }
     }
   }
@@ -3499,6 +3537,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
   drop.addEventListener('drop', (e) => recibir([...e.dataTransfer.files]));
   $('c-corte').value = new Date().toISOString().slice(0, 10);
+  $('c-corte').addEventListener('change', () => pintarLote());
 
   const combinado = () => {
     const base = soloDatos(SERVER || {});
@@ -3624,7 +3663,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (vs.length) { const r = await guardarVentas(vs); hecho.push('ventas de ' + r.meses.map(nomMes).join(', ') + ' (' + r.lineas.toLocaleString('es-VE') + ' líneas · ' + fmtU(r.total) + ')'); bitacora('CARGA VENTAS', vs.map((v) => v.archivo).join(', ') + ' · ' + r.meses.join(', ') + ' · ' + r.lineas + ' líneas'); }
       if (p) { await guardarPrecios(p, fecha); hecho.push('lista de precios (' + p.filas.length.toLocaleString('es-VE') + ' artículos)'); bitacora('CARGA PRECIOS', p.archivo + ' · ' + p.filas.length + ' filas'); }
       LOTE = []; PREVIEW = null; pintarLote(); $('t-preview').hidden = true;
-      const ok_ = '✔ Datos subidos con éxito: ' + (hecho.join(' y ') || 'conciliación') + '. Todos los usuarios ya ven la nueva versión.';
+      const fl = (controlCarga().it || []).filter((x) => !x.en && (x.falta || x.viejo));
+      const ok_ = '✔ Datos subidos con éxito: ' + (hecho.join(' y ') || 'conciliación') + '. Todos los usuarios ya ven la nueva versión.' + (fl.length ? ' ⚠ No olvide cargar también: ' + fl.map((x) => x.n).join(', ') + '.' : '');
       msg($('c-msg'), ok_, 'ok'); avisoCarga(ok_, 'ok');
       SERVER = await leerDatos(); dash._set(soloDatos(SERVER)); ver('v-tablero');
     } catch (e) {
