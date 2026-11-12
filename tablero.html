@@ -1265,11 +1265,11 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         <div class="fm-res" id="fm-res"></div>
         <div class="fm-tr" id="fm-tr"></div>
         <div class="tt-tools">
-          <select class="tt-in" id="fm-v" aria-label="Qué ver"><option value="Propuesta">Con cambio propuesto (por decidir)</option><option value="Aceptada">Aceptadas (van para Profit)</option><option value="Bajada para Profit">Ya bajadas para Profit</option><option value="Rechazada">Rechazadas</option><option value="Correcta">Familia correcta</option><option value="">Todos los artículos</option></select>
+          <select class="tt-in" id="fm-v" aria-label="Qué ver"><option value="Nueva propuesta">Aceptadas cuya propuesta se corrigió</option><option value="Propuesta">Con cambio propuesto (por decidir)</option><option value="Aceptada">Aceptadas (van para Profit)</option><option value="Bajada para Profit">Ya bajadas para Profit</option><option value="Rechazada">Rechazadas</option><option value="Correcta">Familia correcta</option><option value="">Todos los artículos</option></select>
           <select class="tt-in" id="fm-f" aria-label="Familia actual"><option value="">Familia anterior: todas</option></select>
           <select class="tt-in" id="fm-p" aria-label="Familia propuesta"><option value="">Familia propuesta: todas</option></select>
           <select class="tt-in" id="fm-s" aria-label="Stock"><option value="">Con y sin stock</option><option value="1">Solo con stock</option></select>
-          <select class="tt-in" id="fm-c" aria-label="Confianza"><option value="">Toda propuesta</option><option value="2">Confirmada por descripción y número de parte</option><option value="1">Revisar: descripción y número de parte no coinciden</option><option value="0">Solo por descripción (sin número Toyota)</option></select>
+          <select class="tt-in" id="fm-c" aria-label="Confianza"><option value="">Toda propuesta</option><option value="2">Confirmada por descripción y número de parte</option><option value="1">Corregidas por el número de parte Toyota (la descripción decía otra)</option><option value="0">Solo por descripción (sin número Toyota)</option></select>
           <span class="tt-status" id="fm-n"></span>
         </div>
         <div class="fm-acc" id="fm-acc"></div>
@@ -2150,13 +2150,13 @@ window.TT = (() => {
   function todas() {
     const A = dash.data('articulos'); if (A.status !== 'ok') return null; const no = NO(), info = window.TT_FAMINFO || ((d) => ({ familia: window.TT_FAMSUG ? window.TT_FAMSUG(d) : null, fuente: 'Descripción' }));
     return A.data.map((a) => { const I = info(a.descripcion, a.codigo) || {}, prop = I.familia || a.familia, p = PEND[K(a.codigo)];
-      const estado = p ? (p.exportado_en ? 'Bajada para Profit' : 'Aceptada') : prop === (a.familia_base || a.familia) ? 'Correcta' : no.has(K(a.codigo)) ? 'Rechazada' : 'Propuesta';
-      return { fila: a.fila, codigo: a.codigo, descripcion: a.descripcion, stock: Number(a.stock) || 0, familia: a.familia_base || a.familia, usada: a.familia, propuesta: p ? p.familia_nueva : prop, sugerida: prop, fuente: I.fuente || 'Descripción', revisar: !!I.revisar, estado, decision: estado }; });
+      const estado = p ? (p.familia_nueva !== prop && p.origen !== 'Familia elegida a mano' ? 'Nueva propuesta' : p.exportado_en ? 'Bajada para Profit' : 'Aceptada') : prop === (a.familia_base || a.familia) ? 'Correcta' : no.has(K(a.codigo)) ? 'Rechazada' : 'Propuesta';
+      return { fila: a.fila, codigo: a.codigo, descripcion: a.descripcion, stock: Number(a.stock) || 0, familia: a.familia_base || a.familia, usada: a.familia, aceptada: p ? p.familia_nueva : null, propuesta: prop, sugerida: prop, fuente: I.fuente || 'Descripción', revisar: !!I.revisar, estado, decision: estado }; });
   }
   const puede = () => !!(window.TT_PROF && window.TT_PROF.familias);
   async function aceptar(L, nueva) {
     if (!puede()) return avisar('✖ Su usuario no puede corregir familias.', 'err');
-    const n = await window.TT_PROF.familias(L.map((r) => ({ codigo: r.codigo, descripcion: r.descripcion, familia: r.familia, nueva: nueva || r.sugerida })), 'Revisión de familias');
+    const n = await window.TT_PROF.familias(L.map((r) => ({ codigo: r.codigo, descripcion: r.descripcion, familia: r.familia, nueva: nueva || r.sugerida })), nueva ? 'Familia elegida a mano' : 'Revisión de familias');
     const S = NO(); L.forEach((r) => S.delete(K(r.codigo))); ponNO(S);
     avisar('✔ ' + n + ' familias aceptadas: quedan listas para el archivo de Profit.', 'ok'); await traerPend();
   }
@@ -2169,32 +2169,35 @@ window.TT = (() => {
     const T = todas(); if (!T) return;
     const FAMS = window.TT_FAMS ? window.TT_FAMS() : [...new Set(T.map((r) => r.familia))].sort();
     opts($('fm-f'), [...new Set(T.map((r) => r.familia))].sort(), 'Familia anterior: todas'); opts($('fm-p'), [...new Set(T.map((r) => r.propuesta))].sort(), 'Familia propuesta: todas');
+    if (!draw._ini) { draw._ini = true; if (T.some((r) => r.estado === 'Nueva propuesta')) $('fm-v').value = 'Nueva propuesta'; }
     const V = $('fm-v').value, F = $('fm-f').value, P = $('fm-p').value, S = $('fm-s').value, Cf = $('fm-c').value;
-    const base = T.filter((r) => (!F || r.familia === F) && (!P || r.propuesta === P) && (!S || r.stock > 0) && (!Cf || (Cf === '2' ? /número de parte$/.test(r.fuente) : Cf === '1' ? r.revisar : r.fuente === 'Descripción')));
+    const base = T.filter((r) => (!F || r.familia === F) && (!P || r.propuesta === P) && (!S || r.stock > 0) && (!Cf || (Cf === '2' ? /número de parte$/.test(r.fuente) : Cf === '1' ? r.revisar : /^Descripción/.test(r.fuente) && !/número de parte$/.test(r.fuente))));
     const rows = base.filter((r) => !V || r.estado === V);
     // resumen por estado (botones)
     const C = {}; T.forEach((r) => { C[r.estado] = (C[r.estado] || 0) + 1; });
     const res = $('fm-res'); res.replaceChildren();
-    [['Propuesta', 'pr', 'por decidir'], ['Aceptada', 'ac', 'aceptadas'], ['Bajada para Profit', 'bj', 'ya bajadas para Profit'], ['Rechazada', 'no', 'rechazadas'], ['Correcta', 'ok', 'con familia correcta']].forEach(([e, c, t]) => {
+    [['Nueva propuesta', 'pr', 'con propuesta corregida (revise)'], ['Propuesta', 'pr', 'por decidir'], ['Aceptada', 'ac', 'aceptadas'], ['Bajada para Profit', 'bj', 'ya bajadas para Profit'], ['Rechazada', 'no', 'rechazadas'], ['Correcta', 'ok', 'con familia correcta']].forEach(([e, c, t]) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-c ' + c + (V === e ? ' on' : ''); b.textContent = fmt.int(C[e] || 0) + ' ' + t; b.addEventListener('click', () => { $('fm-v').value = e; $('fm-f').value = ''; $('fm-p').value = ''; draw(); }); res.appendChild(b); });
     { const k = $('fm-kpi'); if (k) k.textContent = fmt.int(C['Propuesta'] || 0); }
     const t0 = document.createElement('span'); t0.className = 'fm-l'; t0.textContent = 'de ' + fmt.int(T.length) + ' artículos revisados'; res.appendChild(t0);
     // cambios propuestos agrupados: de qué familia a cuál
     const tr = $('fm-tr'); tr.replaceChildren(); const G = {};
-    base.filter((r) => r.estado === 'Propuesta').forEach((r) => { const k = r.familia + ' → ' + r.propuesta; (G[k] = G[k] || []).push(r); });
+    const NV = $('fm-v').value === 'Nueva propuesta';
+    base.filter((r) => r.estado === (NV ? 'Nueva propuesta' : 'Propuesta')).forEach((r) => { const k = (NV ? r.aceptada : r.familia) + ' → ' + r.propuesta; (G[k] = G[k] || []).push(r); });
     const gs = Object.entries(G).sort((a, b) => b[1].length - a[1].length);
     if (gs.length) { const l = document.createElement('span'); l.className = 'fm-l'; l.textContent = 'Cambios propuestos (toque para ver):'; tr.appendChild(l); }
     gs.slice(0, 14).forEach(([k, L]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-t'; b.innerHTML = ''; b.append(k + ' '); const n = document.createElement('b'); n.textContent = '(' + L.length + ')'; b.appendChild(n); b.title = 'Ver solo estos ' + L.length + ' artículos';
-      b.addEventListener('click', () => { $('fm-v').value = 'Propuesta'; $('fm-f').value = L[0].familia; $('fm-p').value = L[0].propuesta; draw(); }); tr.appendChild(b); });
+      b.addEventListener('click', () => { if (NV) { $('fm-f').value = ''; } else { $('fm-v').value = 'Propuesta'; $('fm-f').value = L[0].familia; } $('fm-p').value = L[0].propuesta; draw(); }); tr.appendChild(b); });
     // tabla
     const n = table($('t-fam'), rows, {
-      estado: { render: (td, r) => chip(td, r.estado, r.estado === 'Correcta' ? 'ok' : r.estado === 'Propuesta' ? 'warn' : r.estado === 'Rechazada' ? '' : 'warn') },
+      estado: { render: (td, r) => chip(td, r.estado, r.estado === 'Correcta' ? 'ok' : r.estado === 'Propuesta' || r.estado === 'Nueva propuesta' ? 'warn' : r.estado === 'Rechazada' ? '' : 'warn') },
       codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num },
       propuesta: { render: (td, r) => { td.textContent = r.propuesta; if (r.propuesta !== r.familia) td.className = 'fm-p'; } },
       fuente: { render: (td, r) => { const s = document.createElement('small'); s.textContent = (/número de parte$/.test(r.fuente) ? '✔✔ ' : r.revisar ? '⚠ ' : '') + r.fuente; s.style.color = r.revisar ? '#9a5b00' : /número de parte$/.test(r.fuente) ? '#14532d' : ''; td.appendChild(s); } },
       decision: { render: (td, r) => {
         const w = document.createElement('div'); w.className = 'fm-d'; const btn = (t, c, f) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; if (c) b.className = c; b.addEventListener('click', async () => { b.disabled = true; try { await f(); } catch (e) { avisar('✖ ' + e.message, 'err'); } }); return b; };
-        if (r.estado === 'Propuesta' || r.estado === 'Rechazada') { w.appendChild(btn('✔ Aceptar', '', () => aceptar([r]))); if (r.estado === 'Propuesta') w.appendChild(btn('✕ No', 'n', async () => rechazar([r]))); }
+        if (r.estado === 'Nueva propuesta') { const sm = document.createElement('small'); sm.textContent = 'aceptó: ' + r.aceptada; w.appendChild(sm); }
+        if (r.estado === 'Propuesta' || r.estado === 'Rechazada' || r.estado === 'Nueva propuesta') { w.appendChild(btn('✔ Aceptar', '', () => aceptar([r]))); if (r.estado === 'Propuesta') w.appendChild(btn('✕ No', 'n', async () => rechazar([r]))); }
         if (r.estado === 'Aceptada' || r.estado === 'Bajada para Profit') w.appendChild(btn('↺ Deshacer', 'n', () => quitar([r])));
         const sel = document.createElement('select'); sel.className = 'tt-in'; sel.appendChild(new Option('Otra familia…', '')); FAMS.filter((f) => f !== r.familia).forEach((f) => sel.appendChild(new Option(f, f)));
         sel.title = 'Escoger otra familia para este artículo'; sel.addEventListener('change', () => { if (sel.value) aceptar([r], sel.value).catch((e) => avisar('✖ ' + e.message, 'err')); }); w.appendChild(sel);
@@ -2203,7 +2206,7 @@ window.TT = (() => {
     $('fm-n').textContent = fmt.int(n) + ' artículos' + (n > st.limit ? ' · se muestran ' + st.limit : '');
     // acciones masivas sobre lo que se ve (incluye la búsqueda de la barra de la tabla)
     const TF = window.TT_TF && window.TT_TF.get($('t-fam')), vis = (TF && TF.vis) || rows;
-    const prop = vis.filter((r) => r.estado === 'Propuesta' || r.estado === 'Rechazada'), acep = vis.filter((r) => r.estado === 'Aceptada');
+    const prop = vis.filter((r) => r.estado === 'Propuesta' || r.estado === 'Rechazada' || r.estado === 'Nueva propuesta'), acep = vis.filter((r) => r.estado === 'Aceptada');
     const nPend = Object.values(PEND).length, acc = $('fm-acc'); acc.replaceChildren();
     const A = (t, c, dis, f, tip) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-a ' + c; b.textContent = t; b.disabled = dis; if (tip) b.title = tip; b.addEventListener('click', async () => { if (c === 'si' && !b.dataset.k) { b.dataset.k = '1'; b.textContent = '¿Seguro? toque otra vez (' + fmt.int(prop.length) + ')'; return; } b.disabled = true; try { await f(); } catch (e) { avisar('✖ ' + e.message, 'err'); } b.disabled = false; }); acc.appendChild(b); };
     A('✔ Aceptar todas las propuestas que se ven (' + fmt.int(prop.length) + ')', 'si', !prop.length || !puede(), () => aceptar(prop), 'Acepta la familia propuesta de todas las filas que se ven con el filtro puesto');
@@ -3337,7 +3340,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     if (['4243', '4351'].includes(p4) || ['445', '446', '447'].includes(p3)) return F_.B;   // discos, tambores, ABS, hidrovac
     if (['426', '451', '452', '386'].includes(p3)) return null;   // tapas de rin, volante, accesorios: decide la descripción
     if (p3 === '421') return F_.M;   // diferencial
-    if (p4 === '3350' || p4 === '3630') return F_.C;   // pomos de palanca y de mocha
+    if (p === '33504' || p4 === '3630') return F_.C;   // pomos de palanca y de mocha
     if (['850', '851', '852', '853'].includes(p3)) return F_.C;
     if (p3 === '878' || p3 === '879') return F_.C; if (p2 === '87') return F_.M;
     const G = { 11: 'M', 12: 'M', 13: 'M', 15: 'M', 16: 'M', 17: 'M', 21: 'M', 22: 'M', 23: 'M', 25: 'M', 19: 'E', 27: 'E', 28: 'E', 31: 'M', 32: 'M', 33: 'M', 35: 'M', 36: 'M', 37: 'M', 38: 'M', 41: 'M',
@@ -3348,10 +3351,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   // propuesta final con su fuente: descripción y número de parte; cuando no coinciden manda el número de parte (salvo filtros y bombillos, que la descripción no engaña)
   function familiaInfo(desc, cod) {
     const d = familiaSugerida(desc), c = famPorCodigo(cod, desc);
-    if (!c) return { familia: d, fuente: 'Descripción', revisar: d === 'Otros' };
+    if (!c) return { familia: d, fuente: d === 'Otros' ? 'Descripción: no es repuesto (servicio, póliza, prueba o herramienta)' : 'Descripción', revisar: false };
     if (c === d) return { familia: d, fuente: 'Descripción y número de parte', revisar: false };
-    if (/BATERIA|YUASA|AIRBAG|LLAVE.{0,12}ENCENDIDO|^\s*MOTOR\s+(DE\s+)?(LIMPIA|WIPER|ENVASE)/.test(String(desc || '').toUpperCase())) return { familia: F_.E, fuente: 'Descripción (pieza eléctrica)', revisar: c !== F_.E || d !== F_.E, otra: c };
-    if (d === 'Filtros' || d === 'Iluminación') return { familia: d, fuente: 'Descripción (el número de parte dice ' + c + ')', revisar: true, otra: c };
+    if (/BATERIA|YUASA|AIRBAG|LLAVE.{0,12}ENCENDIDO|^\s*MOTOR\s+(DE\s+)?(LIMPIA|WIPER|ENVASE)/.test(String(desc || '').toUpperCase())) return { familia: F_.E, fuente: 'Descripción: pieza eléctrica (batería, airbag, llave, motor de wiper)', revisar: false, otra: c };
+    const D0 = String(desc || '').toUpperCase().replace(/^\s*[0-9A-Z]{4,6}-[0-9A-Z]{4,6}(-[0-9A-Z]{1,3})?\s+/, '').trim();
+    if ((d === 'Filtros' && /^(PRE-? ?FILTRO|PREFILTRO|FILTRO|MICROFILTRO|ELEMENTO|FIELTRO|CARTUCHO|TRAMPA DE AGUA)/.test(D0)) || (d === 'Iluminación' && /^(\d+ ?CONTACTO|BOMBILLO|FARO|STOP|LAMPARA|LUZ|LUCES|COCUYO|BALITA|MICA|T ?\d|H\d|LED|REFLECTOR|CARELO|SIDELAMP|FOCO|CONJUNTO DE LAMPARA)/.test(D0))) return { familia: d, fuente: 'Descripción: la pieza es un ' + (d === 'Filtros' ? 'filtro' : 'bombillo o lámpara') + ' (sistema Toyota: ' + c + ')', revisar: false, otra: c };
     return { familia: c, fuente: 'Número de parte Toyota (la descripción decía ' + d + ')', revisar: true, otra: d };
   }
   window.TT_FAMINFO = familiaInfo;
