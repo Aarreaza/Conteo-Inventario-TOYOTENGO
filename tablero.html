@@ -414,6 +414,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .tt-tab:focus-visible,.tt-btn:focus-visible,.tt-in:focus-visible{outline:2px solid var(--color-fg);outline-offset:2px}
 .ap-go{cursor:pointer;transition:border-color .15s,box-shadow .15s}.ap-go:hover,.ap-go:focus-visible{border-color:var(--cds-chart-status-critical,#c00);box-shadow:0 2px 8px rgba(0,0,0,.08);outline:none}.ap-go .k::after{content:' ›';opacity:.6}
 .ap-res{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:.2rem 0 .6rem;font-size:var(--cds-font-size-caption)}.ap-res div{display:flex;flex-direction:column}.ap-res span{color:var(--color-fg-muted)}.ap-res b{font-size:1rem;font-variant-numeric:tabular-nums}
+.fm-ir{font:600 .8rem inherit;border:1px solid #a9c3f2;background:#e8f0ff;color:#173f8a;border-radius:999px;padding:.2rem .7rem;cursor:pointer;margin-left:.3rem}
 .fm-res,.fm-tr,.fm-acc{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.25rem 0 .5rem}.fm-c{font:600 .85rem inherit;border:1px solid var(--color-border-line);background:var(--color-panel);border-radius:999px;padding:.3rem .8rem;cursor:pointer}.fm-c.on{outline:2px solid currentColor;outline-offset:1px}.fm-c.pr{background:#e8f0ff;color:#173f8a;border-color:#a9c3f2}.fm-c.ac{background:#fff6dd;color:#7a4b00;border-color:#f0d27a}.fm-c.ok{background:#e7f6ec;color:#14532d;border-color:#9fd5b0}.fm-c.no{background:#f3f3f3;color:#555}.fm-c.bj{background:#efe9ff;color:#4b2a9a;border-color:#c9b8f5}
 .fm-tr .fm-t{font-size:.8rem;border:1px dashed #a9c3f2;background:#f7faff;border-radius:6px;padding:.2rem .5rem;cursor:pointer;color:#173f8a}.fm-tr .fm-t b{font-variant-numeric:tabular-nums}.fm-tr .fm-l{font-size:.8rem;color:var(--color-fg-muted)}
 .fm-a{font:600 .85rem inherit;border-radius:6px;padding:.4rem .8rem;cursor:pointer;border:1px solid var(--color-border-line);background:var(--color-panel)}.fm-a.si{background:#14532d;color:#fff;border-color:#14532d}.fm-a.xls{background:#1d6f42;color:#fff;border-color:#1d6f42}.fm-a:disabled{opacity:.5;cursor:default}
@@ -1165,7 +1166,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="tt-grid">
         <div class="tt-card" id="card-margen-fam">
           <h3>Margen bruto por familia</h3>
-          <p class="note">Margen = (precio de venta − costo) ÷ precio de venta, sobre los artículos con stock que tienen precio.</p>
+          <p class="note">Margen = (precio de venta − costo) ÷ precio de venta, sobre los artículos con stock que tienen precio. <button type="button" class="fm-ir" data-fm-ir>🏷 Revisar y corregir familias ›</button></p>
           <div class="tt-chart" id="ch-margen-fam" data-source="margen_familia"></div>
         </div>
         <div class="tt-card" id="card-margen-rango">
@@ -1216,6 +1217,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         <div class="tt-tile"><span class="k">Prioridad media</span><span class="v dash-skeleton" data-source="kpis" data-field="hallazgos_media">—</span><span class="s">revisar después del conteo</span><span class="tt-seg" data-grupo="media"></span><button class="tt-btn tt-dl" data-grupo="media" hidden>Descargar Excel</button></div>
         <div class="tt-tile"><span class="k">Códigos con stock negativo</span><span class="v dash-skeleton" data-source="kpis" data-field="negativos">—</span><span class="s">restan <span data-source="kpis" data-field="valor_negativo">—</span> al valor</span><span class="tt-seg" data-grupo="neg"></span><button class="tt-btn tt-dl" data-grupo="neg" hidden>Descargar Excel</button></div>
         <div class="tt-tile"><span class="k">Solo en el reporte de Stocks</span><span class="v dash-skeleton" data-source="kpis" data-field="sin_costo">—</span><span class="s">códigos sin costo en el reporte de Valor</span><span class="tt-seg" data-grupo="sc"></span><button class="tt-btn tt-dl" data-grupo="sc" hidden>Descargar Excel</button></div>
+        <div class="tt-tile ap-go fm-go" role="button" tabindex="0" title="Ver la propuesta de familias"><span class="k">Familias por revisar</span><span class="v" id="fm-kpi">—</span><span class="s">artículos con otra familia propuesta · toque para revisar</span></div>
         <div class="tt-tile"><span class="k">Hallazgos resueltos</span><span class="v dash-skeleton" data-source="kpis" data-field="resueltos">—</span><span class="s">según el seguimiento cargado</span><span class="tt-seg" data-grupo="res"></span><button class="tt-btn tt-dl" data-grupo="res" hidden>Descargar Excel</button></div>
       </div>
       <div class="tt-card" id="card-hz-tipo">
@@ -2164,6 +2166,7 @@ window.TT = (() => {
     const res = $('fm-res'); res.replaceChildren();
     [['Propuesta', 'pr', 'por decidir'], ['Aceptada', 'ac', 'aceptadas'], ['Bajada para Profit', 'bj', 'ya bajadas para Profit'], ['Rechazada', 'no', 'rechazadas'], ['Correcta', 'ok', 'con familia correcta']].forEach(([e, c, t]) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-c ' + c + (V === e ? ' on' : ''); b.textContent = fmt.int(C[e] || 0) + ' ' + t; b.addEventListener('click', () => { $('fm-v').value = e; $('fm-f').value = ''; $('fm-p').value = ''; draw(); }); res.appendChild(b); });
+    { const k = $('fm-kpi'); if (k) k.textContent = fmt.int(C['Propuesta'] || 0); }
     const t0 = document.createElement('span'); t0.className = 'fm-l'; t0.textContent = 'de ' + fmt.int(T.length) + ' artículos revisados'; res.appendChild(t0);
     // cambios propuestos agrupados: de qué familia a cuál
     const tr = $('fm-tr'); tr.replaceChildren(); const G = {};
@@ -2209,7 +2212,9 @@ window.TT = (() => {
   st.redraw = draw;
   dash.onData(draw);
   document.querySelectorAll('.tt-tab').forEach((t) => t.addEventListener('click', () => setTimeout(draw, 0))); if (window.TT.page === 'calidad') setTimeout(draw, 50);
-  window.TT_FAMREV = { draw, traerPend };
+  const ir = () => { window.TT.show('calidad'); setTimeout(() => { draw(); const c = $('card-familias'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); };
+  document.querySelectorAll('.fm-go, [data-fm-ir]').forEach((b) => { b.addEventListener('click', ir); b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ir(); } }); });
+  window.TT_FAMREV = { draw, traerPend, ir };
 })();
 </script>
 
