@@ -360,10 +360,19 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 #mla-msg:not(:empty){padding:.7rem .9rem;border-radius:8px;border:1px solid var(--color-border-line);font-weight:600}
 #mla-msg.ok{border-color:var(--color-ok);background:color-mix(in srgb,var(--color-ok) 9%,transparent)}
 #mla-msg.err{border-color:var(--color-bad);background:color-mix(in srgb,var(--color-bad) 8%,transparent)}
-.ml-tabs{display:flex;flex-wrap:wrap;gap:.35rem;margin:1rem 0 .9rem;border-bottom:1px solid var(--color-border-line)}
-.ml-tabs button{border:0;background:transparent;padding:.6rem .95rem;font-size:.92rem;cursor:pointer;color:var(--color-fg-muted);border-bottom:3px solid transparent;margin-bottom:-1px}
-.ml-tabs button:hover{color:var(--color-fg)}
-.ml-tabs button.on{color:var(--color-fg);font-weight:600;border-bottom-color:#ffe600}
+.ml-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem;margin:1rem 0 1.1rem}
+@media (max-width:900px){.ml-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ml-tabs button{position:relative;display:flex;align-items:center;gap:.7rem;text-align:left;padding:.85rem 1rem;border-radius:12px;border:1.5px solid var(--color-border-line);background:var(--color-panel);cursor:pointer;color:var(--color-fg);transition:border-color .15s,box-shadow .15s,transform .15s}
+.ml-tabs button:hover{border-color:#d9c400;box-shadow:0 4px 14px rgba(0,0,0,.08);transform:translateY(-1px)}
+.ml-tabs button.on{border-color:#2d3277;background:#2d3277;color:#fff;box-shadow:0 6px 18px rgba(45,50,119,.25)}
+.ml-tabs .mt-ic{font-size:1.6rem;line-height:1;flex:none;width:2.6rem;height:2.6rem;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff7b3}
+.ml-tabs button.on .mt-ic{background:#ffe600}
+.ml-tabs .mt-tx{display:flex;flex-direction:column;min-width:0}
+.ml-tabs .mt-tx b{font-size:.98rem;line-height:1.2}
+.ml-tabs .mt-tx small{font-size:.78rem;opacity:.75;margin-top:.15rem}
+.ml-tabs .mt-bd{position:absolute;top:-.45rem;right:-.35rem;min-width:1.5rem;height:1.5rem;padding:0 .4rem;border-radius:99px;background:var(--color-bad);color:#fff;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--color-bg)}
+.ml-tabs .mt-bd.ok{background:var(--color-ok)}
+.ml-tabs .mt-bd[hidden]{display:none}
 .ml-pane{display:flex;flex-direction:column;gap:1rem}.ml-pane[hidden]{display:none}
 #ml-cx{display:flex;flex-direction:column;gap:.75rem}#ml-cx>#mla{order:-1;margin-bottom:.75rem}
 
@@ -671,10 +680,10 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
     </div>
 
     <nav class="ml-tabs" id="ml-tabs" role="tablist" aria-label="Secciones de Mercado Libre">
-      <button type="button" role="tab" data-mt="cuenta" class="on">Cuenta y alertas</button>
-      <button type="button" role="tab" data-mt="ventas">Estadísticas de venta</button>
-      <button type="button" role="tab" data-mt="analisis">Análisis vs inventario</button>
-      <button type="button" role="tab" data-mt="archivos">Archivos: subir y descargar</button>
+      <button type="button" role="tab" data-mt="cuenta" class="on"><span class="mt-ic" aria-hidden="true">🛡️</span><span class="mt-tx"><b>Cuenta y alertas</b><small>Estado, deuda, preguntas</small></span><span class="mt-bd" data-bd="cuenta" hidden></span></button>
+      <button type="button" role="tab" data-mt="ventas"><span class="mt-ic" aria-hidden="true">📈</span><span class="mt-tx"><b>Estadísticas de venta</b><small>Ventas por mes y año</small></span><span class="mt-bd" data-bd="ventas" hidden></span></button>
+      <button type="button" role="tab" data-mt="analisis"><span class="mt-ic" aria-hidden="true">🔍</span><span class="mt-tx"><b>Análisis vs inventario</b><small>Qué corregir en ML</small></span><span class="mt-bd" data-bd="analisis" hidden></span></button>
+      <button type="button" role="tab" data-mt="archivos"><span class="mt-ic" aria-hidden="true">📁</span><span class="mt-tx"><b>Archivos</b><small>Subir y descargar Excel</small></span><span class="mt-bd" data-bd="archivos" hidden></span></button>
     </nav>
     <div class="sh-msg" id="ml-msg" role="status"></div>
     <div class="ml-pane" data-mp="cuenta">
@@ -4554,6 +4563,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const A = aj(); $('ml-com').value = Math.round(A.com * 1000) / 10; $('ml-min').value = Math.round(A.min * 1000) / 10; $('ml-tasa').value = A.tasa || '';
       if (!famLlena && SERVER.articulos.length) { famLlena = true; [...new Set(SERVER.articulos.map((a) => a.familia))].sort((a, b) => a.localeCompare(b, 'es')).forEach((f) => $('ml-fam').appendChild(new Option(f, f))); }
       estadoTxt(); ctrl(); alertas(); tiles(); tabla(); vendedor(); resumenVentas(); pintarPlanillas();
+      pintarInsignias();
       $('ml-graf').hidden = !R.ventas.length;
     }
     // ---------- descargas ----------
@@ -4758,6 +4768,14 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         avisa('✔ Listo para subir a Mercado Libre: ' + nombres.join(' y ') + ' · ' + log.length + ' publicaciones cambian (' + ceros + ' quedan en 0' + (pr ? ', ' + pr + ' con precio nuevo' : '') + '). Ahora haga el paso 3.', 'ok');
         bitacora('PLANILLA MERCADO LIBRE', tot + ' publicaciones cambian · ' + PLANILLAS.map((x) => x.nombre).join(', '));
       } catch (e) { avisa('✖ No se pudo preparar la planilla: ' + e.message + '. Vuelva a descargarla de Mercado Libre y súbala de nuevo.', 'err'); }
+    }
+    // insignias en las pestañas: cuántas cosas hay que atender en cada una
+    function pintarInsignias() {
+      const pon = (k, n, ok) => { const b = document.querySelector('#ml-tabs [data-bd="' + k + '"]'); if (!b) return; b.hidden = !n; b.textContent = n > 999 ? '999+' : n; b.classList.toggle('ok', !!ok); };
+      const e = (R && R.ml && R.ml.estado) || {};
+      pon('cuenta', (e.cuenta_estado && e.cuenta_estado !== 'ACTIVA' ? 1 : 0) + (Number(e.deuda_vencida) > 0 ? 1 : 0) + (Number(e.preguntas_pendientes) || 0));
+      pon('analisis', R && R.k.hay ? R.k.ss.length + R.k.bc.length + R.k.du.length : 0);
+      const P = PLANILLAS.length; const b = document.querySelector('#ml-tabs [data-bd="archivos"]'); if (b) { b.hidden = !P; b.textContent = '✔'; b.classList.add('ok'); b.title = P ? 'Planillas de Mercado Libre subidas' : ''; }
     }
     function pintarPlanillas() { leerPlanillasGuardadas(); if (window.TT_MLA && window.TT_MLA.estado) window.TT_MLA.estado(); }
 
