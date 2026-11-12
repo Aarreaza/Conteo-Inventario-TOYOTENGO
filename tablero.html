@@ -129,6 +129,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-dif.wa{color:#b26a00;font-weight:600}.ml-dif.ig{color:#1d6f42}#ml-tabla td .tt-chip{display:inline-block;margin:.1rem 0}.ml-dif.dn{color:#c0182a;font-weight:600}
 .ml-edhint{background:#eef4ff;border:1px solid #b9cdf5;border-left:5px solid #2d5bd0;border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;font-size:.88rem;line-height:1.45}.ml-edhint b{color:#173f8a}.ml-edhint .ir{display:inline-flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}.ml-edhint button{font:600 .8rem inherit;border-radius:999px;padding:.3rem .75rem;cursor:pointer;border:1px solid #2d5bd0;background:#fff;color:#173f8a}.ml-edhint button:hover{background:#2d5bd0;color:#fff}.ml-sug{font:600 .75rem inherit;border:1px dashed #1d6f42;background:#eaf7ef;color:#14532d;border-radius:6px;padding:.15rem .45rem;margin:.15rem .25rem 0 0;cursor:pointer}
 .ml-mbtn{cursor:pointer}.ml-mbtn:hover{outline:2px solid #2d5bd0;outline-offset:1px}.ml-mbtn::after{content:" ✏";font-size:.75em;opacity:.65}.ml-mnew{font-size:.72rem;color:#7a4b00;background:#fff1b8;border-radius:4px;padding:0 .3rem;margin-top:.15rem;display:inline-block}.ml-medit{display:flex;align-items:center;gap:.2rem;justify-content:flex-end}.ml-mprev{font-size:.72rem;color:#173f8a;margin-top:.15rem}.ml-mok,.ml-mno{font:600 .8rem inherit;border:1px solid #ccd;border-radius:5px;background:#fff;cursor:pointer;padding:.1rem .35rem}.ml-mok{background:#1d6f42;color:#fff;border-color:#1d6f42}.ml-mall{display:inline-flex;align-items:center;gap:.3rem;background:#fff;border:1px solid #b9cdf5;border-radius:999px;padding:.2rem .3rem .2rem .7rem;font-size:.82rem}
+.pf-b.xl{background:#eef7f0;border-color:#9fd5b0;color:#14532d}.pf-b.xl.up{background:#14532d;color:#fff;border-color:#14532d}
 .pf-bar{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.5rem 0 .4rem}.pf-bar.on{background:#fff8e6;border:1px solid #f0c060;border-left:5px solid #e8a400;border-radius:8px;padding:.45rem .6rem}.pf-b{font:600 .86rem inherit;border-radius:8px;padding:.45rem .85rem;cursor:pointer;border:1.5px solid transparent}.pf-b.ed{background:#fff;color:#7a4b00;border-color:#e8a400}.pf-b.ed.on{background:#b26a00;color:#fff;border-color:#b26a00}.pf-b.x{background:#1d6f42;color:#fff;border-color:#1d6f42}.pf-b.x:disabled{background:#fff;color:#1d6f42;opacity:.55;cursor:default}.pf-b.c{background:#e8eefc;color:#173f8a;border-color:#b9cdf5}.pf-n{font-size:.82rem;color:#7a4b00;font-weight:600}td.pf-td{background:#fffaf0}.pf-ed{width:6.4rem;font:inherit;text-align:right;padding:.25rem .35rem;border:1px solid #d7b46a;border-radius:6px;background:#fff}.pf-ed.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-ed.okk{background:#dff5e6;border-color:#1d6f42}.pf-ed.err{background:#fde8ea;border-color:#c0182a}.pf-m{display:block;font-size:.7rem;color:#555}.pf-m.bad{color:#c0182a}
 .ml-mprev{min-width:15rem;text-align:left;white-space:normal}.ml-pl{display:flex;justify-content:space-between;gap:.6rem;font-size:.74rem;color:#333;border-bottom:1px dotted #e3e6ee;padding:.05rem 0}.ml-pl b{font-weight:600}.ml-pl.ok b{color:#1d6f42}.ml-pl.bad b{color:#c0182a}.ml-pl.muted{color:#777;border:0}.ml-gan{font-weight:600;color:#1d6f42}.ml-gan.bad{color:#c0182a}
 .pf-fam{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem;margin-top:.3rem}.pf-fl{font-size:.72rem;color:#777}.pf-fs{font:inherit;font-size:.78rem;padding:.12rem .3rem;border:1px solid #d7b46a;border-radius:6px;background:#fff;max-width:13rem}.pf-fs.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-fs.okk{background:#dff5e6;border-color:#1d6f42}.pf-fs.err{background:#fde8ea;border-color:#c0182a}.pf-sug{font:600 .74rem inherit;border:1px dashed #2d5bd0;background:#eef4ff;color:#173f8a;border-radius:6px;padding:.1rem .45rem;cursor:pointer}.pf-sug:hover{background:#2d5bd0;color:#fff}
@@ -6793,6 +6794,7 @@ function zoomEn(box){
       }
     }
     marcar(F, out.length, rows.length);
+    F.vis = out;
     return out;
   };
   // modo pantalla: tablas armadas a mano (bitácora, histórico, ventas ML, etc.)
@@ -6852,12 +6854,13 @@ function zoomEn(box){
       if (enDB) for (let i = 0; i < cods.length; i += 200) ok(await sb.from('profit_pendientes').delete().eq('empresa_id', EMPRESA).in('codigo', cods.slice(i, i + 200)));
       cods.forEach((c) => { delete PP[String(c).toUpperCase()]; }); if (!enDB) local();
     }
-    async function guardar(r, campo, valor, origen) {
+    async function guardar(r, campo, valor, origen, lote) {
       await cargar(); const k = String(r.codigo).toUpperCase(), a = art(r.codigo) || {};
       const cur = { ...(PP[k] || { empresa_id: EMPRESA, codigo: r.codigo, descripcion: r.descripcion || a.descripcion || '', costo_antes: a.costo != null ? Number(a.costo) : (r.costo ?? null), precio_antes: precioActual(r.codigo) ?? (r.precio ?? r.precio_lista ?? null), stock_antes: a.stock != null ? Number(a.stock) : (r.stock ?? null) }) };
       cur[campo] = valor; cur.por = quien(); cur.en = new Date().toISOString(); cur.origen = origen || cur.origen || ''; cur.exportado_en = null; cur.exportado_por = null;
       if (campo === 'familia_nueva') cur.familia_antes = cur.familia_antes || a.familia || r.familia || null;
       const vacio = cur.costo_nuevo == null && cur.precio_nuevo == null && cur.stock_contado == null && !cur.familia_nueva;
+      if (lote) { if (!vacio) { PP[k] = cur; lote.set(k, cur); } return; }
       if (enDB) { if (vacio) ok(await sb.from('profit_pendientes').delete().eq('empresa_id', EMPRESA).eq('codigo', r.codigo)); else ok(await sb.from('profit_pendientes').upsert(cur, { onConflict: 'empresa_id,codigo' })); }
       if (vacio) delete PP[k]; else PP[k] = cur; if (!enDB) local();
       botones();
@@ -6912,8 +6915,62 @@ function zoomEn(box){
       c.addEventListener('click', async () => { if (!c.dataset.k) { c.dataset.k = '1'; c.textContent = '¿Seguro? toque otra vez'; setTimeout(() => { delete c.dataset.k; botones(); }, 4000); return; } delete c.dataset.k;
         const L = Object.values(PP).filter((y) => y.exportado_en).map((y) => y.codigo); await cerrar(L); botones(); BARRAS.forEach((G) => G.redraw && G.redraw()); avisoCarga('✔ ' + L.length + ' correcciones marcadas como cargadas en Profit.', 'ok'); });
       const n = document.createElement('span'); n.className = 'pf-n'; n.hidden = true;
-      box.append(ed, x, c, n); F.bar.parentNode.insertBefore(box, F.bar); F.pfx = x; F.pfc = c; F.pfn = n;
+      const bx = document.createElement('button'); bx.type = 'button'; bx.className = 'pf-b xl'; bx.textContent = '⬇ Bajar en Excel para corregir'; bx.title = 'Baja las filas que se ven (con el filtro puesto) con columnas ✏ para escribir costo, precio, familia o stock contado';
+      bx.addEventListener('click', () => bajarExcel(tbl, F).catch((e) => avisoCarga('✖ ' + e.message, 'err')));
+      const sx = document.createElement('button'); sx.type = 'button'; sx.className = 'pf-b xl up'; sx.textContent = '⬆ Subir Excel corregido'; sx.title = 'Suba el Excel que bajó y corrigió: lo escrito en las columnas ✏ queda como corrección pendiente para Profit';
+      sx.addEventListener('click', () => subirExcel(sx).catch((e) => avisoCarga('✖ ' + e.message, 'err')));
+      box.append(ed, bx, sx, x, c, n); F.bar.parentNode.insertBefore(box, F.bar); F.pfx = x; F.pfc = c; F.pfn = n;
       cargar().then(botones).catch(() => {});
+    }
+    // Excel de trabajo: se baja lo que se ve, se corrige en las columnas ✏ y se sube; queda como corrección pendiente para Profit
+    const XC = { costo: '✏ COSTO NUEVO US$', precio: '✏ PRECIO NUEVO US$', familia: '✏ FAMILIA NUEVA', stock: '✏ STOCK CONTADO' };
+    async function bajarExcel(tbl, F) {
+      if (!window.XLSX) throw new Error('falta el componente de Excel; recargue la página');
+      await cargar(); const rows = (F.vis || F.rows || []).filter((r) => r && r.codigo != null); if (!rows.length) return avisoCarga('No hay filas con código en esta tabla.', 'err');
+      const titulo = ((tbl.closest('.tt-card') && (tbl.closest('.tt-card').querySelector('h3') || {}).textContent) || tbl.id || 'Tabla').trim();
+      const num = (v) => (v == null || v === '' || !isFinite(Number(v)) ? '' : Math.round(Number(v) * 100) / 100);
+      const datos = rows.map((r) => { const a = art(r.codigo) || {}, P = PP[String(r.codigo).toUpperCase()] || {}, costo = a.costo != null ? Number(a.costo) : r.costo, precio = precioActual(r.codigo) ?? r.precio ?? r.precio_lista ?? null;
+        return { 'Código': String(r.codigo), 'Descripción': r.descripcion || a.descripcion || '', 'Familia actual': r.familia || a.familia || '', 'Stock': num(a.stock != null ? a.stock : r.stock), 'Disponible': num(r.disponible != null ? r.disponible : ''), 'Costo actual US$': num(costo), 'Precio actual US$': num(precio),
+          'Margen actual': costo > 0 && precio > 0 ? Math.round((precio - costo) / precio * 1000) / 1000 : '',
+          [XC.costo]: P.costo_nuevo ?? '', [XC.precio]: P.precio_nuevo ?? '', [XC.familia]: P.familia_nueva || '', [XC.stock]: P.stock_contado ?? '', 'Familia sugerida': window.TT_FAMSUG ? window.TT_FAMSUG(r.descripcion || a.descripcion || '') : '' }; });
+      const ws = XLSX.utils.json_to_sheet(datos); ws['!cols'] = [14, 45, 20, 8, 10, 12, 12, 10, 16, 16, 20, 14, 20].map((w) => ({ wch: w })); ws['!autofilter'] = { ref: ws['!ref'] };
+      for (let i = 1; i <= datos.length; i++) { const c = ws[XLSX.utils.encode_cell({ r: i, c: 0 })]; if (c) { c.t = 's'; c.v = String(c.v); } const m = ws[XLSX.utils.encode_cell({ r: i, c: 7 })]; if (m && m.t === 'n') m.z = '0.0%'; }
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Corregir');
+      const ins = XLSX.utils.aoa_to_sheet([['Cómo corregir'], ['1. Escriba SOLO en las columnas que empiezan con ✏ (costo nuevo, precio nuevo, familia nueva, stock contado).'], ['2. Deje vacío lo que no cambia. No cambie la columna Código.'], ['3. Familia nueva: use una de la lista de abajo (o copie la «Familia sugerida»).'], ['4. Guarde el archivo y súbalo con «⬆ Subir Excel corregido» en la misma tabla del tablero.'], ['5. Luego baje «⬇ Excel para Profit» y cárguelo en Profit.'], [], ['Familias válidas'], ...(window.TT_FAMS ? window.TT_FAMS() : []).map((f) => [f])]); ins['!cols'] = [{ wch: 100 }];
+      XLSX.utils.book_append_sheet(wb, ins, 'Instrucciones'); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['toyotengo-profit', titulo, new Date().toISOString()]]), '_toyotengo');
+      const nom = 'TOYOTENGO_Corregir_' + titulo.replace(/[^\wáéíóúñÁÉÍÓÚÑ ]+/g, '').trim().replace(/\s+/g, '_').slice(0, 40) + '_' + new Date().toLocaleDateString('en-CA') + '.xlsx';
+      XLSX.writeFile(wb, nom); avisoCarga('✔ Descargado «' + nom + '» con ' + rows.length + ' artículos. Corrija las columnas ✏ y súbalo con «⬆ Subir Excel corregido».', 'ok');
+    }
+    async function subirExcel(btn) {
+      const f = await new Promise((ok2) => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.xlsx,.xls'; i.addEventListener('change', () => ok2(i.files[0] || null)); i.click(); }); if (!f) return;
+      btn.disabled = true;
+      try {
+        await cargar(); const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: 'array' });
+        const n0 = (x) => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        let ws = null, hdr = null; for (const nm of wb.SheetNames) { const a = XLSX.utils.sheet_to_json(wb.Sheets[nm], { header: 1, defval: '' }); const h = (a[0] || []).map(n0); if (h.some((x) => x === 'codigo') && h.some((x) => x.includes('nuev') || x.includes('contado'))) { ws = a; hdr = h; break; } }
+        if (!ws) throw new Error('«' + f.name + '» no es el Excel para corregir del tablero (no encuentro la columna Código y las columnas ✏). Bájelo con «⬇ Bajar en Excel para corregir».');
+        const col = (re) => hdr.findIndex((x) => re.test(x)), cC = hdr.indexOf('codigo'), cCo = col(/costo nuevo/), cPr = col(/precio nuevo/), cFa = col(/familia nueva/), cSt = col(/stock contado/), cDe = hdr.indexOf('descripcion');
+        const FAMS = window.TT_FAMS ? window.TT_FAMS() : [], famOk = (v) => FAMS.find((x) => n0(x) === n0(v));
+        const numX = (v) => { if (v === '' || v == null) return null; if (typeof v === 'number') return v; const t = String(v).trim().replace(/\s|US\$|\$/g, ''); const x = Number(/,\d{1,2}$/.test(t) ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '')); return isFinite(x) ? x : NaN; };
+        const lote = new Map(), err = [], cuenta = { costo: 0, precio: 0, familia: 0, stock: 0 }, origen = 'EXCEL ' + f.name;
+        for (let i = 1; i < ws.length; i++) {
+          const fila = ws[i], cod = String(fila[cC] ?? '').trim(); if (!cod) continue;
+          const r = { codigo: (art(cod) || {}).codigo || cod, descripcion: cDe >= 0 ? fila[cDe] : '' }, P = PP[String(r.codigo).toUpperCase()] || {};
+          const pon = async (campo, v, k) => { if (P[campo] === v) return; await guardar(r, campo, v, origen, lote); cuenta[k]++; };
+          for (const [c, campo, k, min] of [[cCo, 'costo_nuevo', 'costo', 0], [cPr, 'precio_nuevo', 'precio', 0], [cSt, 'stock_contado', 'stock', -1]]) {
+            if (c < 0) continue; const v = numX(fila[c]); if (v == null) continue;
+            if (isNaN(v) || v < 0 || (min === 0 && v === 0)) { err.push('fila ' + (i + 1) + ' (' + cod + '): ' + k + ' «' + fila[c] + '» no es válido'); continue; }
+            await pon(campo, Math.round(v * 100) / 100, k);
+          }
+          if (cFa >= 0 && String(fila[cFa] || '').trim()) { const fm = famOk(fila[cFa]); if (!fm) err.push('fila ' + (i + 1) + ' (' + cod + '): familia «' + fila[cFa] + '» no existe'); else await pon('familia_nueva', fm, 'familia'); }
+        }
+        const L = [...lote.values()];
+        if (enDB) for (let i = 0; i < L.length; i += 300) ok(await sb.from('profit_pendientes').upsert(L.slice(i, i + 300), { onConflict: 'empresa_id,codigo' }));
+        else local();
+        botones(); BARRAS.forEach((G) => G.redraw && G.redraw());
+        const tot = cuenta.costo + cuenta.precio + cuenta.familia + cuenta.stock;
+        avisoCarga((tot ? '✔ ' + L.length + ' artículos quedan con corrección pendiente para Profit (' + [[cuenta.precio, 'de precio'], [cuenta.costo, 'de costo'], [cuenta.familia, 'de familia'], [cuenta.stock, 'de stock contado']].filter((x) => x[0]).map((x) => x[0] + ' ' + x[1]).join(' · ') + '). Ahora baje «⬇ Excel para Profit».' : 'No encontré cambios nuevos en las columnas ✏ de «' + f.name + '».') + (err.length ? ' ⚠ ' + err.length + ' no se tomaron: ' + err.slice(0, 5).join(' · ') + (err.length > 5 ? '…' : '') : ''), err.length && !tot ? 'err' : 'ok');
+      } finally { btn.disabled = false; }
     }
     async function exportar() {
       await cargar(); const L = Object.values(PP).sort((a, b) => String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true })); if (!L.length) return avisoCarga('No hay correcciones pendientes.', 'ok');
