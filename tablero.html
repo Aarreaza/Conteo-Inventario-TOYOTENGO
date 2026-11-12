@@ -2193,7 +2193,17 @@ window.TT = (() => {
     const A = (t, c, dis, f, tip) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-a ' + c; b.textContent = t; b.disabled = dis; if (tip) b.title = tip; b.addEventListener('click', async () => { if (c === 'si' && !b.dataset.k) { b.dataset.k = '1'; b.textContent = '¿Seguro? toque otra vez (' + fmt.int(prop.length) + ')'; return; } b.disabled = true; try { await f(); } catch (e) { avisar('✖ ' + e.message, 'err'); } b.disabled = false; }); acc.appendChild(b); };
     A('✔ Aceptar todas las propuestas que se ven (' + fmt.int(prop.length) + ')', 'si', !prop.length || !puede(), () => aceptar(prop), 'Acepta la familia propuesta de todas las filas que se ven con el filtro puesto');
     if (acep.length) A('↺ Quitar las aceptadas que se ven (' + fmt.int(acep.length) + ')', '', false, () => quitar(acep));
-    A('⬇ Bajar familias para Profit (.xls)' + (nPend ? ' · ' + fmt.int(nPend) : ''), 'xls', !nPend, async () => { await window.TT_PROF.exportar({ solo: 'familias', xls: true }); await traerPend(); }, 'Archivo .xls con Código, Descripción, Familia actual y Familia nueva de todas las familias aceptadas');
+    A('⬇ Bajar TODOS los artículos con su familia (.xls)', 'xls', !T.length, async () => {
+      const C = window.TT_CODFAM || {}, fin = (r) => (r.estado === 'Aceptada' || r.estado === 'Bajada para Profit' ? r.propuesta : r.familia);
+      const filas = T.slice().sort((a, b) => String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true })).map((r) => [String(r.codigo), r.descripcion, fin(r), C[fin(r)] || '', r.familia, r.estado === 'Propuesta' ? 'Por decidir (va con la actual)' : r.estado]);
+      const wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet([['Código', 'Descripción', 'Familia', 'Código familia', 'Familia anterior en el tablero', 'Estado de la revisión'], ...filas]); ws['!cols'] = [{ wch: 18 }, { wch: 50 }, { wch: 26 }, { wch: 14 }, { wch: 26 }, { wch: 28 }];
+      for (let i = 1; i <= filas.length; i++) { const c = ws[XLSX.utils.encode_cell({ r: i, c: 0 })]; if (c) { c.t = 's'; c.v = String(c.v); } }
+      XLSX.utils.book_append_sheet(wb, ws, 'Familias');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Código familia', 'Nombre de la familia', 'Artículos'], ...Object.entries(C).map(([n, c]) => [c, n, filas.filter((f) => f[2] === n).length])]), 'Familias a crear');
+      const nom = 'TOYOTENGO_Familias_todos_los_articulos_' + new Date().toLocaleDateString('en-CA') + '.xls'; XLSX.writeFile(wb, nom, { bookType: 'biff8' });
+      const pd = T.filter((r) => r.estado === 'Propuesta').length; avisar('✔ Descargado ' + nom + ': ' + fmt.int(filas.length) + ' artículos con su familia' + (pd ? ' · ⚠ ' + fmt.int(pd) + ' propuestas sin decidir salen con la familia actual: decídalas antes si quiere que vayan con la nueva' : '') + '.', pd ? 'err' : 'ok');
+    }, 'Catálogo completo: cada artículo con la familia que debe tener en Profit (las aceptadas con la nueva; las demás con la actual)');
+    A('⬇ Bajar solo los cambios aceptados (.xls)' + (nPend ? ' · ' + fmt.int(nPend) : ''), 'xls', !nPend, async () => { await window.TT_PROF.exportar({ solo: 'familias', xls: true }); await traerPend(); }, 'Archivo .xls con Código, Descripción, Familia actual y Familia nueva de todas las familias aceptadas');
   };
   ['fm-v', 'fm-f', 'fm-p', 'fm-s'].forEach((i) => $(i).addEventListener('change', () => draw()));
   st.redraw = draw;
@@ -6952,10 +6962,13 @@ function zoomEn(box){
     const CAMPO = (f) => (/^(costo|costo_unit|costo_prom|costo_unitario)$/.test(f) ? 'costo_nuevo' : /^(precio|precio_lista|precio_venta|precio_1|pvp)$/.test(f) ? 'precio_nuevo' : /^(stock|contado|existencia)$/.test(f) ? 'stock_contado' : null);
     const ETQ = { costo_nuevo: 'costo', precio_nuevo: 'precio de venta', stock_contado: 'stock contado' };
     // formato del archivo para Profit (encabezados iguales a los reportes que exporta Profit; se ajusta aquí si su plantilla de importación usa otros)
+    // códigos cortos sugeridos para crear las familias en Profit
+    const CODFAM = { 'Frenos': 'FRE', 'Filtros': 'FIL', 'Lubricantes y químicos': 'LUB', 'Encendido y eléctrico': 'ELE', 'Iluminación': 'ILU', 'Motor y transmisión': 'MOT', 'Suspensión y dirección': 'SUS', 'Carrocería y accesorios': 'CAR', 'Otros': 'OTR' };
+    window.TT_CODFAM = CODFAM;
     const FMT = {
       precios: { hoja: 'Precios', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Precio 1', (p) => p.precio_nuevo]] },
       costos: { hoja: 'Costos', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Costo', (p) => p.costo_nuevo]] },
-      familias: { hoja: 'Familias', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Familia actual', (p) => p.familia_antes], ['Familia nueva', (p) => p.familia_nueva]] },
+      familias: { hoja: 'Familias', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Familia actual', (p) => p.familia_antes], ['Familia nueva', (p) => p.familia_nueva], ['Código familia nueva', (p) => CODFAM[p.familia_nueva] || '']] },
       ajuste: { hoja: 'Ajuste de inventario', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Almacén', (p) => p.almacen || 'PRINCIPAL'], ['Stock sistema', (p) => p.stock_antes], ['Stock contado', (p) => p.stock_contado], ['Ajuste', (p) => (p.stock_contado != null && p.stock_antes != null ? Math.round((p.stock_contado - p.stock_antes) * 100) / 100 : '')], ['Costo unitario', (p) => (p.costo_nuevo != null ? p.costo_nuevo : p.costo_antes)]] },
     };
     let PP = null, enDB = true, cargando = null;
@@ -7123,7 +7136,9 @@ function zoomEn(box){
       if (pr.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.precios, pr), FMT.precios.hoja);
       if (co.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.costos, co), FMT.costos.hoja);
       if (st.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.ajuste, st), FMT.ajuste.hoja);
-      if (fa.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.familias, fa), FMT.familias.hoja);
+      if (fa.length) { XLSX.utils.book_append_sheet(wb, hoja(FMT.familias, fa), FMT.familias.hoja);
+        const cat = XLSX.utils.aoa_to_sheet([['Código familia', 'Nombre de la familia', 'Artículos que pasan a esta familia'], ...Object.entries(CODFAM).map(([n, c]) => [c, n, fa.filter((p) => p.familia_nueva === n).length])]); cat['!cols'] = [{ wch: 14 }, { wch: 28 }, { wch: 18 }];
+        XLSX.utils.book_append_sheet(wb, cat, 'Familias a crear'); }
       const det = XLSX.utils.json_to_sheet(L.map((p) => ({ 'Código': String(p.codigo), 'Descripción': p.descripcion, 'Costo antes': p.costo_antes, 'Costo nuevo': p.costo_nuevo, 'Precio antes': p.precio_antes, 'Precio nuevo': p.precio_nuevo, 'Margen nuevo': p.precio_nuevo && (p.costo_nuevo || p.costo_antes) ? Math.round((1 - (p.costo_nuevo || p.costo_antes) / p.precio_nuevo) * 1000) / 1000 : null, 'Stock antes': p.stock_antes, 'Stock contado': p.stock_contado, 'Familia antes': p.familia_antes, 'Familia nueva': p.familia_nueva, 'Corregido en': p.origen, 'Por': p.por, 'Fecha': String(p.en || '').slice(0, 16).replace('T', ' ') })));
       det['!cols'] = [{ wch: 14 }, { wch: 45 }, ...Array(7).fill({ wch: 12 }), { wch: 22 }, { wch: 22 }, { wch: 28 }, { wch: 30 }, { wch: 16 }]; XLSX.utils.book_append_sheet(wb, det, 'Detalle (control)');
       const xls = op.xls !== false, ext = xls ? '.xls' : '.xlsx', f = new Date().toLocaleDateString('en-CA'), nom = (solo ? 'TOYOTENGO_Familias_para_Profit_' : 'TOYOTENGO_Correcciones_para_Profit_') + f + ext; XLSX.writeFile(wb, nom, xls ? { bookType: 'biff8' } : undefined);
