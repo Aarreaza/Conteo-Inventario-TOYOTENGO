@@ -759,6 +759,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
           <option value="ss">⚠ Publicados sin stock en el inventario</option>
           <option value="sd">Stock de ML distinto al inventario</option>
           <option value="du">Publicaciones duplicadas (mismo código)</option>
+          <option value="rz">✖ Rechazadas por Mercado Libre (archivo de errores)</option>
           <option value="act">✔ Activas en Mercado Libre (con stock, se ven en la tienda)</option>
           <option value="sf">⏸ Pausadas por falta de stock (Activa con stock 0)</option>
           <option value="pz">⏸ Publicaciones pausadas o inactivas (todas)</option>
@@ -4336,6 +4337,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       ss: 'Publicaciones activas de artículos que en el inventario están en cero o negativo: si alguien compra, no hay mercancía. Páuselas o revise el inventario.',
       sd: 'El stock disponible en Mercado Libre no coincide con el del inventario. Actualice la cantidad en la publicación.',
       pa: 'Artículos con existencia cuya publicación está pausada o finalizada. Reactívelas.',
+      rz: 'Publicaciones que Mercado Libre rechazó al subir la planilla (vienen en el archivo de errores que entrega Mercado Libre). El motivo está en «Situación». Corrija los valores y vuelva a armar la planilla.',
       act: 'Publicaciones que hoy se ven en la tienda de Mercado Libre: estado Activa y stock mayor que 0 en ML. Es la misma cifra del filtro «Activas» de Mercado Libre.',
       sf: 'Publicaciones que en la planilla dicen «Activa» pero tienen stock 0 en Mercado Libre: Mercado Libre las pausa solas por falta de stock. Se reactivan al darles stock.',
       pz: 'Todas las publicaciones que hoy no se muestran a compradores (pausadas, finalizadas, en revisión o inactivas por la suspensión de la cuenta), con su stock en el inventario. Las que tienen stock son las primeras a reactivar.',
@@ -4459,7 +4461,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       ['bc', 'mb', 'ss', 'sd', 'sv', 'ok', 'du'].forEach((c) => { k[c] = pubs.filter((p) => p.cat.includes(c)); });
       // comparación inventario vs Mercado Libre e incidencias por fila
       const PD = {}; (ml.pend || []).forEach((x) => { PD[x.item_id] = x; });
-      pubs.forEach((r) => { r.pend = PD[r.item_id] || null; comparar(r, A); });
+      pubs.forEach((r) => { r.pend = PD[r.item_id] || null; if (r.pend && /^Rechazada por Mercado Libre/.test(r.pend.nota || '')) r.problema = '✖ ' + r.pend.nota + (r.problema ? ' · ' + r.problema : ''); comparar(r, A); });
       invRows.forEach((r) => { r.pend = r.item_id ? PD[r.item_id] || null : null; comparar(r, A); });
       k.pend = Object.keys(PD).length;
       R = { pubs, inv: invRows, ventas, k, ml, A, PD };
@@ -4472,7 +4474,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       b.hidden = !n; b.textContent = n > 999 ? '999+' : n;
       $('n-ml').title = n ? n + ' alertas de Mercado Libre' + (es.cuenta_estado && es.cuenta_estado !== 'ACTIVA' ? ' · CUENTA ' + es.cuenta_estado : '') : 'Mercado Libre';
     }
-    const filas = (v) => (v === 'np' ? R.k.np : v === 'pa' ? R.k.pa : v === 'pz' ? R.pubs.filter((p) => !p.activa) : v === 'act' ? R.pubs.filter((p) => p.activa) : v === 'sf' ? R.pubs.filter((p) => p.sinStockML) : v === 'vt' ? R.ventas : v === 'todas' ? R.pubs : R.k[v] || []);
+    const filas = (v) => (v === 'rz' ? R.pubs.filter((p) => p.pend && /^Rechazada por Mercado Libre/.test(p.pend.nota || '')) : v === 'np' ? R.k.np : v === 'pa' ? R.k.pa : v === 'pz' ? R.pubs.filter((p) => !p.activa) : v === 'act' ? R.pubs.filter((p) => p.activa) : v === 'sf' ? R.pubs.filter((p) => p.sinStockML) : v === 'vt' ? R.ventas : v === 'todas' ? R.pubs : R.k[v] || []);
     function estadoTxt() {
       const e = R && R.ml.estado, el = $('ml-estado'); el.replaceChildren();
       const add = (t, b) => { const s = document.createElement('span'); if (b) { const x = document.createElement('b'); x.textContent = b; s.appendChild(x); s.append(' '); } s.append(t); el.appendChild(s); };
@@ -4822,7 +4824,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (!R || !R.k.hay && tipo !== 'vt') { el.hidden = true; return; }
       el.hidden = false;
       const rows = vista, n = rows.length, sum = (f) => rows.reduce((s, r) => s + (Number(f(r)) || 0), 0);
-      const nom = { act: 'Activas en Mercado Libre', sf: 'Pausadas por falta de stock', du: 'Publicaciones duplicadas', np: 'Con stock y NO publicados', bc: 'Precio ML bajo el costo', mb: 'Margen bajo el mínimo', ss: 'Publicados sin stock en inventario', sd: 'Stock de ML distinto', pa: 'Publicaciones pausadas o inactivas con stock',
+      const nom = { rz: 'Rechazadas por Mercado Libre', act: 'Activas en Mercado Libre', sf: 'Pausadas por falta de stock', du: 'Publicaciones duplicadas', np: 'Con stock y NO publicados', bc: 'Precio ML bajo el costo', mb: 'Margen bajo el mínimo', ss: 'Publicados sin stock en inventario', sd: 'Stock de ML distinto', pa: 'Publicaciones pausadas o inactivas con stock',
         sv: 'Publicaciones sin código', ok: 'Publicados y correctos', todas: 'Todas las publicaciones', vt: 'Ventas en Mercado Libre', pz: 'Publicaciones pausadas o inactivas' };
       const h = document.createElement('h4'); h.textContent = 'Resumen · ' + (nom[v] || '');
       const filt = [$('ml-fam').value ? 'familia ' + $('ml-fam').value : '', $('ml-q').value.trim() ? 'búsqueda "' + $('ml-q').value.trim() + '"' : ''].filter(Boolean).join(' · ');
@@ -5138,7 +5140,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const CAMPOS = { inv: ['codigo', 'descripcion', 'familia', 'stock', 'costo', 'valor', 'precio_lista', 'estado_ml'],
       pub: ['item_id', 'titulo', 'sku', 'codigo', 'sugerido', 'descripcion', 'via', 'stock', 'stock_ml', 'costo', 'precio_ml', 'moneda', 'precio_usd', 'neto_usd', 'margen_ml', 'ganancia_unit', 'precio_lista', 'vendidos', 'estado_ml', 'problema', 'permalink'],
       vt: ['fecha', 'venta_id', 'item_id', 'codigo', 'titulo', 'cantidad', 'total_usd', 'costo_total', 'margen', 'estado'] };
-    const NOMBRE = { act: 'Activas en ML', sf: 'Pausadas por falta de stock', du: 'Publicaciones duplicadas', pz: 'Pausadas o inactivas', np: 'No publicados con stock', bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Publicados sin stock', sd: 'Stock distinto', pa: 'Pausadas con stock', sv: 'Sin código (vincular)', ok: 'Correctas', todas: 'Todas las publicaciones', vt: 'Ventas ML' };
+    const NOMBRE = { rz: 'Rechazadas por ML', act: 'Activas en ML', sf: 'Pausadas por falta de stock', du: 'Publicaciones duplicadas', pz: 'Pausadas o inactivas', np: 'No publicados con stock', bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Publicados sin stock', sd: 'Stock distinto', pa: 'Pausadas con stock', sv: 'Sin código (vincular)', ok: 'Correctas', todas: 'Todas las publicaciones', vt: 'Ventas ML' };
     function hojaML(id, rows) {
       const tipo = id === 'np' || id === 'pa' ? 'inv' : id === 'vt' ? 'vt' : 'pub';
       const data = rows.map((r) => { const o = {}; CAMPOS[tipo].forEach((c) => { o[ETQ[c]] = r[c] == null ? '' : r[c]; });
@@ -5343,10 +5345,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       } catch (e) { avisa('✖ No se pudo preparar la planilla: ' + e.message + '. Vuelva a descargarla de Mercado Libre y súbala de nuevo.', 'err'); }
     }
     // ---------- listas de trabajo: se bajan a Excel, se corrigen y al subirlas pasan a los cambios pendientes y a la planilla de Mercado Libre ----------
-    const TRAB = { act: 'Activas en Mercado Libre', sf: 'Pausadas por falta de stock', ss: 'Publicadas sin stock', sd: 'Stock distinto al inventario', bc: 'Precio bajo el costo', mb: 'Margen bajo', du: 'Publicaciones duplicadas', sv: 'Sin código (vincular)', pa: 'Pausadas con stock', pz: 'Pausadas o inactivas', todas: 'Todas las publicaciones', ok: 'Publicadas correctas', np: 'No publicados con stock' };
+    const TRAB = { rz: 'Rechazadas por Mercado Libre', act: 'Activas en Mercado Libre', sf: 'Pausadas por falta de stock', ss: 'Publicadas sin stock', sd: 'Stock distinto al inventario', bc: 'Precio bajo el costo', mb: 'Margen bajo', du: 'Publicaciones duplicadas', sv: 'Sin código (vincular)', pa: 'Pausadas con stock', pz: 'Pausadas o inactivas', todas: 'Todas las publicaciones', ok: 'Publicadas correctas', np: 'No publicados con stock' };
     const ED = { q: '✏ STOCK NUEVO', p: '✏ PRECIO NUEVO', s: '✏ CÓDIGO (SKU) NUEVO', a: '✏ ACCIÓN (PAUSAR / ACTIVAR)', m: '✏ PUBLICACIÓN ML (si ya está publicado)' };
     const MARCA = 'TOYOTENGO · lista de trabajo Mercado Libre v1';
-    const filasTrabajo = (id) => (id === 'act' ? R.pubs.filter((p) => p.activa) : id === 'sf' ? R.pubs.filter((p) => p.sinStockML) : id === 'np' ? R.k.np : id === 'pa' ? R.pubs.filter((p) => !p.activa && p.codigo && p.stock > 0) : id === 'pz' ? R.pubs.filter((p) => !p.activa) : id === 'todas' ? R.pubs : (R.k[id] || []).filter((p) => p.tipo === 'pub'));
+    const filasTrabajo = (id) => (id === 'rz' ? R.pubs.filter((p) => p.pend && /^Rechazada por Mercado Libre/.test(p.pend.nota || '')) : id === 'act' ? R.pubs.filter((p) => p.activa) : id === 'sf' ? R.pubs.filter((p) => p.sinStockML) : id === 'np' ? R.k.np : id === 'pa' ? R.pubs.filter((p) => !p.activa && p.codigo && p.stock > 0) : id === 'pz' ? R.pubs.filter((p) => !p.activa) : id === 'todas' ? R.pubs : (R.k[id] || []).filter((p) => p.tipo === 'pub'));
     async function reglasStock() {
       let c = {}; try { c = (await sb.from('ml_config').select('stock_reserva, stock_maximo').eq('empresa_id', EMPRESA).maybeSingle()).data || {}; } catch (e) { c = {}; }
       const res = Number(c.stock_reserva) || 0, tope = c.stock_maximo == null ? null : Number(c.stock_maximo);
@@ -5470,6 +5472,23 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
     function pintarPlanillas() { leerPlanillasGuardadas(); if (window.TT_MLA && window.TT_MLA.estado) window.TT_MLA.estado(); }
 
+    function erroresML(wb) {
+      const F = XLSX.utils.sheet_to_json(wb.Sheets.Publicaciones, { header: 1, defval: null }), h = (F[0] || []).map(String), iE = h.indexOf('ERRORS'), iI = h.indexOf('ITEM_ID');
+      if (iE < 0 || iI < 0) return null;
+      const L = []; F.slice(5).forEach((r) => { const it = String(r[iI] || '').trim(); if (/^MLV\d+$/.test(it)) L.push({ item_id: it, error: String(r[iE] || '').trim(), q: r[h.indexOf('QUANTITY')], p: r[h.indexOf('PRICE')], st: r[h.indexOf('STATUS')] }); });
+      return L;
+    }
+    async function aplicarErroresML(L, pl) {
+      const con = L.filter((x) => x.error), PD = {}; (SERVER.ml.pend || []).forEach((x) => { PD[x.item_id] = x; });
+      // cada rechazada queda pendiente con el motivo de Mercado Libre (se conservan los valores que se habían pedido)
+      const filas = con.map((x) => { const P = PD[x.item_id] || {}; return { item_id: x.item_id, stock_nuevo: P.stock_nuevo ?? (x.q == null ? null : Number(x.q)), precio_nuevo: P.precio_nuevo ?? (x.p == null ? null : Number(x.p)), nota: 'Rechazada por Mercado Libre: ' + x.error }; });
+      if (filas.length) await guardarPendLote(filas, 'ML');
+      // esta planilla de errores también se puede corregir y volver a subir a Mercado Libre (una sola vez)
+      PLANILLAS.length = 0; PLANILLAS.push(pl); guardarPlanillas(PLANILLAS);
+      bitacora('ERRORES MERCADO LIBRE', pl.nombre + ' · ' + con.length + ' rechazadas');
+      $('ml-ver').value = 'rz'; st.modo = 'edit'; irMl('analisis'); pintar();
+      avisa('⚠ Mercado Libre rechazó ' + con.length + ' publicaciones (' + [...new Set(con.map((x) => x.error))].join(' · ') + '). Están en la lista «Rechazadas por Mercado Libre»: corríjalas aquí y toque 🛒 Planilla para Mercado Libre; se arma sobre este mismo archivo de errores para subirlo a Mercado Libre.', 'err');
+    }
     async function subir(files) {
       if (!puede()) return avisa('Solo un Responsable o Administrador puede cargar datos de Mercado Libre.', 'err');
       if (!window.XLSX) return avisa('No cargó el componente de Excel. Revise su internet.', 'err');
@@ -5480,6 +5499,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         const buf = await f.arrayBuffer();
         const wb = XLSX.read(buf, { type: 'array', cellDates: true });
         if (esTrabajo(wb)) { trabajos.push({ wb, nombre: f.name }); continue; }
+        // planilla de ERRORES que devuelve Mercado Libre (columna ERRORS): no reemplaza las publicaciones, marca las rechazadas
+        if (esPlanillaML(wb)) { const er = erroresML(wb); if (er) { await aplicarErroresML(er, { nombre: f.name, buf }); return; } }
         if (esPlanillaML(wb)) planillas.push({ nombre: f.name, buf });
         let usado = false;
         wb.SheetNames.forEach((n) => {
