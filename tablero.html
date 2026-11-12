@@ -360,6 +360,12 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 #mla-msg:not(:empty){padding:.7rem .9rem;border-radius:8px;border:1px solid var(--color-border-line);font-weight:600}
 #mla-msg.ok{border-color:var(--color-ok);background:color-mix(in srgb,var(--color-ok) 9%,transparent)}
 #mla-msg.err{border-color:var(--color-bad);background:color-mix(in srgb,var(--color-bad) 8%,transparent)}
+.ml-tabs{display:flex;flex-wrap:wrap;gap:.35rem;margin:1rem 0 .9rem;border-bottom:1px solid var(--color-border-line)}
+.ml-tabs button{border:0;background:transparent;padding:.6rem .95rem;font-size:.92rem;cursor:pointer;color:var(--color-fg-muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.ml-tabs button:hover{color:var(--color-fg)}
+.ml-tabs button.on{color:var(--color-fg);font-weight:600;border-bottom-color:#ffe600}
+.ml-pane{display:flex;flex-direction:column;gap:1rem}.ml-pane[hidden]{display:none}
+#ml-cx{display:flex;flex-direction:column;gap:.75rem}#ml-cx>#mla{order:-1;margin-bottom:.75rem}
 
 /* ---- tablero ---- */
 
@@ -659,11 +665,19 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         <a class="sh-btn" id="ml-abrir" href="https://vendedores.mercadolibre.com.ve/publicaciones" target="_blank" rel="noopener">Abrir mi cuenta de Mercado Libre ↗</a>
         <button class="sh-btn lt ml-resp" id="ml-subir-b" type="button">Subir archivo de Mercado Libre</button>
         <input type="file" id="ml-file" accept=".xlsx,.xls,.csv" multiple hidden>
-        <button class="sh-btn lt ml-resp" id="ml-conectar" type="button">Conexión automática</button>
-        <button class="sh-btn lt" id="ml-archivos" type="button" onclick="var x=document.getElementById('mla')||document.getElementById('ml-cx');if(x)x.scrollIntoView({behavior:'smooth',block:'start'})">Archivos para Mercado Libre</button>
+        <button class="sh-btn lt ml-resp" id="ml-conectar" type="button" data-ir="archivos">Conexión automática</button>
+        <button class="sh-btn lt" id="ml-archivos" type="button" data-ir="archivos">Archivos para Mercado Libre</button>
       </div>
     </div>
 
+    <nav class="ml-tabs" id="ml-tabs" role="tablist" aria-label="Secciones de Mercado Libre">
+      <button type="button" role="tab" data-mt="cuenta" class="on">Cuenta y alertas</button>
+      <button type="button" role="tab" data-mt="ventas">Estadísticas de venta</button>
+      <button type="button" role="tab" data-mt="analisis">Análisis vs inventario</button>
+      <button type="button" role="tab" data-mt="archivos">Archivos: subir y descargar</button>
+    </nav>
+    <div class="sh-msg" id="ml-msg" role="status"></div>
+    <div class="ml-pane" data-mp="cuenta">
     <div class="ml-ctrl" id="ml-ctrl" aria-live="polite"></div>
     <form class="tt-card ml-deuda-f" id="ml-deuda-f" hidden>
       <h3>Actualizar estado de cuenta y deuda con Mercado Libre</h3>
@@ -678,15 +692,16 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       </div>
       <div class="sh-row" style="gap:.5rem;flex-wrap:wrap;margin-top:.75rem"><button class="sh-btn" type="submit">Guardar</button><button class="sh-btn lt" type="button" id="mld-pagado">✔ Marcar todo como pagado</button><button class="sh-btn lt" type="button" id="mld-cancel">Cancelar</button></div>
     </form>
-    <div class="tt-card ml-cx" id="ml-cx" aria-live="polite"></div>
     <div class="ml-alertas" id="ml-alertas"></div>
+    <div class="sh-banner ml-estado" id="ml-estado"></div>
+    </div>
+    <div class="ml-pane" data-mp="ventas" hidden>
     <div class="tt-card ml-vend" id="ml-vend">
       <div class="ml-vhead">
         <h3><span class="ml-ic ml-ic-b" aria-hidden="true"></span> Seguimiento de ventas en Mercado Libre</h3>
         <div class="sh-row" style="gap:.5rem;flex-wrap:wrap;align-items:center">
           <div class="ml-seg" id="ml-v-per" role="group" aria-label="Periodo"><button type="button" data-v="mes" class="on">Mensual</button><button type="button" data-v="anio">Anual</button></div>
           <div class="ml-seg" id="ml-v-mon" role="group" aria-label="Moneda"><button type="button" data-v="usd" class="on">US$ BCV</button><button type="button" data-v="usdb">US$ Binance</button><button type="button" data-v="bs">Bs.</button></div>
-          <button class="sh-btn lt" type="button" id="ml-v-bajar">Descargar Excel</button>
         </div>
       </div>
       <div class="ml-vk" id="ml-vk"></div>
@@ -694,14 +709,12 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="tt-scroll" style="max-height:30rem"><table class="tt-t" id="ml-vtabla"><thead><tr></tr></thead><tbody></tbody></table></div>
       <p class="tt-note" id="ml-vnota"></p>
     </div>
-    <div class="sh-banner ml-estado" id="ml-estado"></div>
-    <div class="sh-msg" id="ml-msg" role="status"></div>
-    <details class="tt-card ml-ayuda" id="ml-ayuda"><summary><b>¿Cómo actualizar los datos de Mercado Libre?</b></summary>
-      <ol>
-        <li><b>Automático (recomendado):</b> el administrador activa "Conexión automática" una vez; desde ahí publicaciones, precios y ventas se actualizan solos cada hora.</li>
-        <li><b>Con archivo:</b> presione "Abrir mi cuenta de Mercado Libre" › Publicaciones › <i>Modificar desde Excel</i> o <i>Descargar</i> (todas las publicaciones). Para ventas: Ventas › <i>Descargar ventas</i>. Luego presione "Subir archivo de Mercado Libre" y escoja los archivos (puede subir varios a la vez). El tablero reconoce solo si son publicaciones o ventas.</li>
-        <li><b>Códigos:</b> el tablero une cada publicación con el inventario por el <b>SKU</b> de Mercado Libre. Si una publicación no tiene SKU, descargue "Publicaciones sin código", escriba el código del inventario en la columna indicada y súbalo con el mismo botón.</li>
-      </ol></details>
+    <div class="tt-grid2 ml-graf" id="ml-graf">
+      <div class="tt-card"><h3>Ventas por mes (detalle de órdenes)</h3><div class="tt-scroll"><table class="tt-t" id="ml-meses"><thead><tr><th>Mes</th><th class="n">Ventas</th><th class="n">Unidades</th><th class="n">Monto US$</th><th class="n">Costo US$</th><th class="n">Margen</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="tt-card"><h3>Más vendidos en Mercado Libre</h3><div class="tt-scroll"><table class="tt-t" id="ml-top"><thead><tr><th>Código</th><th>Título</th><th class="n">Unid.</th><th class="n">Monto US$</th><th class="n">Stock</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+    </div>
+    <div class="ml-pane" data-mp="analisis" hidden>
     <div class="ml-ajustes">
       <label>Comisión y costos de venta en ML <input class="tt-in" id="ml-com" type="number" min="0" max="60" step="0.5" style="width:5.5rem"> %</label>
       <label>Margen mínimo deseado <input class="tt-in" id="ml-min" type="number" min="0" max="200" step="1" style="width:5.5rem"> %</label>
@@ -731,13 +744,24 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="ml-res" id="ml-res" aria-live="polite"></div>
       <div class="sh-row" style="justify-content:space-between;align-items:center;margin:.25rem 0 .5rem;flex-wrap:wrap;gap:.5rem">
         <span class="tt-status" id="ml-n"></span>
-        <span class="sh-row" style="gap:.5rem;flex-wrap:wrap"><button class="sh-btn" id="ml-bajar-vista" type="button">Descargar Excel (lo que ve)</button><button class="sh-btn lt" id="ml-bajar-todo" type="button">Descargar conciliación completa</button></span>
+        <span class="sh-row" style="gap:.5rem;flex-wrap:wrap"><button class="sh-btn" id="ml-bajar-vista" type="button">Descargar Excel (lo que ve)</button></span>
       </div>
       <div class="tt-scroll" style="max-height:34rem"><table class="tt-t" id="ml-tabla"><thead><tr></tr></thead><tbody></tbody></table></div>
     </div>
-    <div class="tt-grid2 ml-graf" id="ml-graf">
-      <div class="tt-card"><h3>Ventas por mes (detalle de órdenes)</h3><div class="tt-scroll"><table class="tt-t" id="ml-meses"><thead><tr><th>Mes</th><th class="n">Ventas</th><th class="n">Unidades</th><th class="n">Monto US$</th><th class="n">Costo US$</th><th class="n">Margen</th></tr></thead><tbody></tbody></table></div></div>
-      <div class="tt-card"><h3>Más vendidos en Mercado Libre</h3><div class="tt-scroll"><table class="tt-t" id="ml-top"><thead><tr><th>Código</th><th>Título</th><th class="n">Unid.</th><th class="n">Monto US$</th><th class="n">Stock</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+    <div class="ml-pane" data-mp="archivos" hidden>
+    <div class="tt-card ml-cx" id="ml-cx" aria-live="polite"></div>
+    <div class="tt-card ml-desc" id="ml-desc">
+      <h3>Descargas de análisis</h3>
+      <p class="tt-note">Excel para revisar y trabajar fuera del tablero. Para descargar solo la lista que está viendo, use "Descargar Excel (lo que ve)" en Análisis vs inventario.</p>
+      <div class="sh-row" style="gap:.5rem;flex-wrap:wrap"><button class="sh-btn" id="ml-bajar-todo" type="button">⬇ Descargar conciliación completa</button><button class="sh-btn lt" type="button" id="ml-v-bajar">⬇ Ventas de Mercado Libre por mes (Excel)</button></div>
+    </div>
+    <details class="tt-card ml-ayuda" id="ml-ayuda"><summary><b>¿Cómo actualizar los datos de Mercado Libre?</b></summary>
+      <ol>
+        <li><b>Automático (recomendado):</b> el administrador activa "Conexión automática" una vez; desde ahí publicaciones, precios y ventas se actualizan solos cada hora.</li>
+        <li><b>Con archivo:</b> presione "Abrir mi cuenta de Mercado Libre" › Publicaciones › <i>Modificar desde Excel</i> o <i>Descargar</i> (todas las publicaciones). Para ventas: Ventas › <i>Descargar ventas</i>. Luego presione "Subir archivo de Mercado Libre" y escoja los archivos (puede subir varios a la vez). El tablero reconoce solo si son publicaciones o ventas.</li>
+        <li><b>Códigos:</b> el tablero une cada publicación con el inventario por el <b>SKU</b> de Mercado Libre. Si una publicación no tiene SKU, descargue "Publicaciones sin código", escriba el código del inventario en la columna indicada y súbalo con el mismo botón.</li>
+      </ol></details>
     </div>
   </section>
 
@@ -4804,7 +4828,13 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
     async function recargar() { if (!SERVER) return; SERVER.ml = await leerML(); if (!$('v-ml').hidden) pintar(); else contador(); }
     // eventos
-    $('ml-subir-b').addEventListener('click', () => $('ml-file').click());
+    // pestañas del módulo
+    const irMl = (k) => { document.querySelectorAll('#ml-tabs [data-mt]').forEach((b) => { b.classList.toggle('on', b.dataset.mt === k); b.setAttribute('aria-selected', b.dataset.mt === k); });
+      document.querySelectorAll('#v-ml .ml-pane').forEach((p) => { p.hidden = p.dataset.mp !== k; }); try { localStorage.setItem('tt_ml_tab', k); } catch (e) {} };
+    document.querySelectorAll('#ml-tabs [data-mt]').forEach((b) => b.addEventListener('click', () => irMl(b.dataset.mt)));
+    document.querySelectorAll('#v-ml [data-ir]').forEach((b) => b.addEventListener('click', () => { irMl(b.dataset.ir); if (b.id === 'ml-archivos') { const x = document.getElementById('mla'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }));
+    try { const t = localStorage.getItem('tt_ml_tab'); if (t) irMl(t); } catch (e) {}
+    $('ml-subir-b').addEventListener('click', () => { irMl('archivos'); $('ml-file').click(); });
     $('ml-file').addEventListener('change', (e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) subir(f); });
     $('ml-conectar').addEventListener('click', () => { const x = $('ml-cx'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     $('ml-abrir').addEventListener('click', () => bitacora('ABRIR MERCADO LIBRE', ''));
