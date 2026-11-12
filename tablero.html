@@ -1005,7 +1005,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       <div class="tt-tiles" id="kpi-tiles">
         <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_inventario">—</span><span class="s">para vender <span data-source="kpis" data-field="valor_total">—</span><span id="kv-comp" hidden> (disponible <span data-source="kpis" data-field="valor_disponible">—</span> · comprometido <span data-source="kpis" data-field="valor_comprometido">—</span>)</span> · en tránsito <span data-source="kpis" data-field="valor_transito">—</span></span></div>
         <div class="tt-tile" id="tile-disp"><span class="k">Disponible para la venta</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_disponible">—</span><span class="s"><span id="tile-disp-ok">comprometido <span data-source="kpis" data-field="valor_comprometido">—</span> (<span data-source="kpis" data-field="pct_comprometido">—</span>) en <span data-source="kpis" data-field="art_comp">—</span> códigos · <span data-source="kpis" data-field="unidades_disp">—</span> uds. libres</span><span id="tile-disp-no" hidden style="color:#b26a00">⚠ este corte no trae lo comprometido: suba el archivo de stock comprometido de Profit en «Cargar datos» (casilla Comprometido)</span></span></div>
-        <div class="tt-tile"><span class="k">Valor a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">ganancia potencial <span data-source="kpis_precio" data-field="margen_usd">—</span> (<span data-source="kpis_precio" data-field="margen_pct">—</span>) · solo el <span data-source="kpis_precio" data-field="cobertura">—</span> del inventario tiene precio</span></div>
+        <div class="tt-tile"><span class="k" title="Solo lo disponible: lo comprometido ya está instalado en los vehículos y solo falta facturarlo">Disponible a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">ganancia potencial <span data-source="kpis_precio" data-field="margen_usd">—</span> (<span data-source="kpis_precio" data-field="margen_pct">—</span>) · solo el <span data-source="kpis_precio" data-field="cobertura">—</span> del inventario tiene precio</span></div>
         <div class="tt-tile"><span class="k">Artículos con existencia</span><span class="v dash-skeleton" data-source="kpis" data-field="con_stock">—</span><span class="s">de <span data-source="kpis" data-field="articulos_total">—</span> códigos en el maestro</span></div>
         <div class="tt-tile"><span class="k">Unidades para vender</span><span class="v dash-skeleton" data-source="kpis" data-field="unidades">—</span><span class="s">costo promedio por unidad <span data-source="kpis" data-field="costo_prom">—</span></span></div>
         <div class="tt-tile"><span class="k">Mercancía en tránsito</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_transito">—</span><span class="s"><span data-source="kpis" data-field="unidades_transito">—</span> unidades en <span data-source="kpis" data-field="art_transito">—</span> códigos · aún no se vende</span></div>
@@ -1143,8 +1143,8 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <section id="precios" class="tt-page" hidden>
     <div style="display:flex;flex-direction:column;gap:var(--cds-gap-md)">
       <div class="tt-tiles">
-        <div class="tt-tile"><span class="k">Inventario a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">solo artículos con stock y precio en la lista</span></div>
-        <div class="tt-tile"><span class="k">Ganancia bruta potencial</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="margen_usd">—</span><span class="s">si se vende todo lo que tiene precio</span></div>
+        <div class="tt-tile"><span class="k">Inventario disponible a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">solo lo disponible (sin comprometido) con precio en la lista</span></div>
+        <div class="tt-tile"><span class="k">Ganancia bruta potencial</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="margen_usd">—</span><span class="s">si se vende todo lo disponible que tiene precio</span></div>
         <div class="tt-tile"><span class="k">Margen de ganancia</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="margen_pct">—</span><span class="s">de cada venta es ganancia: (precio − costo) ÷ precio</span></div>
         <div class="tt-tile"><span class="k">Artículos con stock sin precio</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="sin_precio">—</span><span class="s">inmovilizan <span data-source="kpis_precio" data-field="valor_sin_precio">—</span> a costo</span></div>
         <div class="tt-tile"><span class="k">Precio por debajo del costo</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="bajo_costo">—</span><span class="s">artículos que se venderían con pérdida</span></div>
@@ -2077,6 +2077,9 @@ window.TT = (() => {
 <script>
 // ---------- precios y margen ----------
 
+const udisp = (a) => (Number(a.comprometido) > 0 ? Math.max(0, Number(a.disponible) || 0) : Number(a.stock) || 0);
+const vdisp = (a) => Math.max(0, (Number(a.valor) || 0) - (Number(a.valor_comprometido) || 0));
+const conDisp = (a) => a.estado === 'Con stock' && udisp(a) > 0;
 dash.calc('margen_art', {
   inputs: ['articulos', 'precios'],
   title: 'Precio y margen por artículo',
@@ -2086,7 +2089,7 @@ dash.calc('margen_art', {
     const P = {};
     precios.forEach((p) => { const v = Number(p.precio_1) > 0 ? Number(p.precio_1) : (Number(p.precio_2) > 0 ? Number(p.precio_2) : null); if (v != null) P[k(p.codigo)] = v; });
     return articulos.filter((a) => P[k(a.codigo)] != null).map((a) => {
-      const precio = P[k(a.codigo)], costo = Number(a.costo) || 0, stock = Number(a.stock) || 0;
+      const precio = P[k(a.codigo)], costo = Number(a.costo) || 0, stock = udisp(a);
       return { fila: a.fila, codigo: a.codigo, precio, margen: costo ? (precio - costo) / precio : null, valor_venta: stock > 0 ? stock * precio : 0 };
     });
   },
@@ -2098,17 +2101,17 @@ dash.calc('kpis_precio', {
   description: 'Valor a precio de venta, margen potencial y cobertura de la lista sobre los artículos con stock.',
   fn: (articulos, margen_art, precios) => {
     const M = {}; margen_art.forEach((m) => { M[m.fila] = m; });
-    const con = articulos.filter((a) => a.estado === 'Con stock');
+    const con = articulos.filter(conDisp);
     const cp = con.filter((a) => M[a.fila]), sp = con.filter((a) => !M[a.fila]);
-    const costoCp = cp.reduce((s, a) => s + (Number(a.valor) || 0), 0);
+    const costoCp = cp.reduce((s, a) => s + vdisp(a), 0);
     const venta = cp.reduce((s, a) => s + M[a.fila].valor_venta, 0);
-    const valorCon = con.reduce((s, a) => s + (Number(a.valor) || 0), 0);
+    const valorCon = con.reduce((s, a) => s + vdisp(a), 0);
     return [{
       con_stock: con.length, con_precio: cp.length, sin_precio: sp.length,
       valor_costo_con_precio: costoCp, valor_venta: venta, margen_usd: venta - costoCp,
       margen_pct: venta ? (venta - costoCp) / venta : 0, markup: costoCp ? venta / costoCp - 1 : 0,
       ganancia_100: venta ? 100 * (venta - costoCp) / venta : 0, ganancia_100c: costoCp ? 100 * (venta - costoCp) / costoCp : 0,
-      valor_sin_precio: sp.reduce((s, a) => s + (Number(a.valor) || 0), 0),
+      valor_sin_precio: sp.reduce((s, a) => s + vdisp(a), 0), hay_comp: articulos.some((a) => Number(a.comprometido) > 0),
       cobertura: valorCon ? costoCp / valorCon : 0,
       bajo_costo: cp.filter((a) => M[a.fila].margen != null && M[a.fila].margen < 0).length,
       lista_codigos: precios.length,
@@ -2124,9 +2127,9 @@ dash.calc('margen_familia', {
   fn: (articulos, margen_art) => {
     const M = {}; margen_art.forEach((m) => { M[m.fila] = m; });
     const g = {};
-    articulos.filter((a) => a.estado === 'Con stock' && M[a.fila]).forEach((a) => {
+    articulos.filter((a) => conDisp(a) && M[a.fila]).forEach((a) => {
       const f = g[a.familia] || (g[a.familia] = { familia: a.familia, articulos: 0, valor_costo: 0, valor_venta: 0 });
-      f.articulos += 1; f.valor_costo += Number(a.valor) || 0; f.valor_venta += M[a.fila].valor_venta;
+      f.articulos += 1; f.valor_costo += vdisp(a); f.valor_venta += M[a.fila].valor_venta;
     });
     return Object.values(g).map((f) => ({ ...f, margen_pct: f.valor_venta ? (f.valor_venta - f.valor_costo) / f.valor_venta : 0 })).sort((a, b) => b.margen_pct - a.margen_pct);
   },
@@ -2140,9 +2143,9 @@ dash.calc('margen_rangos', {
     const M = {}; margen_art.forEach((m) => { M[m.fila] = m; });
     const R = [['Negativo', -Infinity, 0], ['0 a 20 %', 0, 0.2], ['20 a 40 %', 0.2, 0.4], ['40 a 60 %', 0.4, 0.6], ['60 a 90 %', 0.6, 0.9], ['Más de 90 %', 0.9, Infinity]];
     const out = R.map((r) => ({ rango: r[0], articulos: 0, valor: 0 }));
-    articulos.filter((a) => a.estado === 'Con stock' && M[a.fila] && M[a.fila].margen != null).forEach((a) => {
+    articulos.filter((a) => conDisp(a) && M[a.fila] && M[a.fila].margen != null).forEach((a) => {
       const m = M[a.fila].margen; const i = R.findIndex((r) => m >= r[1] && m < r[2]);
-      out[i].articulos += 1; out[i].valor += Number(a.valor) || 0;
+      out[i].articulos += 1; out[i].valor += vdisp(a);
     });
     return out;
   },
