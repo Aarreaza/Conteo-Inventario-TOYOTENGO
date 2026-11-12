@@ -133,6 +133,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-mprev{min-width:15rem;text-align:left;white-space:normal}.ml-pl{display:flex;justify-content:space-between;gap:.6rem;font-size:.74rem;color:#333;border-bottom:1px dotted #e3e6ee;padding:.05rem 0}.ml-pl b{font-weight:600}.ml-pl.ok b{color:#1d6f42}.ml-pl.bad b{color:#c0182a}.ml-pl.muted{color:#777;border:0}.ml-gan{font-weight:600;color:#1d6f42}.ml-gan.bad{color:#c0182a}
 .pf-fam{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem;margin-top:.3rem}.pf-fl{font-size:.72rem;color:#777}.pf-fs{font:inherit;font-size:.78rem;padding:.12rem .3rem;border:1px solid #d7b46a;border-radius:6px;background:#fff;max-width:13rem}.pf-fs.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-fs.okk{background:#dff5e6;border-color:#1d6f42}.pf-fs.err{background:#fde8ea;border-color:#c0182a}.pf-sug{font:600 .74rem inherit;border:1px dashed #2d5bd0;background:#eef4ff;color:#173f8a;border-radius:6px;padding:.1rem .45rem;cursor:pointer}.pf-sug:hover{background:#2d5bd0;color:#fff}
 .ml-tasas{display:flex;flex-wrap:wrap;gap:.5rem;margin:.4rem 0 .2rem;align-items:stretch}.mt-c{flex:1 1 11rem;border-radius:10px;padding:.5rem .8rem;display:flex;flex-direction:column;gap:.1rem;border:1px solid #e3e6ee;background:#fff}.mt-c small{font-size:.75rem;color:#666}.mt-c b{font-size:1.25rem;line-height:1.2}.mt-c span{font-size:.72rem;color:#777}.mt-c.bn{border-left:5px solid #f0b90b}.mt-c.bc{border-left:5px solid #1f4fa3}.mt-c.gp{border-left:5px solid #5b3fd0;background:#f6f3ff}.mt-c.gp.alto b{color:#c0182a}.mt-n{flex-basis:100%;font-size:.78rem;color:#555;margin:.1rem 0 0}.ml-masivo{border:1px solid #c9b8f5;border-left:5px solid #5b3fd0;background:#faf8ff;border-radius:8px;padding:.6rem .8rem;margin:.5rem 0;display:flex;flex-direction:column;gap:.45rem}.mm-t{color:#3d2a9a}.mm-f{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-size:.86rem}.mm-l{min-width:16rem;font-weight:600}.mm-b{font:600 .82rem inherit;border-radius:999px;padding:.35rem .8rem;cursor:pointer;border:1.5px solid #5b3fd0;background:#fff;color:#3d2a9a}.mm-b:hover{background:#efeafd}.mm-b.all{background:#5b3fd0;color:#fff}.mm-b.all:hover{filter:brightness(1.1)}.mm-b:disabled{opacity:.5}.mm-n{color:#666;font-size:.76rem}
+.mm-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(16rem,1fr);gap:.8rem;align-items:start}@media (max-width:900px){.mm-grid{grid-template-columns:1fr}}.mm-izq{display:flex;flex-direction:column;gap:.55rem}.mm-r{font-size:1.15rem;color:#3d2a9a;background:#efeafd;border-radius:6px;padding:.05rem .45rem}.mm-r.man{color:#7a4b00;background:#fff1b8}.mm-s{font-size:.75rem;color:#666}.mm-man{flex-basis:100%;display:flex;align-items:center;gap:.35rem;font-size:.82rem;color:#555;margin-left:16.4rem}@media (max-width:900px){.mm-man{margin-left:0}}.mm-x{font:600 .75rem inherit;border:1px solid #ccd;background:#fff;border-radius:6px;padding:.15rem .45rem;cursor:pointer}.mm-cuadro{background:#fff;border:1px solid #d9d0f7;border-radius:8px;padding:.55rem .7rem;font-size:.8rem}.mm-ct{display:block;color:#3d2a9a;margin-bottom:.3rem}.mm-tb{width:100%;border-collapse:collapse;margin:.15rem 0 .35rem}.mm-tb td{padding:.12rem .2rem;border-bottom:1px dotted #e3e6ee}.mm-tb td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.mm-tb tr.tot td{font-weight:700;color:#3d2a9a;border-bottom:1.5px solid #c9b8f5}.mm-tb tr.man td{color:#7a4b00}.mm-tb tr.ok td:last-child{color:#1d6f42;font-weight:700}.mm-tb tr.bad td:last-child{color:#c0182a;font-weight:700}.mm-tb tr.muted td{color:#888;border:0}.mm-ej{display:block;color:#666;margin-top:.2rem}
 .ml-al-x{white-space:nowrap;font:600 .78rem inherit;border:1px solid #1d6f42;color:#1d6f42;background:#fff;border-radius:6px;padding:.15rem .5rem;cursor:pointer;margin-left:.4rem}.ml-al-x:hover{background:#1d6f42;color:#fff}.ml-al-up{margin-left:auto;font:600 .8rem inherit;background:#1d6f42;color:#fff;border:0;border-radius:6px;padding:.35rem .7rem;cursor:pointer}.ml-al-up:hover{filter:brightness(1.1)}.ml-al-ayuda{font-size:.8rem;color:#555;margin:.3rem 0 .5rem}.mla-trab{margin-top:.7rem;padding-top:.6rem;border-top:1px dashed #ccd;font-size:.85rem}.mla-trab select{max-width:15rem}
 .ml-al-i{display:inline-flex;margin-top:.1rem}.ml-al-t{flex:1}.ml-al-a{white-space:nowrap;font-weight:600;font-size:.82rem;text-decoration:none}
 .ml-al.mal{background:#fff1f2;border-left-color:var(--color-bad)}.ml-al.mal .ml-al-i{color:var(--color-bad)}.ml-al.mal .ml-al-a{color:var(--color-bad)}
@@ -4436,7 +4437,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           catch (e) { avisa('✖ No se pudo guardar: ' + e.message, 'err'); } };
         i.addEventListener('input', prev); i.addEventListener('keydown', (e) => { if (e.key === 'Enter') guardar(); if (e.key === 'Escape') pinta(); });
         ok2.addEventListener('click', guardar); no.addEventListener('click', pinta);
-        w.append(i, pc, ok2, no); td.append(w, out); prev(); i.focus(); i.select();
+        const rU = recargoUsado(); if (rU != null) { const ub = mk('button', 'ml-mno', '⚡ ' + String(Math.round(rU * 1000) / 10).replace('.', ',') + '%'); ub.type = 'button'; ub.title = 'Usar el recargo ' + (recargoManual() != null ? 'manual' : 'automático (brecha + ' + PTS + ' puntos)'); ub.addEventListener('click', () => { i.value = String(Math.round(rU * 1000) / 10).replace('.', ','); prev(); i.focus(); }); w.append(i, pc, ub, ok2, no); } else w.append(i, pc, ok2, no);
+        td.append(w, out); prev(); i.focus(); i.select();
       };
       pinta();
     }
@@ -4462,15 +4464,55 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const btn = (t, f, k) => { const b = mk('button', 'mm-b' + (k ? ' ' + k : ''), t); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; try { await f(); } catch (e) { avisa('✖ ' + e.message, 'err'); } b.disabled = false; }); return b; };
       el.appendChild(mk('b', 'mm-t', '⚡ Cambios masivos para la planilla de Mercado Libre'));
       const f1 = mk('div', 'mm-f'); f1.append(mk('span', 'mm-l', '📦 Stock en ML = stock del inventario'), btn('Esta lista (' + T0().fmt.int(n) + ')', () => stockALista(false)), btn('Todas las publicaciones (' + T0().fmt.int(N) + ')', () => stockALista(true), 'all'));
-      let rec = '10'; try { rec = localStorage.getItem('tt_ml_rec') || '10'; } catch (e) {}
-      const i = document.createElement('input'); i.className = 'ml-ed'; i.style.width = '3.6rem'; i.inputMode = 'decimal'; i.value = rec; i.addEventListener('change', () => { try { localStorage.setItem('tt_ml_rec', i.value); } catch (e) {} });
-      const leer = () => { const m = Number(i.value.replace(',', '.')) / 100; if (!(m > -0.5 && m <= 3) || i.value.trim() === '') { avisa('✖ Escriba un % entre -50 y 300.', 'err'); return null; } return m; };
-      const f2 = mk('div', 'mm-f'); f2.append(mk('span', 'mm-l', '💲 Precio en ML = precio al público + recargo'), i, mk('span', null, '% (ya libre de comisión)'),
-        btn('Esta lista (' + T0().fmt.int(n) + ')', () => { const m = leer(); return m == null ? null : margenALista(m, false); }), btn('Todas las publicaciones (' + T0().fmt.int(N) + ')', () => { const m = leer(); return m == null ? null : margenALista(m, true); }, 'all'));
-      f2.title = 'Precio ML = precio al público × (1 + recargo) ÷ (1 − comisión ' + Math.round(R.A.com * 1000) / 10 + '%). Con 0 % recibe exactamente su precio al público.';
-      el.append(f1, f2, mk('small', 'mm-n', 'Todo queda como cambio pendiente: revíselo en la tabla, bájelo con 🛒 Planilla para Mercado Libre o descártelo en la barra amarilla.'));
+      const f2 = mk('div', 'mm-f'); const rA = recargoAuto(), rM = recargoManual(), rU = recargoUsado();
+      const i = document.createElement('input'); i.className = 'ml-ed'; i.style.width = '3.8rem'; i.inputMode = 'decimal'; i.placeholder = rA == null ? '%' : String(Math.round(rA * 1000) / 10).replace('.', ','); i.value = rM == null ? '' : String(Math.round(rM * 1000) / 10).replace('.', ',');
+      i.title = 'Escriba un % para usarlo en lugar del automático (brecha + ' + PTS + ' puntos). Vacío = automático.';
+      i.addEventListener('change', () => { const t = i.value.trim(); try { if (!t) localStorage.removeItem('tt_ml_rec_manual'); else { const m = Number(t.replace(',', '.')); if (!(m > -50 && m <= 300)) { avisa('✖ Escriba un % entre -50 y 300.', 'err'); return; } localStorage.setItem('tt_ml_rec_manual', String(m / 100)); } } catch (e) {} pintarMasivo(tipo); });
+      const usar = () => { const m = recargoUsado(); if (m == null) { avisa('✖ No hay tasas para calcular la brecha: escriba el % manual.', 'err'); return null; } return m; };
+      const vuelve = mk('button', 'mm-x', '↺ automático'); vuelve.type = 'button'; vuelve.hidden = rM == null; vuelve.addEventListener('click', () => { try { localStorage.removeItem('tt_ml_rec_manual'); } catch (e) {} pintarMasivo(tipo); });
+      f2.append(mk('span', 'mm-l', '💲 Precio en ML = precio al público + recargo'), mk('b', 'mm-r' + (rM != null ? ' man' : ''), rU == null ? '—' : T0().fmt.pct(rU)), mk('span', 'mm-s', rM != null ? '(manual)' : '(automático)'),
+        btn('Esta lista (' + T0().fmt.int(n) + ')', () => { const m = usar(); return m == null ? null : margenALista(m, false); }), btn('Todas las publicaciones (' + T0().fmt.int(N) + ')', () => { const m = usar(); return m == null ? null : margenALista(m, true); }, 'all'));
+      const man = mk('div', 'mm-man'); man.append(mk('span', null, '✏ Cambiar manualmente el % final:'), i, mk('span', null, '%'), vuelve); f2.appendChild(man);
+      const grid = mk('div', 'mm-grid'), izq = mk('div', 'mm-izq'); izq.append(f1, f2);
+      grid.append(izq, cuadroRecargo());
+      el.append(grid, mk('small', 'mm-n', 'Todo queda como cambio pendiente: revíselo en la tabla, bájelo con 🛒 Planilla para Mercado Libre o descártelo en la barra amarilla.'));
     }
     const T0 = () => window.TT;
+    // recargo sobre el precio al público: brecha cambiaria (Binance vs BCV) + 2 puntos, o el % que se ponga a mano
+    const PTS = 2;
+    const brecha = () => { const M = window.TT_MON || {}; return M.binance && M.bcv ? M.binance / M.bcv - 1 : null; };
+    const recargoAuto = () => { const g = brecha(); return g == null ? null : g + PTS / 100; };
+    const recargoManual = () => { try { const v = localStorage.getItem('tt_ml_rec_manual'); return v == null || v === '' ? null : Number(v); } catch (e) { return null; } };
+    const recargoUsado = () => { const m = recargoManual(); return m != null && isFinite(m) ? m : recargoAuto(); };
+    function cuadroRecargo() {
+      const T = T0(), g = brecha(), rA = recargoAuto(), rM = recargoManual(), rU = recargoUsado(), com = R.A.com, M = window.TT_MON || {};
+      const box = mk('div', 'mm-cuadro'); box.appendChild(mk('b', 'mm-ct', '🧮 Cómo se calcula el precio en Mercado Libre'));
+      const tb = document.createElement('table'); tb.className = 'mm-tb'; const fila = (a, b, k) => { const tr = document.createElement('tr'); if (k) tr.className = k; const t1 = document.createElement('td'), t2 = document.createElement('td'); t1.textContent = a; t2.textContent = b; tr.append(t1, t2); tb.appendChild(tr); };
+      const f2 = (v) => (v == null ? '—' : 'Bs ' + Number(v).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+      fila('Tasa Binance ÷ tasa BCV', f2(M.binance) + ' ÷ ' + f2(M.bcv));
+      fila('Brecha cambiaria', g == null ? '— (sin tasas)' : T.fmt.pct(g));
+      fila('+ puntos adicionales', '+ ' + PTS + ',0 pts');
+      fila('= Recargo automático', rA == null ? '—' : T.fmt.pct(rA), rM == null ? 'tot' : '');
+      if (rM != null) fila('Recargo manual (el que se usa)', T.fmt.pct(rM), 'tot man');
+      box.appendChild(tb);
+      // ejemplo con un artículo
+      const ej = R.pubs.find((r) => String(r.codigo).toUpperCase() === '68920-49135' && r.precio_lista > 0) || vista.find((r) => r.tipo === 'pub' && r.precio_lista > 0) || R.pubs.find((r) => r.precio_lista > 0);
+      if (ej && rU != null) {
+        const pv = ej.precio_lista, rec = pv * (1 + rU), pml = rec / (1 - com), cm = pml * com, gan = ej.costo ? rec - ej.costo : null;
+        box.appendChild(mk('small', 'mm-ej', 'Ejemplo: ' + ej.codigo + ' · ' + String(ej.titulo || '').slice(0, 40)));
+        const t2 = document.createElement('table'); t2.className = 'mm-tb'; const fl = (a, b, k) => { const tr = document.createElement('tr'); if (k) tr.className = k; const x = document.createElement('td'), y = document.createElement('td'); x.textContent = a; y.textContent = b; tr.append(x, y); t2.appendChild(tr); };
+        fl('Precio de venta al público', T.fmt.usd2(pv));
+        fl('× (1 + ' + T.fmt.pct(rU) + ') = lo que quiere recibir', T.fmt.usd2(rec));
+        fl('÷ (1 − ' + Math.round(com * 1000) / 10 + '% comisión) = precio en ML', T.fmt.usd2(pml), 'tot');
+        fl('− comisión de Mercado Libre', T.fmt.usd2(cm));
+        fl('= le llega', T.fmt.usd2(rec));
+        if (gan != null) fl('− costo ' + T.fmt.usd2(ej.costo) + ' = ganancia por unidad', T.fmt.usd2(gan), gan < 0 ? 'bad' : 'ok');
+        if (ej.precio_ml != null) fl('Hoy está publicado en', T.fmt.usd2(ej.precio_usd != null ? ej.precio_usd : ej.precio_ml), 'muted');
+        box.appendChild(t2);
+      }
+      box.appendChild(mk('small', 'mm-ej', 'El recargo cubre la brecha: si el cliente le paga en bolívares a tasa BCV, ese dinero vale menos en dólares Binance. Los 2 puntos son ganancia adicional.'));
+      return box;
+    }
     // tasas a la vista mientras se ponen precios
     function pintarTasasML() {
       const el = $('ml-tasas'); if (!el) return; const M = window.TT_MON || {}, b = M.binance, c = M.bcv; el.replaceChildren();
