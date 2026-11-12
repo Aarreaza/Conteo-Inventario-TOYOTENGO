@@ -888,13 +888,14 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <!-- CARGAR -->
   <section class="sh-view" id="v-cargar" hidden>
     <h2 class="sh-h2">Cargar datos</h2>
-    <p class="sh-sub">Mientras no exista la conexión con Profit, el inventario se carga con los <b>4 reportes de inventario a costo</b> que entrega Profit, uno por almacén (.xls), y aparte la <b>lista de precios de venta</b> y las <b>ventas del mes</b> (reporte "Facturas por artículo", en .xls o .pdf; puede subir varios meses). Use una casilla por archivo, o arrastre todos juntos al recuadro: el tablero reconoce el almacén por el nombre del archivo (PRINCIPAL, TIENDA, TRANSITO, CONSIGNACION). Stock para vender = Principal + Tienda + Consignación; el tránsito se muestra aparte y suma al valor total. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
+    <p class="sh-sub">Mientras no exista la conexión con Profit, el inventario se carga con los <b>4 reportes de inventario a costo</b> que entrega Profit, uno por almacén (.xls), el <b>reporte de Stocks</b> (trae lo comprometido, para separarlo de lo disponible para la venta), y aparte la <b>lista de precios de venta</b> y las <b>ventas del mes</b> (reporte "Facturas por artículo", en .xls o .pdf; puede subir varios meses). Use una casilla por archivo, o arrastre todos juntos al recuadro: el tablero reconoce el almacén por el nombre del archivo (PRINCIPAL, TIENDA, TRANSITO, CONSIGNACION). Stock para vender = Principal + Tienda + Consignación; el tránsito se muestra aparte y suma al valor total. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:900px">
       <div class="sh-slots" id="c-slots">
         <label class="sh-slot" data-alm="principal"><b>Almacén Principal</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot" data-alm="tienda"><b>Almacén Tienda</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot" data-alm="consignacion"><b>Consignación</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot" data-alm="transito"><b>Tránsito</b><small>Se muestra aparte · suma al total</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot pr" data-alm="stocks"><b>Comprometido</b><small>Reporte de Stocks · Profit (Artículo, Comprometido, Disponible)</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot pr" data-alm="precios"><b>Precios de venta</b><small>Lista de precios · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot pr" data-alm="ventas"><b>Ventas del mes</b><small>Facturas por artículo · Profit (.xls o .pdf)</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx,.pdf" multiple hidden></label>
       </div>
@@ -1000,6 +1001,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
     <div style="display:flex;flex-direction:column;gap:var(--cds-gap-md)">
       <div class="tt-tiles" id="kpi-tiles">
         <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_inventario">—</span><span class="s">para vender <span data-source="kpis" data-field="valor_total">—</span> · en tránsito <span data-source="kpis" data-field="valor_transito">—</span></span></div>
+        <div class="tt-tile" id="tile-disp"><span class="k">Disponible para la venta</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_disponible">—</span><span class="s"><span id="tile-disp-ok">comprometido <span data-source="kpis" data-field="valor_comprometido">—</span> (<span data-source="kpis" data-field="pct_comprometido">—</span>) en <span data-source="kpis" data-field="art_comp">—</span> códigos · <span data-source="kpis" data-field="unidades_disp">—</span> uds. libres</span><span id="tile-disp-no" hidden style="color:#b26a00">⚠ este corte no trae lo comprometido: suba el reporte de Stocks de Profit en «Cargar datos» (casilla Comprometido)</span></span></div>
         <div class="tt-tile"><span class="k">Valor a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">ganancia potencial <span data-source="kpis_precio" data-field="margen_usd">—</span> (<span data-source="kpis_precio" data-field="margen_pct">—</span>) · solo el <span data-source="kpis_precio" data-field="cobertura">—</span> del inventario tiene precio</span></div>
         <div class="tt-tile"><span class="k">Artículos con existencia</span><span class="v dash-skeleton" data-source="kpis" data-field="con_stock">—</span><span class="s">de <span data-source="kpis" data-field="articulos_total">—</span> códigos en el maestro</span></div>
         <div class="tt-tile"><span class="k">Unidades para vender</span><span class="v dash-skeleton" data-source="kpis" data-field="unidades">—</span><span class="s">costo promedio por unidad <span data-source="kpis" data-field="costo_prom">—</span></span></div>
@@ -1247,6 +1249,8 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
             <th data-field="descripcion"><button>Descripción</button></th>
             <th data-field="familia" class="tt-hide-n"><button>Familia</button></th>
             <th data-field="stock" class="n" title="Para vender: Principal + Tienda + Consignación"><button>Stock</button></th>
+            <th data-field="comprometido" class="n" title="Reservado para pedidos (reporte de Stocks de Profit)"><button>Comprometido</button></th>
+            <th data-field="disponible" class="n" title="Stock para vender − comprometido"><button>Disponible</button></th>
             <th data-field="por_llegar" class="n tt-hide-n" title="Mercancía en tránsito"><button>Tránsito</button></th>
             <th data-field="costo" class="n tt-hide-n"><button>Costo</button></th>
             <th data-field="valor" class="n"><button>Valor</button></th>
@@ -1473,7 +1477,8 @@ dash.calc('kpis', {
       valor_transito, valor_inventario: valor_total + valor_transito, unidades_transito: sum(tr, 'transito'), art_transito: tr.filter((r) => n(r.transito) > 0).length, hay_alm: articulos.some((r) => r.alm),
       pct_comprometido: valor_total ? valor_comprometido / valor_total : 0,
       articulos_total: articulos.length, con_stock: con.length, negativos: neg.length,
-      valor_negativo: sum(neg, 'valor'), unidades, comprometido_u: sum(con, 'comprometido'),
+      valor_negativo: sum(neg, 'valor'), unidades, comprometido_u: sum(con, 'comprometido'), hay_comp: articulos.some((r) => n(r.comprometido) > 0), unidades_disp: unidades - sum(con, 'comprometido'),
+      art_comp: articulos.filter((r) => n(r.comprometido) > 0).length,
       costo_prom: unidades ? sum(con, 'valor') / unidades : 0,
       sin_costo: articulos.filter((r) => r.en_rep_valor === 'NO').length,
       hallazgos_total: hallazgos.length, hallazgos_alta: alta, hallazgos_media: hallazgos.length - alta,
@@ -1695,7 +1700,7 @@ window.TT = (() => {
   const K = {
     valor_total: fmt.usd0, valor_inventario: fmt.usd0, valor_transito: fmt.usd0, unidades_transito: fmt.num, art_transito: fmt.int, valor_comprometido: fmt.usd0, valor_disponible: fmt.usd0, valor_negativo: fmt.usd0,
     pct_comprometido: fmt.pct, articulos_total: fmt.int, con_stock: fmt.int, negativos: fmt.int, unidades: fmt.num,
-    comprometido_u: fmt.num, costo_prom: fmt.usd2, sin_costo: fmt.int, hallazgos_total: fmt.int, hallazgos_alta: fmt.int,
+    comprometido_u: fmt.num, unidades_disp: fmt.num, art_comp: fmt.int, costo_prom: fmt.usd2, sin_costo: fmt.int, hallazgos_total: fmt.int, hallazgos_alta: fmt.int,
     hallazgos_media: fmt.int, resueltos: fmt.int,
   };
   // ---------- detalle por almacén: artículos que lo componen + Excel segmentado para regularizar ----------
@@ -1814,6 +1819,7 @@ window.TT = (() => {
         el.textContent = (r.hay_alm ? `El inventario vale ${fmt.usd0(r.valor_inventario)} a costo: ${fmt.usd0(r.valor_total)} para vender en ${fmt.int(r.con_stock)} artículos con existencia (Principal + Tienda + Consignación) y ${fmt.usd0(r.valor_transito)} en tránsito. `
           : `El inventario vale ${fmt.usd0(r.valor_total)} a costo en ${fmt.int(r.con_stock)} artículos con existencia. `) +
           `${fmt.int(r.articulos_80)} artículos (${fmt.pct(r.articulos_80_pct)}) concentran el 80 % del valor y la familia con más dinero es ${r.familia_top} (${fmt.pct(r.familia_top_pct)}). ` +
+          (r.hay_comp ? `De lo que está para vender, ${fmt.usd0(r.valor_comprometido)} (${fmt.pct(r.pct_comprometido)}) ya está comprometido en pedidos y ${fmt.usd0(r.valor_disponible)} está disponible para la venta. ` : `Este corte no trae lo comprometido (falta el reporte de Stocks de Profit), así que todo el stock se cuenta como disponible. `) +
           `Hay ${fmt.int(r.hallazgos_alta)} hallazgos de prioridad alta que conviene resolver en la próxima toma física.`;
       } else el.textContent = K[f] ? K[f](r[f]) : r[f];
     });
@@ -1821,7 +1827,8 @@ window.TT = (() => {
     // por almacén + tarjeta comprometido (solo si hay datos de comprometido)
     if (k.status === 'ok') {
       const r0 = k.data[0];
-      const cu = document.getElementById('card-uso'); if (cu) cu.hidden = !(r0.valor_comprometido > 0);
+      const cu = document.getElementById('card-uso'); if (cu) cu.hidden = !r0.hay_comp;
+      { const a1 = document.getElementById('tile-disp-ok'), a2 = document.getElementById('tile-disp-no'); if (a1 && a2) { a1.hidden = !r0.hay_comp; a2.hidden = !!r0.hay_comp; } }
       const ca = document.getElementById('card-alm'); ca.hidden = !r0.hay_alm;
       if (r0.hay_alm) {
         const A = dash.data('articulos').data || [], nn = (x) => Number(x) || 0;
@@ -2743,7 +2750,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const co = l.costo == null ? null : Math.round(num(l.costo) * 10000) / 10000;
     const alm = l.stock_principal != null || l.stock_tienda != null || l.stock_transito != null || l.stock_consignacion != null;
     const a = { fila: l.fila, codigo: String(l.codigo), descripcion: l.descripcion || '', familia: l.familia || 'Otros', linea: l.marca || 'Sin modelo en descripción',
-      estado: st < 0 ? 'Negativo' : st > 0 ? 'Con stock' : 'Sin stock', stock: st, comprometido: num(l.comprometido), disponible: alm ? st : num(l.disponible), por_llegar: alm ? num(l.stock_transito) : num(l.por_llegar),
+      estado: st < 0 ? 'Negativo' : st > 0 ? 'Con stock' : 'Sin stock', stock: st, comprometido: num(l.comprometido), disponible: alm ? st - num(l.comprometido) : num(l.disponible), comp: l.comprometido != null, por_llegar: alm ? num(l.stock_transito) : num(l.por_llegar),
       costo: co, valor: r2(l.valor_calculado), valor_comprometido: r2(num(l.comprometido) * (co || 0)),
       en_rep_stocks: l.en_rep_stocks === false ? 'NO' : 'SÍ', en_rep_valor: l.en_rep_valor === false ? 'NO' : 'SÍ', hallazgo: l.hallazgo || 'OK' };
     if (alm) Object.assign(a, { alm: true, transito: num(l.stock_transito), valor_transito: r2(l.valor_transito),
@@ -3161,6 +3168,23 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     }
     return null;
   }
+  function leerStocks(wb) {
+    for (const n of wb.SheetNames) {
+      const A = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: '', raw: true });
+      for (let i = 0; i < Math.min(20, A.length); i++) {
+        const cab = A[i].map(quitarAcentos), jc = cab.findIndex((h) => /^comprometid/.test(h)), jk = cab.findIndex((h) => h === 'articulo' || h === 'codigo' || h === 'cod. articulo' || h === 'codigo del articulo');
+        if (jc < 0 || jk < 0) continue;
+        const jd = cab.findIndex((h) => /^disponib/.test(h)), jl = cab.findIndex((h) => /^por llegar/.test(h)), jp = cab.findIndex((h) => /^por despachar/.test(h)), js = cab.findIndex((h) => /^(stock actual|stock|existencia|actual)$/.test(h)), jn = cab.findIndex((h) => /^descrip/.test(h));
+        const M = {};
+        A.slice(i + 1).forEach((r) => { const cod = String(r[jk] ?? '').trim(); if (!cod || /^total/i.test(cod)) return;
+          const f = M[cod] || (M[cod] = { codigo: cod, descripcion: jn >= 0 ? String(r[jn] || '').trim() : '', comprometido: 0, disponible: 0, por_llegar: 0, por_despachar: 0, stock: 0 });
+          f.comprometido += N(r[jc]); if (jd >= 0) f.disponible += N(r[jd]); if (jl >= 0) f.por_llegar += N(r[jl]); if (jp >= 0) f.por_despachar += N(r[jp]); if (js >= 0) f.stock += N(r[js]); });
+        const filas = Object.values(M); if (!filas.length) continue;
+        return { filas, comprometido: filas.reduce((t, f) => t + f.comprometido, 0), conComp: filas.filter((f) => f.comprometido > 0).length };
+      }
+    }
+    return null;
+  }
   const r4 = (v) => Math.round(v * 10000) / 10000;
   // Une los reportes por código: líneas listas para la base + hallazgos automáticos + totales
   function unirAlmacenes() {
@@ -3171,6 +3195,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const a = A[f.codigo] || (A[f.codigo] = { codigo: f.codigo, descripcion: f.descripcion, s: { principal: 0, tienda: 0, transito: 0, consignacion: 0 }, v: { principal: 0, tienda: 0, transito: 0, consignacion: 0 }, c: {} });
       a.s[x.alm] += f.stock; a.v[x.alm] += f.valor; if (f.costo) a.c[x.alm] = f.costo; if (!a.descripcion) a.descripcion = f.descripcion;
     }));
+    const STK = {}; const stk = LOTE.find((l) => l.tipo === 'stk'); if (stk) stk.filas.forEach((f) => { STK[f.codigo] = f; });
     const lineas = [], hz = [];
     const H = (prioridad, tipo, a, stock, valor, detalle, accion) => hz.push({ id: hz.length + 1, prioridad, tipo, codigo: a.codigo, descripcion: a.descripcion, stock: Math.round(stock * 1000) / 1000, valor: Math.round(valor * 100) / 100, detalle, accion, responsable: '', resuelto: '', fecha: '' });
     Object.values(A).sort((p, q) => p.codigo.localeCompare(q.codigo, 'es')).forEach((a) => {
@@ -3183,8 +3208,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (conStock.length && !cs.length) { marcas.push('VALOR SIN COSTO'); H('1-ALTA', 'Stock sin costo', a, sv + Math.max(a.s.transito, 0), 0, 'Tiene existencia (' + conStock.map(([k, n]) => n + ' ' + String(a.s[k]).replace('.', ',')).join(' · ') + ') pero el costo es 0: no suma al valor del inventario', 'Cargar el costo del artículo en Profit'); }
       else if (costo != null && costo > 0 && costo <= 1 && sv > 0) { marcas.push('COSTO ≤ US$ 1'); H('2-MEDIA', 'Costo sospechoso', a, sv, vv, 'Costo unitario US$ ' + costo.toFixed(2).replace('.', ',') + ' con ' + String(sv).replace('.', ',') + ' uds. para vender', 'Verificar el costo en Profit'); }
       if (cs.length > 1 && Math.max(...cs) > Math.min(...cs) * 1.05 + 0.01) { marcas.push('COSTO DISTINTO ENTRE ALMACENES'); H('2-MEDIA', 'Costo distinto entre almacenes', a, sv, vv, Object.entries(a.c).map(([k, c]) => ALMN[k] + ' US$ ' + c.toFixed(2).replace('.', ',')).join(' · '), 'Revisar el costo del artículo en cada almacén de Profit'); }
+      const cp = stk ? Math.max(0, (STK[a.codigo] || {}).comprometido || 0) : null;
+      if (cp > 0 && cp > sv) { marcas.push('SOBRECOMPROMETIDO'); H('2-MEDIA', 'Sobrecomprometido', a, sv, vv, 'Comprometido ' + String(cp).replace('.', ',') + ' uds. con solo ' + String(sv).replace('.', ',') + ' para vender', 'Revisar pedidos pendientes y el stock real'); }
       lineas.push({ fila: lineas.length + 1, codigo: a.codigo, descripcion: a.descripcion, familia: familia(a.descripcion), marca: linea(a.descripcion),
-        en_rep_stocks: true, en_rep_valor: true, stock_stocks: sv + a.s.transito, stock_valor: sv, comprometido: 0, disponible: sv, por_llegar: a.s.transito, por_despachar: 0,
+        en_rep_stocks: true, en_rep_valor: true, stock_stocks: sv + a.s.transito, stock_valor: sv, comprometido: cp, disponible: cp == null ? sv : sv - cp, por_llegar: a.s.transito, por_despachar: stk ? (STK[a.codigo] || {}).por_despachar || 0 : 0,
         costo: costo == null ? null : r4(costo), valor_sistema: Math.round((vv + a.v.transito) * 100) / 100, valor_calculado: Math.round(vv * 100) / 100, hallazgo: marcas.join(' · ') || 'OK',
         stock_principal: a.s.principal, stock_tienda: a.s.tienda, stock_transito: a.s.transito, stock_consignacion: a.s.consignacion,
         valor_principal: Math.round(a.v.principal * 100) / 100, valor_tienda: Math.round(a.v.tienda * 100) / 100, valor_transito: Math.round(a.v.transito * 100) / 100, valor_consignacion: Math.round(a.v.consignacion * 100) / 100 });
@@ -3193,6 +3220,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const tot = { codigos: lineas.length, unidades_venta: T((l) => l.stock_valor), valor_venta: T((l) => l.valor_calculado), unidades_transito: T((l) => l.stock_transito), valor_transito: T((l) => l.valor_transito) };
     tot.valor_total = Math.round((tot.valor_venta + tot.valor_transito) * 100) / 100; tot.unidades = tot.unidades_venta + tot.unidades_transito;
     tot.con_stock = lineas.filter((l) => l.stock_valor > 0).length;
+    tot.comp = stk ? { unidades: T((l) => l.comprometido), valor: T((l) => (l.comprometido || 0) * (l.costo || 0)), codigos: lineas.filter((l) => l.comprometido > 0).length } : null;
     const archivos = xs.map((x) => ({ almacen: x.alm, nombre: ALMN[x.alm], archivo: x.archivo, codigos: x.filas.length, unidades: x.unidades, valor: Math.round(x.valor * 100) / 100, total_profit: x.total }));
     return { lineas, hz, tot, archivos, faltan: ALM.filter(([k]) => !xs.some((x) => x.alm === k)).map(([, n]) => n), art: lineas.map(artDeLinea) };
   }
@@ -3313,6 +3341,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           if (v) { LOTE = LOTE.filter((x) => !(x.tipo === 'ventas' && x.archivo === f.name)); LOTE.push({ tipo: 'ventas', archivo: f.name, ...v, filas: armarVentas(v.filas) }); continue; }
           error = true; msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo de ventas. Debe traer las columnas Fecha, Código de artículo, Cantidad y Total. Vuelva a elegirlo o súbalo en PDF.', 'err'); continue;
         }
+        if (forzado !== 'precios' && (forzado === 'stocks' || !forzado)) {
+          const sk = leerStocks(wb);
+          if (sk && sk.filas.length) { LOTE = LOTE.filter((x) => x.tipo !== 'stk'); LOTE.push({ tipo: 'stk', archivo: f.name, ...sk }); continue; }
+          if (forzado === 'stocks') { error = true; msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo. El reporte de Stocks de Profit debe traer las columnas Artículo (o Código) y Comprometido. Vuelva a elegirlo.', 'err'); continue; }
+        }
         if (forzado !== 'precios') {
           const r = leerAlmacen(wb);
           if (r && r.filas.length) {
@@ -3383,11 +3416,12 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const t = U.tot;
       linea_('Inventario consolidado', fmtNum(t.codigos) + ' códigos · para vender (Principal + Tienda + Consignación) ' + fmtNum(t.unidades_venta) + ' uds. · ' + fmtU(t.valor_venta) +
         ' · en tránsito ' + fmtNum(t.unidades_transito) + ' uds. · ' + fmtU(t.valor_transito) + ' · valor total ' + fmtU(t.valor_total) +
-        ' · ' + U.hz.filter((h) => h.prioridad === '1-ALTA').length + ' hallazgos de prioridad alta' + (U.faltan.length ? ' · falta: ' + U.faltan.join(', ') : ''), 'tot' + (U.faltan.length ? ' warn' : ''));
+        ' · ' + U.hz.filter((h) => h.prioridad === '1-ALTA').length + ' hallazgos de prioridad alta' + (U.faltan.length ? ' · falta: ' + U.faltan.join(', ') : '') +
+        (t.comp ? ' · comprometido ' + fmtNum(t.comp.unidades) + ' uds. (' + fmtU(t.comp.valor) + ') en ' + fmtNum(t.comp.codigos) + ' códigos · disponible para la venta ' + fmtU(t.valor_venta - t.comp.valor) : ' · ⚠ sin reporte de Stocks: no se sabrá cuánto está comprometido'), 'tot' + (U.faltan.length || !t.comp ? ' warn' : ''));
     }
     // estado de cada casilla
     document.querySelectorAll('#c-slots .sh-slot').forEach((c) => {
-      const k = c.dataset.alm, vs = LOTE.filter((l) => l.tipo === 'ventas'), x = k === 'ventas' ? vs[0] : k === 'precios' ? LOTE.find((l) => l.tipo === 'precios') : LOTE.find((l) => l.tipo === 'alm' && l.alm === k);
+      const k = c.dataset.alm, vs = LOTE.filter((l) => l.tipo === 'ventas'), x = k === 'ventas' ? vs[0] : k === 'precios' ? LOTE.find((l) => l.tipo === 'precios') : k === 'stocks' ? LOTE.find((l) => l.tipo === 'stk') : LOTE.find((l) => l.tipo === 'alm' && l.alm === k);
       c.classList.toggle('ok', !!x); c.querySelector('.st').textContent = x ? '✔ ' + (k === 'ventas' ? vs.map((v) => v.archivo).join(', ') : x.archivo) : 'Sin archivo'; c.querySelector('.sh-elegir').textContent = x ? '🔄 Cambiar archivo' : '📂 Elegir archivo';
     });
     const pend = LOTE.some((x) => x.tipo === 'alm' && !x.alm);
@@ -3403,8 +3437,9 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       else {
         est.textContent = 'Paso 2: pulse "⬆ Subir al tablero" para guardar';
         const hayV = LOTE.some((x) => x.tipo === 'ventas');
-        const sube = [...(hayA ? ['inventario'] : []), ...(hayP ? ['lista de precios'] : []), ...(hayV ? ['ventas'] : [])];
-        const f = hayA && faltanA.length ? ' · Atención: falta inventario de ' + faltanA.join(', ') : '';
+        const hayS = LOTE.some((x) => x.tipo === 'stk');
+        const sube = [...(hayA ? ['inventario' + (hayS ? ' con comprometido' : '')] : hayS ? ['comprometido (se pone en el último corte cargado)'] : []), ...(hayP ? ['lista de precios'] : []), ...(hayV ? ['ventas'] : [])];
+        const f = (hayA && faltanA.length ? ' · Atención: falta inventario de ' + faltanA.join(', ') : '') + (hayA && !hayS ? ' · ⚠ sin el reporte de Stocks no se separa lo comprometido' : '');
         est2.textContent = 'Se subirá: ' + sube.join(', ') + f;
       }
     }
@@ -3496,6 +3531,20 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       throw new Error('No se pudo guardar el corte (' + e.message + '). Se deshizo la carga.');
     }
   }
+  // solo el reporte de Stocks: pone el comprometido en el último corte ya cargado (sin volver a subir los 4 reportes)
+  async function guardarComprometido(x) {
+    const c = ok(await sb.from('cortes').select('id, fecha_corte').eq('empresa_id', EMPRESA).order('fecha_corte', { ascending: false }).limit(1));
+    if (!c.length) throw new Error('No hay un corte de inventario cargado: suba primero los 4 reportes de inventario');
+    const L = await todas(() => sb.from('corte_lineas').select('*').eq('corte_id', c[0].id).order('fila'));
+    const M = {}; x.filas.forEach((f) => { M[String(f.codigo).toUpperCase()] = f; });
+    let cods = 0, uds = 0;
+    const filas = L.map((l) => { const f = M[String(l.codigo).toUpperCase()], cp = Math.max(0, f ? f.comprometido : 0), sv = Number(l.stock_valor) || 0;
+      if (cp > 0) { cods++; uds += cp; }
+      let hz = String(l.hallazgo || 'OK').split(' · ').filter((h) => h && h !== 'OK' && h !== 'SOBRECOMPROMETIDO'); if (cp > 0 && cp > sv) hz.push('SOBRECOMPROMETIDO');
+      return { ...l, comprometido: cp, disponible: sv - cp, por_despachar: f ? f.por_despachar || 0 : 0, hallazgo: hz.join(' · ') || 'OK' }; });
+    for (let i = 0; i < filas.length; i += 500) ok(await sb.from('corte_lineas').upsert(filas.slice(i, i + 500), { onConflict: 'corte_id,fila' }));
+    return { fecha: String(c[0].fecha_corte).slice(0, 10), cods, uds };
+  }
   async function guardarPrecios(x, fecha) {
     const ya = ok(await sb.from('listas_precios').select('id').eq('empresa_id', EMPRESA).eq('fecha', fecha));
     for (const l of ya) ok(await sb.from('listas_precios').delete().eq('id', l.id));
@@ -3528,6 +3577,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         hecho.push('inventario al ' + fecha.split('-').reverse().join('/') + ' (' + U.archivos.length + ' almacenes · ' + U.lineas.length.toLocaleString('es-VE') + ' códigos · valor total ' + fmtU(U.tot.valor_total) + ')');
         bitacora('CARGA INVENTARIO POR ALMACÉN', 'corte ' + fecha + ' · ' + U.archivos.map((x) => x.nombre + ' (' + x.archivo + ')').join(', ') + ' · ' + U.lineas.length + ' códigos · total ' + fmtU(U.tot.valor_total));
       } else if (a) { a.filas.archivo = a.archivo; await guardarCorte(a.filas, h && h.filas, fecha); bitacora('CARGA CONCILIACIÓN', a.archivo + ' · corte ' + fecha + ' · ' + a.filas.length + ' filas'); }
+      else if (LOTE.some((l) => l.tipo === 'stk')) { const r = await guardarComprometido(LOTE.find((l) => l.tipo === 'stk')); hecho.push('comprometido del corte ' + r.fecha.split('-').reverse().join('/') + ' (' + r.cods.toLocaleString('es-VE') + ' códigos comprometidos · ' + fmtNum(r.uds) + ' uds.)'); bitacora('CARGA COMPROMETIDO', LOTE.find((l) => l.tipo === 'stk').archivo + ' · corte ' + r.fecha + ' · ' + r.cods + ' códigos'); }
       const vs = LOTE.filter((l) => l.tipo === 'ventas');
       if (vs.length) { const r = await guardarVentas(vs); hecho.push('ventas de ' + r.meses.map(nomMes).join(', ') + ' (' + r.lineas.toLocaleString('es-VE') + ' líneas · ' + fmtU(r.total) + ')'); bitacora('CARGA VENTAS', vs.map((v) => v.archivo).join(', ') + ' · ' + r.meses.join(', ') + ' · ' + r.lineas + ' líneas'); }
       if (p) { await guardarPrecios(p, fecha); hecho.push('lista de precios (' + p.filas.length.toLocaleString('es-VE') + ' artículos)'); bitacora('CARGA PRECIOS', p.archivo + ' · ' + p.filas.length + ' filas'); }
@@ -4198,16 +4248,16 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       vt: 'Ventas registradas en Mercado Libre (por archivo o conexión automática), con su costo y margen.',
     };
     const COLS = {
-      inv: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['familia', 'Familia', 'h'], ['stock', 'Stock', 'n'], ['costo', 'Costo unit.', 'n'], ['valor', 'Valor a costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['estado_ml', 'Publicación', 'h']],
-      pub: [['item_id', 'N.º publicación ML'], ['titulo', 'Título'], ['codigo', 'Código'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['precio_usd', 'Precio en ML', 'n'], ['ganancia_unit', 'Ganancia por unidad', 'n'], ['margen_ml', 'Margen ML', 'n'], ['estado_ml', 'Estado', 'h'], ['problema', 'Situación']],
+      inv: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['familia', 'Familia', 'h'], ['stock_total', 'Stock', 'n h'], ['comprometido', 'Comprometido', 'n h'], ['stock', 'Disponible', 'n'], ['costo', 'Costo unit.', 'n'], ['valor', 'Valor a costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['estado_ml', 'Publicación', 'h']],
+      pub: [['item_id', 'N.º publicación ML'], ['titulo', 'Título'], ['codigo', 'Código'], ['stock', 'Disponible inv.', 'n'], ['stock_ml', 'Stock ML', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['precio_usd', 'Precio en ML', 'n'], ['ganancia_unit', 'Ganancia por unidad', 'n'], ['margen_ml', 'Margen ML', 'n'], ['estado_ml', 'Estado', 'h'], ['problema', 'Situación']],
       vt: [['fecha', 'Fecha'], ['venta_id', 'Venta'], ['codigo', 'Código'], ['titulo', 'Título'], ['cantidad', 'Unid.', 'n'], ['total_usd', 'Monto', 'n'], ['costo_total', 'Costo', 'n h'], ['margen', 'Margen', 'n']],
       // comparar inventario vs Mercado Libre
-      pubC: [['item_id', 'N.º publicación ML'], ['codigo', 'Código'], ['titulo', 'Título', 'h'], ['stock', 'Stock inv.', 'n cmp'], ['stock_ml', 'Stock ML', 'n cmp'], ['dif_stock', 'Dif. stock', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta público', 'n cmp'], ['precio_usd', 'Precio en ML', 'n cmp'], ['ml_vs_lista', 'ML vs público', 'n cmp'], ['ganancia_unit', 'Ganancia por unidad', 'n cmp'], ['margen_ml', 'Margen ML', 'n cmp'], ['cbar', 'Costo · público · ML', 'cmp'], ['inc_txt', 'Incidencias']],
-      invC: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock inv.', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta público', 'n cmp'], ['margen_lista', 'Margen al público', 'n cmp'], ['cbar', 'Costo · público', 'cmp'], ['inc_txt', 'Incidencias']],
+      pubC: [['item_id', 'N.º publicación ML'], ['codigo', 'Código'], ['titulo', 'Título', 'h'], ['stock', 'Disponible inv.', 'n cmp'], ['stock_ml', 'Stock ML', 'n cmp'], ['dif_stock', 'Dif. stock', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta público', 'n cmp'], ['precio_usd', 'Precio en ML', 'n cmp'], ['ml_vs_lista', 'ML vs público', 'n cmp'], ['ganancia_unit', 'Ganancia por unidad', 'n cmp'], ['margen_ml', 'Margen ML', 'n cmp'], ['cbar', 'Costo · público · ML', 'cmp'], ['inc_txt', 'Incidencias']],
+      invC: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Disponible inv.', 'n cmp'], ['costo', 'Costo', 'n cmp'], ['precio_lista', 'Precio venta público', 'n cmp'], ['margen_lista', 'Margen al público', 'n cmp'], ['cbar', 'Costo · público', 'cmp'], ['inc_txt', 'Incidencias']],
       // corregir directo en el panel
-      pubE: [['item_id', 'N.º publicación ML'], ['titulo', 'Título', 'h'], ['e_cod', '✏ Código inventario', 'ed'], ['stock', 'Stock inv.', 'n'], ['stock_ml', 'Stock ML actual', 'n'], ['e_q', '✏ Stock ML nuevo', 'ed'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['precio_usd', 'Precio ML actual', 'n'], ['e_p', '✏ Precio ML nuevo', 'ed'], ['ganancia_unit', 'Ganancia por unidad', 'n'], ['margen_ml', '✏ Margen ML', 'n ed'], ['estado_ml', 'Estado ML'], ['e_a', '✏ Pausar / activar', 'ed'], ['problema', 'Situación', 'h']],
-      npE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['e_pub', '✏ ¿Ya está en ML? Escriba su N.º MLV', 'ed']],
-      paE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Stock', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['estado_ml', 'Publicación'], ['e_act', '✏ Reactivar', 'ed']],
+      pubE: [['item_id', 'N.º publicación ML'], ['titulo', 'Título', 'h'], ['e_cod', '✏ Código inventario', 'ed'], ['stock', 'Disponible inv.', 'n'], ['stock_ml', 'Stock ML actual', 'n'], ['e_q', '✏ Stock ML nuevo', 'ed'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['precio_usd', 'Precio ML actual', 'n'], ['e_p', '✏ Precio ML nuevo', 'ed'], ['ganancia_unit', 'Ganancia por unidad', 'n'], ['margen_ml', '✏ Margen ML', 'n ed'], ['estado_ml', 'Estado ML'], ['e_a', '✏ Pausar / activar', 'ed'], ['problema', 'Situación', 'h']],
+      npE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Disponible', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['e_pub', '✏ ¿Ya está en ML? Escriba su N.º MLV', 'ed']],
+      paE: [['codigo', 'Código'], ['descripcion', 'Descripción'], ['stock', 'Disponible', 'n'], ['costo', 'Costo', 'n'], ['precio_lista', 'Precio venta público', 'n'], ['estado_ml', 'Publicación'], ['e_act', '✏ Reactivar', 'ed']],
     };
     const colsDe = (tipo, v) => { const m = st.modo || 'normal'; if (tipo === 'vt' || m === 'normal') return COLS[tipo]; if (m === 'cmp') return tipo === 'inv' ? COLS.invC : COLS.pubC; return tipo === 'inv' ? (v === 'pa' ? COLS.paE : COLS.npE) : COLS.pubE; };
     // ---------- comparación inventario vs ML: costo, precio de venta (Profit) y precio en ML ----------
@@ -4247,6 +4297,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       const codes = Object.keys(inv).filter((k) => k.length >= 6 && /\d/.test(k));
       const pmin = (c) => (c ? Math.round(c / ((1 - A.min) * (1 - A.com)) * 100) / 100 : null);
       const porArt = {};
+      // para Mercado Libre cuenta lo DISPONIBLE (stock para vender − comprometido)
+      const dispo = (a) => (a.comp ? Math.max(0, Number(a.disponible) || 0) : a.stock);
       const pubs = (ml.pubs || []).map((p) => {
         let a = null, via = '';
         if (vinc[p.item_id]) { a = inv[norm(vinc[p.item_id])] || null; if (a) via = 'Vinculado'; }
@@ -4255,7 +4307,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         if (!a) { const t = norm(p.titulo); const c = codes.find((k) => t.includes(k)); if (c) sugerido = inv[c].codigo; }
         const pu = aUsd(pn(p.precio), p.moneda, A.tasa), costo = a ? a.costo : null, neto = pu != null ? pu * (1 - A.com) : null;
         const r = { tipo: 'pub', item_id: p.item_id, titulo: p.titulo || '', sku: p.sku || '', codigo: a ? a.codigo : '', descripcion: a ? a.descripcion : '', familia: a ? a.familia : '',
-          stock: a ? a.stock : null, costo, precio_lista: a && M[a.fila] ? M[a.fila].precio : null, precio_ml: pn(p.precio), moneda: p.moneda || '', precio_usd: pu,
+          stock: a ? dispo(a) : null, stock_total: a ? a.stock : null, comprometido: a && a.comp ? a.comprometido : null, costo, precio_lista: a && M[a.fila] ? M[a.fila].precio : null, precio_ml: pn(p.precio), moneda: p.moneda || '', precio_usd: pu,
           neto_usd: neto, margen_ml: neto && costo ? (neto - costo) / neto : null, ganancia_unit: neto != null && costo ? Math.round((neto - costo) * 100) / 100 : null,
           precio_min: pmin(costo), stock_ml: pn(p.stock), vendidos: pn(p.vendidos), estado_ml: p.estado || '', activa: activa(p.estado) && !(pn(p.stock) === 0), sinStockML: activa(p.estado) && pn(p.stock) === 0, permalink: p.permalink || '', via, sugerido, cat: [] };
         if (!a) r.cat.push('sv');
@@ -4263,7 +4315,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           (porArt[a.fila] = porArt[a.fila] || []).push(r);
           if (r.activa) {
             if (pu != null && costo && pu < costo) r.cat.push('bc'); else if (r.margen_ml != null && r.margen_ml < A.min) r.cat.push('mb');
-            if (!(a.stock > 0)) r.cat.push('ss'); else if (r.stock_ml != null && r.stock_ml !== a.stock) r.cat.push('sd');
+            if (!(dispo(a) > 0)) r.cat.push('ss'); else if (r.stock_ml != null && r.stock_ml !== dispo(a)) r.cat.push('sd');
             if (!r.cat.length) r.cat.push('ok');
           }
         }
@@ -4276,10 +4328,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       });
       const invRows = [];
       S.articulos.forEach((a) => {
-        if (!(a.stock > 0)) return;
+        if (!(dispo(a) > 0)) return;
         const L = porArt[a.fila] || [], act = L.filter((x) => x.activa);
         if (act.length) return;
-        invRows.push({ tipo: 'inv', cat: [L.length ? 'pa' : 'np'], codigo: a.codigo, descripcion: a.descripcion, familia: a.familia, stock: a.stock, costo: a.costo, valor: a.valor,
+        invRows.push({ tipo: 'inv', cat: [L.length ? 'pa' : 'np'], codigo: a.codigo, descripcion: a.descripcion, familia: a.familia, stock: dispo(a), stock_total: a.stock, comprometido: a.comp ? a.comprometido : null, costo: a.costo, valor: a.comp ? Math.round(dispo(a) * (a.costo || 0) * 100) / 100 : a.valor,
           precio_lista: M[a.fila] ? M[a.fila].precio : null, precio_min: pmin(a.costo), estado_ml: L.length ? 'Pausada: ' + L.map((x) => x.item_id).join(', ') : 'No publicado', item_id: L.length ? L[0].item_id : '' });
       });
       const hoy = Date.now(), d30 = hoy - 30 * 864e5;
@@ -4378,7 +4430,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         precio_lista: { num: true, fmt: u2 }, precio_min: { num: true, fmt: u2 }, precio_usd: { num: true, fmt: (x, r) => (x == null ? (r.precio_ml != null ? r.precio_ml + ' ' + r.moneda + ' (falta tasa)' : '—') : T.fmt.usd2(x)) },
         margen_ml: { num: true, render: (td, r) => margenEditable(td, r, T) },
         problema: { render: (td, r) => (r.problema ? T.chip(td, r.problema, r.cat.some((c) => c === 'bc' || c === 'ss' || c === 'sv') ? 'bad' : r.cat.includes('ok') ? 'ok' : 'warn') : (td.textContent = '')) },
-        ...colsExtra(T),
+        ...colsExtra(T), stock_total: { num: true, fmt: (x) => (x == null ? '—' : T.fmt.num(x)) }, comprometido: { num: true, fmt: (x) => (x == null ? '—' : T.fmt.num(x)) },
         estado_ml: { fmt: (x) => ({ active: 'Activa', paused: 'Pausada', closed: 'Finalizada', restricted: 'Inactiva', under_review: 'En revisión', inactive: 'Inactiva' }[String(x || '').toLowerCase()] || x || '—') }, cantidad: { num: true, fmt: nn }, total_usd: { num: true, fmt: u2 }, costo_total: { num: true, fmt: u2 }, margen: { num: true, fmt: pc },
       }, (r) => (r.item_id || '') + '|' + (r.codigo || '') + '|' + (r.venta_id || ''), st);
       $('ml-n').textContent = T.fmt.int(n) + (tipo === 'vt' ? ' líneas de venta' : tipo === 'inv' ? ' artículos' : ' publicaciones') + (n > st.limit ? ' · se muestran ' + st.limit + ', use la búsqueda' : '');
