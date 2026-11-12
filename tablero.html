@@ -1261,12 +1261,12 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       </div>
       <div class="tt-card" id="card-familias">
         <h3>Revisión de familias</h3>
-        <p class="note">El tablero revisó cada artículo por su descripción y, cuando es un número de parte Toyota (5 dígitos-5), por el sistema del vehículo que indican sus primeros dígitos (15xxx lubricación del motor, 48xxx suspensión, 81xxx faros…). La columna «Por qué» dice de dónde sale cada propuesta y marca ⚠ las que conviene mirar. Acepte o rechace cada propuesta (o todas las que se ven de una vez) y baje el archivo <b>.xls</b> para cargar las familias en Profit.</p>
+        <p class="note">El tablero revisó cada artículo por su descripción y, cuando es un número de parte Toyota (5 dígitos-5), por el sistema del vehículo que indican sus primeros dígitos (15xxx lubricación del motor, 48xxx suspensión, 81xxx faros…). La columna «Por qué» dice de dónde sale cada propuesta y marca ⚠ las que conviene mirar. <b>Todas las tablas del tablero ya usan la familia propuesta</b> (o la que usted escoja); las que rechace con «✕ No» vuelven a la anterior. Acepte o rechace cada propuesta (o todas las que se ven de una vez) y baje el archivo <b>.xls</b> para cargar las familias en Profit.</p>
         <div class="fm-res" id="fm-res"></div>
         <div class="fm-tr" id="fm-tr"></div>
         <div class="tt-tools">
           <select class="tt-in" id="fm-v" aria-label="Qué ver"><option value="Propuesta">Con cambio propuesto (por decidir)</option><option value="Aceptada">Aceptadas (van para Profit)</option><option value="Bajada para Profit">Ya bajadas para Profit</option><option value="Rechazada">Rechazadas</option><option value="Correcta">Familia correcta</option><option value="">Todos los artículos</option></select>
-          <select class="tt-in" id="fm-f" aria-label="Familia actual"><option value="">Familia actual: todas</option></select>
+          <select class="tt-in" id="fm-f" aria-label="Familia actual"><option value="">Familia anterior: todas</option></select>
           <select class="tt-in" id="fm-p" aria-label="Familia propuesta"><option value="">Familia propuesta: todas</option></select>
           <select class="tt-in" id="fm-s" aria-label="Stock"><option value="">Con y sin stock</option><option value="1">Solo con stock</option></select>
           <select class="tt-in" id="fm-c" aria-label="Confianza"><option value="">Toda propuesta</option><option value="2">Confirmada por descripción y número de parte</option><option value="1">Revisar: descripción y número de parte no coinciden</option><option value="0">Solo por descripción (sin número Toyota)</option></select>
@@ -1280,7 +1280,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
               <th data-field="codigo"><button>Código</button></th>
               <th data-field="descripcion"><button>Descripción</button></th>
               <th data-field="stock" class="n"><button>Stock</button></th>
-              <th data-field="familia"><button>Familia actual</button></th>
+              <th data-field="familia"><button>Familia anterior</button></th>
               <th data-field="propuesta"><button>Familia propuesta</button></th>
               <th data-field="fuente" class="tt-hide-n"><button>Por qué</button></th>
               <th data-field="decision"><button>Decisión</button></th>
@@ -2150,8 +2150,8 @@ window.TT = (() => {
   function todas() {
     const A = dash.data('articulos'); if (A.status !== 'ok') return null; const no = NO(), info = window.TT_FAMINFO || ((d) => ({ familia: window.TT_FAMSUG ? window.TT_FAMSUG(d) : null, fuente: 'Descripción' }));
     return A.data.map((a) => { const I = info(a.descripcion, a.codigo) || {}, prop = I.familia || a.familia, p = PEND[K(a.codigo)];
-      const estado = p ? (p.exportado_en ? 'Bajada para Profit' : 'Aceptada') : prop === a.familia ? 'Correcta' : no.has(K(a.codigo)) ? 'Rechazada' : 'Propuesta';
-      return { fila: a.fila, codigo: a.codigo, descripcion: a.descripcion, stock: Number(a.stock) || 0, familia: a.familia, propuesta: p ? p.familia_nueva : prop, sugerida: prop, fuente: I.fuente || 'Descripción', revisar: !!I.revisar, estado, decision: estado }; });
+      const estado = p ? (p.exportado_en ? 'Bajada para Profit' : 'Aceptada') : prop === (a.familia_base || a.familia) ? 'Correcta' : no.has(K(a.codigo)) ? 'Rechazada' : 'Propuesta';
+      return { fila: a.fila, codigo: a.codigo, descripcion: a.descripcion, stock: Number(a.stock) || 0, familia: a.familia_base || a.familia, usada: a.familia, propuesta: p ? p.familia_nueva : prop, sugerida: prop, fuente: I.fuente || 'Descripción', revisar: !!I.revisar, estado, decision: estado }; });
   }
   const puede = () => !!(window.TT_PROF && window.TT_PROF.familias);
   async function aceptar(L, nueva) {
@@ -2161,14 +2161,14 @@ window.TT = (() => {
     avisar('✔ ' + n + ' familias aceptadas: quedan listas para el archivo de Profit.', 'ok'); await traerPend();
   }
   async function quitar(L) { await window.TT_PROF.familias(L.map((r) => ({ codigo: r.codigo, descripcion: r.descripcion, familia: r.familia, nueva: null }))); avisar('↺ Se quitaron ' + L.length + ' familias aceptadas.', 'ok'); await traerPend(); }
-  function rechazar(L) { const S = NO(); L.forEach((r) => S.add(K(r.codigo))); ponNO(S); draw(); }
+  function rechazar(L) { const S = NO(); L.forEach((r) => S.add(K(r.codigo))); ponNO(S); if (window.TT_FAMAPLICAR) window.TT_FAMAPLICAR(); draw(); }
   const opts = (sel, vals, lab) => { const cur = sel.value; sel.replaceChildren(new Option(lab, '')); vals.forEach((v) => sel.appendChild(new Option(v, v))); sel.value = vals.includes(cur) ? cur : ''; };
   const draw = () => {
     if (window.TT.page !== 'calidad') return;
     if (!pedido) { pedido = true; traerPend(); return; }
     const T = todas(); if (!T) return;
     const FAMS = window.TT_FAMS ? window.TT_FAMS() : [...new Set(T.map((r) => r.familia))].sort();
-    opts($('fm-f'), [...new Set(T.map((r) => r.familia))].sort(), 'Familia actual: todas'); opts($('fm-p'), [...new Set(T.map((r) => r.propuesta))].sort(), 'Familia propuesta: todas');
+    opts($('fm-f'), [...new Set(T.map((r) => r.familia))].sort(), 'Familia anterior: todas'); opts($('fm-p'), [...new Set(T.map((r) => r.propuesta))].sort(), 'Familia propuesta: todas');
     const V = $('fm-v').value, F = $('fm-f').value, P = $('fm-p').value, S = $('fm-s').value, Cf = $('fm-c').value;
     const base = T.filter((r) => (!F || r.familia === F) && (!P || r.propuesta === P) && (!S || r.stock > 0) && (!Cf || (Cf === '2' ? /número de parte$/.test(r.fuente) : Cf === '1' ? r.revisar : r.fuente === 'Descripción')));
     const rows = base.filter((r) => !V || r.estado === V);
@@ -2954,13 +2954,33 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   // ---------- datos ----------
   const num = (v) => (v == null ? 0 : Number(v) || 0);
   const r2 = (v) => Math.round(num(v) * 100) / 100;
+  // familia con la que se muestra cada artículo: la aceptada/escogida en la revisión de familias; si no, la propuesta (descripción + número de parte Toyota);
+  // si el usuario rechazó la propuesta, la que traía guardada
+  let FAMOVR = (() => { try { return JSON.parse(localStorage.getItem('tt_famovr') || '{}'); } catch (e) { return {}; } })();
+  let FAMNO = null;
+  function famFinal(cod, desc, fDB) {
+    const k = String(cod).toUpperCase(); if (FAMOVR[k]) return FAMOVR[k];
+    if (!FAMNO) { try { FAMNO = new Set(JSON.parse(localStorage.getItem('tt_fam_no') || '[]')); } catch (e) { FAMNO = new Set(); } }
+    if (FAMNO.has(k)) return fDB || familia(desc);
+    return familiaInfo(desc, cod).familia;
+  }
+  // vuelve a calcular la familia de todos los artículos y redibuja el tablero (al aceptar familias)
+  function aplicarFamilias(mapa) {
+    const nuevo = JSON.stringify(mapa || {}), antes = JSON.stringify(FAMOVR); FAMNO = null;
+    if (mapa && nuevo !== antes) { FAMOVR = mapa; try { localStorage.setItem('tt_famovr', nuevo); } catch (e) {} }
+    if (!SERVER || !SERVER.articulos) return false; let n = 0;
+    SERVER.articulos.forEach((a) => { const f = famFinal(a.codigo, a.descripcion, a.familia_base || a.familia); if (f !== a.familia) { a.familia = f; n++; } });
+    if (n) { try { dash._set(soloDatos(SERVER)); } catch (e) {} if (window.TT_ML && window.TT_ML._reset) window.TT_ML._reset(); }
+    return n;
+  }
+  window.TT_FAMAPLICAR = aplicarFamilias;
   // Una línea del corte (como está en la base) → artículo del tablero.
   // Con los 4 reportes por almacén: stock = Principal + Tienda + Consignación (para vender); el tránsito va aparte.
   function artDeLinea(l) {
     const st = l.stock_valor != null ? num(l.stock_valor) : num(l.stock_stocks);
     const co = l.costo == null ? null : Math.round(num(l.costo) * 10000) / 10000;
     const alm = l.stock_principal != null || l.stock_tienda != null || l.stock_transito != null || l.stock_consignacion != null;
-    const a = { fila: l.fila, codigo: String(l.codigo), descripcion: l.descripcion || '', familia: l.familia || 'Otros', linea: l.marca || 'Sin modelo en descripción',
+    const a = { fila: l.fila, codigo: String(l.codigo), descripcion: l.descripcion || '', familia: famFinal(l.codigo, l.descripcion, l.familia), familia_base: l.familia || 'Otros', linea: l.marca || 'Sin modelo en descripción',
       estado: st < 0 ? 'Negativo' : st > 0 ? 'Con stock' : 'Sin stock', stock: st, comprometido: num(l.comprometido), disponible: alm ? Math.max(0, st - num(l.comprometido)) : num(l.disponible), comp: l.comprometido != null, por_llegar: alm ? num(l.stock_transito) : num(l.por_llegar),
       costo: co, valor: r2(l.valor_calculado), valor_comprometido: r2(Math.min(num(l.comprometido), Math.max(0, st)) * (co || 0)),
       en_rep_stocks: l.en_rep_stocks === false ? 'NO' : 'SÍ', en_rep_valor: l.en_rep_valor === false ? 'NO' : 'SÍ', hallazgo: l.hallazgo || 'OK' };
@@ -3361,7 +3381,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     t.filas.forEach((r) => {
       const cod = String(r[c.cod] ?? '').trim(); if (!cod) return;
       const st = r[c.s2] !== '' ? N(r[c.s2]) : N(r[c.s1]); const co = N(r[c.co]) || null; const com = N(r[c.com]);
-      art.push({ fila: art.length + 1, codigo: cod, descripcion: String(r[c.des] || ''), familia: familia(r[c.des]), linea: linea(r[c.des]),
+      art.push({ fila: art.length + 1, codigo: cod, descripcion: String(r[c.des] || ''), familia: familiaInfo(r[c.des], cod).familia, linea: linea(r[c.des]),
         estado: st < 0 ? 'Negativo' : st > 0 ? 'Con stock' : 'Sin stock', stock: st, comprometido: com, disponible: N(r[c.dis]), por_llegar: N(r[c.pl]),
         costo: co ? Math.round(co * 10000) / 10000 : null, valor: Math.round(N(r[c.vc]) * 100) / 100, valor_comprometido: Math.round(com * (co || 0) * 100) / 100,
         en_rep_stocks: r[c.es], en_rep_valor: r[c.ev], hallazgo: String(r[c.h] || 'OK'),
@@ -3532,7 +3552,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (cs.length > 1 && Math.max(...cs) > Math.min(...cs) * 1.05 + 0.01) { marcas.push('COSTO DISTINTO ENTRE ALMACENES'); H('2-MEDIA', 'Costo distinto entre almacenes', a, sv, vv, Object.entries(a.c).map(([k, c]) => ALMN[k] + ' US$ ' + c.toFixed(2).replace('.', ',')).join(' · '), 'Revisar el costo del artículo en cada almacén de Profit'); }
       const cp = stk ? Math.max(0, (STK[a.codigo] || {}).comprometido || 0) : null;
       if (cp > 0 && cp > sv) { marcas.push('SOBRECOMPROMETIDO'); H('2-MEDIA', 'Sobrecomprometido', a, sv, vv, 'Comprometido ' + String(cp).replace('.', ',') + ' uds. con solo ' + String(sv).replace('.', ',') + ' para vender', 'Revisar pedidos pendientes y el stock real'); }
-      lineas.push({ fila: lineas.length + 1, codigo: a.codigo, descripcion: a.descripcion, familia: familia(a.descripcion), marca: linea(a.descripcion),
+      lineas.push({ fila: lineas.length + 1, codigo: a.codigo, descripcion: a.descripcion, familia: familiaInfo(a.descripcion, a.codigo).familia, marca: linea(a.descripcion),
         en_rep_stocks: true, en_rep_valor: true, stock_stocks: sv + a.s.transito, stock_valor: sv, comprometido: cp, disponible: cp == null ? sv : sv - cp, por_llegar: a.s.transito, por_despachar: stk ? (STK[a.codigo] || {}).por_despachar || 0 : 0,
         costo: costo == null ? null : r4(costo), valor_sistema: Math.round((vv + a.v.transito) * 100) / 100, valor_calculado: Math.round(vv * 100) / 100, hallazgo: marcas.join(' · ') || 'OK',
         stock_principal: a.s.principal, stock_tienda: a.s.tienda, stock_transito: a.s.transito, stock_consignacion: a.s.consignacion,
@@ -7038,7 +7058,7 @@ function zoomEn(box){
         const hechos = Object.values(PP).filter((x) => { const a = art(x.codigo); if (!a) return false; const pa = precioActual(x.codigo);
           return !x.familia_nueva && (x.costo_nuevo == null || (a.costo != null && Math.abs(Number(a.costo) - Number(x.costo_nuevo)) < 0.01)) && (x.precio_nuevo == null || (pa != null && Math.abs(pa - Number(x.precio_nuevo)) < 0.01)) && (x.stock_contado == null || Number(a.stock) === Number(x.stock_contado)); });
         if (hechos.length) await cerrar(hechos.map((x) => x.codigo)).catch(() => {});
-        cargando = null; botones(); return PP;
+        cargando = null; botones(); try { aplicarFamilias(mapaFam()); } catch (e) {} return PP;
       })();
       return cargando;
     }
@@ -7175,8 +7195,9 @@ function zoomEn(box){
     async function familias(lista, origen) {   // lista: [{codigo, descripcion, familia (actual), nueva (null = quitar)}]
       await cargar(); const lote = new Map();
       for (const x of lista) await guardar({ codigo: x.codigo, descripcion: x.descripcion, familia: x.familia }, 'familia_nueva', x.nueva && x.nueva !== x.familia ? x.nueva : null, origen || 'Revisión de familias', lote);
-      await guardarLote(lote); return lote.size;
+      await guardarLote(lote); aplicarFamilias(mapaFam()); return lote.size;
     }
+    const mapaFam = () => { const o = {}; Object.values(PP || {}).forEach((p) => { if (p.familia_nueva) o[String(p.codigo).toUpperCase()] = p.familia_nueva; }); return o; };
     const famPend = async () => { await cargar(); const o = {}; Object.values(PP).forEach((p) => { if (p.familia_nueva) o[String(p.codigo).toUpperCase()] = p; }); return o; };
     async function exportar(op) {
       op = op || {}; await cargar(); const L = Object.values(PP).filter((p) => !op.solo || (op.solo === 'familias' && p.familia_nueva)).sort((a, b) => String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true })); if (!L.length) return avisoCarga(op.solo === 'familias' ? 'No hay familias aceptadas para Profit.' : 'No hay correcciones pendientes.', 'ok');
