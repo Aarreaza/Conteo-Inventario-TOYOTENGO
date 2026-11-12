@@ -342,6 +342,10 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 #c-msg.err:not(:empty){border-color:var(--color-bad);background:color-mix(in srgb,var(--color-bad) 9%,transparent);font-weight:600}
 #sh-aviso{position:fixed;left:50%;top:1rem;transform:translateX(-50%);z-index:9999;max-width:min(680px,calc(100vw - 2rem));padding:.9rem 1.2rem;border-radius:10px;font-weight:600;font-size:.95rem;box-shadow:0 10px 30px rgba(0,0,0,.25);cursor:pointer;color:#fff}
 #sh-aviso.ok{background:#1f7a45}#sh-aviso.err{background:#b3261e}
+.ml-plan{margin:1rem 0}.ml-plan h3{margin:0 0 .5rem}
+.ml-pl-pasos{margin:.25rem 0 .75rem 1.1rem;padding:0;display:flex;flex-direction:column;gap:.55rem;font-size:.92rem}
+.ml-pl-pasos .sh-btn{margin:.2rem .3rem}
+.ml-pl-op{display:flex;gap:.5rem;align-items:flex-start;font-size:.88rem}
 
 /* ---- tablero ---- */
 
@@ -645,6 +649,18 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         <button class="sh-btn lt" id="ml-archivos" type="button" onclick="var x=document.getElementById('mla')||document.getElementById('ml-cx');if(x)x.scrollIntoView({behavior:'smooth',block:'start'})">Archivos para Mercado Libre</button>
       </div>
     </div>
+    <div class="tt-card ml-plan" id="ml-plan" hidden>
+      <h3>Actualizar Mercado Libre con planillas (igual que con Profit)</h3>
+      <ol class="ml-pl-pasos">
+        <li>En Mercado Libre: <b>Publicaciones → Modificar desde Excel → Condiciones generales</b>, marque <b>Todas</b> y descargue la planilla (si la divide en activas y pausadas, descargue ambas).</li>
+        <li>Súbalas aquí: <button class="sh-btn lt" id="ml-pl-subir" type="button">📂 Subir planillas de Mercado Libre</button> El panel compara cada publicación contra el inventario.</li>
+        <li>Pulse <button class="sh-btn" id="ml-pl-bajar" type="button" disabled>⬇ Preparar planilla para subir a ML</button> Se descarga la misma planilla con el <b>stock del inventario</b> (las publicaciones sin existencia quedan en 0) y una lista de cambios para revisar.</li>
+        <li>En Mercado Libre: <b>Modificar desde Excel → Sube la planilla que descargaste</b>. ML acepta una subida por cada planilla descargada: si pasa tiempo, repita desde el paso 1.</li>
+      </ol>
+      <label class="ml-pl-op"><input type="checkbox" id="ml-pl-precio"> También subir al precio mínimo las publicaciones que hoy están por debajo de él (por defecto solo se cambia el stock)</label>
+      <p class="tt-note" id="ml-pl-lista"></p>
+      <p class="tt-note" id="ml-pl-res"></p>
+    </div>
     <div class="ml-ctrl" id="ml-ctrl" aria-live="polite"></div>
     <form class="tt-card ml-deuda-f" id="ml-deuda-f" hidden>
       <h3>Actualizar estado de cuenta y deuda con Mercado Libre</h3>
@@ -697,6 +713,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
           <option value="mb">Margen ML por debajo del mínimo</option>
           <option value="ss">⚠ Publicados sin stock en el inventario</option>
           <option value="sd">Stock de ML distinto al inventario</option>
+          <option value="du">Publicaciones duplicadas (mismo código)</option>
           <option value="pz">⏸ Publicaciones pausadas o inactivas (todas)</option>
           <option value="pa">Artículos con stock cuya publicación está pausada</option>
           <option value="sv">Publicaciones sin código (sin vincular)</option>
@@ -4085,6 +4102,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       pz: 'Todas las publicaciones que hoy no se muestran a compradores (pausadas, finalizadas, en revisión o inactivas por la suspensión de la cuenta), con su stock en el inventario. Las que tienen stock son las primeras a reactivar.',
       sv: 'Publicaciones que no se pudieron unir con un código del inventario (no tienen SKU o el SKU no existe). Descárguelas, escriba el código del inventario y súbalas.',
       ok: 'Publicaciones activas con stock, margen suficiente y la misma cantidad que el inventario.',
+      du: 'El mismo código del inventario está en más de una publicación activa: el stock se ofrece dos veces. Unifique o pause la que sobra.',
       todas: 'Todas las publicaciones de la cuenta con su comparación contra el inventario.',
       vt: 'Ventas registradas en Mercado Libre (por archivo o conexión automática), con su costo y margen.',
     };
@@ -4159,7 +4177,10 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         cobertura: conStock.length ? cubiertos / conStock.length : 0, conStock: conStock.length,
         mProm, v30: v30.reduce((s, v) => s + (v.total_usd || 0), 0), v30u: v30.reduce((s, v) => s + v.cantidad, 0), v30n: new Set(v30.map((v) => v.venta_id)).size,
       };
-      ['bc', 'mb', 'ss', 'sd', 'sv', 'ok'].forEach((c) => { k[c] = pubs.filter((p) => p.cat.includes(c)); });
+      // mismo código en más de una publicación activa
+      const nAct = {}; pubs.forEach((p) => { if (p.activa && p.codigo) nAct[p.codigo] = (nAct[p.codigo] || 0) + 1; });
+      pubs.forEach((p) => { if (p.activa && p.codigo && nAct[p.codigo] > 1) { p.cat = p.cat.filter((c) => c !== 'ok'); p.cat.push('du'); p.problema = (p.problema && p.problema !== 'Correcta' ? p.problema + ' · ' : '') + 'Duplicada (' + nAct[p.codigo] + ' publicaciones activas)'; } });
+      ['bc', 'mb', 'ss', 'sd', 'sv', 'ok', 'du'].forEach((c) => { k[c] = pubs.filter((p) => p.cat.includes(c)); });
       R = { pubs, inv: invRows, ventas, k, ml, A };
       return R;
     }
@@ -4231,7 +4252,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       if (!R || !R.k.hay && tipo !== 'vt') { el.hidden = true; return; }
       el.hidden = false;
       const rows = vista, n = rows.length, sum = (f) => rows.reduce((s, r) => s + (Number(f(r)) || 0), 0);
-      const nom = { np: 'Con stock y NO publicados', bc: 'Precio ML bajo el costo', mb: 'Margen bajo el mínimo', ss: 'Publicados sin stock en inventario', sd: 'Stock de ML distinto', pa: 'Publicaciones pausadas o inactivas con stock',
+      const nom = { du: 'Publicaciones duplicadas', np: 'Con stock y NO publicados', bc: 'Precio ML bajo el costo', mb: 'Margen bajo el mínimo', ss: 'Publicados sin stock en inventario', sd: 'Stock de ML distinto', pa: 'Publicaciones pausadas o inactivas con stock',
         sv: 'Publicaciones sin código', ok: 'Publicados y correctos', todas: 'Todas las publicaciones', vt: 'Ventas en Mercado Libre', pz: 'Publicaciones pausadas o inactivas' };
       const h = document.createElement('h4'); h.textContent = 'Resumen · ' + (nom[v] || '');
       const filt = [$('ml-fam').value ? 'familia ' + $('ml-fam').value : '', $('ml-q').value.trim() ? 'búsqueda "' + $('ml-q').value.trim() + '"' : ''].filter(Boolean).join(' · ');
@@ -4505,7 +4526,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       $('ml-conectar').hidden = !(YO && YO.rol === 'ADMIN');
       const A = aj(); $('ml-com').value = Math.round(A.com * 1000) / 10; $('ml-min').value = Math.round(A.min * 1000) / 10; $('ml-tasa').value = A.tasa || '';
       if (!famLlena && SERVER.articulos.length) { famLlena = true; [...new Set(SERVER.articulos.map((a) => a.familia))].sort((a, b) => a.localeCompare(b, 'es')).forEach((f) => $('ml-fam').appendChild(new Option(f, f))); }
-      estadoTxt(); ctrl(); alertas(); tiles(); tabla(); vendedor(); resumenVentas();
+      estadoTxt(); ctrl(); alertas(); tiles(); tabla(); vendedor(); resumenVentas(); pintarPlanillas();
       $('ml-graf').hidden = !R.ventas.length;
     }
     // ---------- descargas ----------
@@ -4516,7 +4537,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     const CAMPOS = { inv: ['codigo', 'descripcion', 'familia', 'stock', 'costo', 'valor', 'precio_lista', 'precio_min', 'estado_ml'],
       pub: ['item_id', 'titulo', 'sku', 'codigo', 'sugerido', 'descripcion', 'via', 'stock', 'stock_ml', 'costo', 'precio_ml', 'moneda', 'precio_usd', 'neto_usd', 'margen_ml', 'ganancia_unit', 'precio_min', 'precio_lista', 'vendidos', 'estado_ml', 'problema', 'permalink'],
       vt: ['fecha', 'venta_id', 'item_id', 'codigo', 'titulo', 'cantidad', 'total_usd', 'costo_total', 'margen', 'estado'] };
-    const NOMBRE = { pz: 'Pausadas o inactivas', np: 'No publicados con stock', bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Publicados sin stock', sd: 'Stock distinto', pa: 'Pausadas con stock', sv: 'Sin código (vincular)', ok: 'Correctas', todas: 'Todas las publicaciones', vt: 'Ventas ML' };
+    const NOMBRE = { du: 'Publicaciones duplicadas', pz: 'Pausadas o inactivas', np: 'No publicados con stock', bc: 'Precio bajo el costo', mb: 'Margen bajo', ss: 'Publicados sin stock', sd: 'Stock distinto', pa: 'Pausadas con stock', sv: 'Sin código (vincular)', ok: 'Correctas', todas: 'Todas las publicaciones', vt: 'Ventas ML' };
     function hojaML(id, rows) {
       const tipo = id === 'np' || id === 'pa' ? 'inv' : id === 'vt' ? 'vt' : 'pub';
       const data = rows.map((r) => { const o = {}; CAMPOS[tipo].forEach((c) => { o[ETQ[c]] = r[c] == null ? '' : r[c]; });
@@ -4548,7 +4569,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         ['Comisión usada %', R.A.com], ['Margen mínimo %', R.A.min], ['Generado', new Date().toLocaleString('es-VE')]];
       const ws = XLSX.utils.aoa_to_sheet(res); ws['!cols'] = [{ wch: 36 }, { wch: 18 }]; res.forEach((f, r) => { if (!r) return; const x = ws[XLSX.utils.encode_cell({ r, c: 1 })]; if (x && x.t === 'n') x.z = /%/.test(f[0]) ? '0.0%' : /US\$/.test(f[0]) ? '#,##0.00' : '#,##0'; });
       XLSX.utils.book_append_sheet(wb, ws, 'Resumen');
-      ['np', 'bc', 'mb', 'ss', 'sd', 'pa', 'pz', 'sv', 'todas', 'vt'].forEach((id) => XLSX.utils.book_append_sheet(wb, hojaML(id, filas(id)), NOMBRE[id].slice(0, 31)));
+      ['np', 'bc', 'mb', 'ss', 'sd', 'du', 'pa', 'pz', 'sv', 'todas', 'vt'].forEach((id) => XLSX.utils.book_append_sheet(wb, hojaML(id, filas(id)), NOMBRE[id].slice(0, 31)));
       const nom = 'TOYOTENGO_MercadoLibre_conciliacion_' + fecha() + '.xlsx'; XLSX.writeFile(wb, nom); bitacora('DESCARGA MERCADO LIBRE', nom);
     }
     // ---------- subir archivos (de Mercado Libre o los Excel trabajados) ----------
@@ -4612,13 +4633,112 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     async function guardarLotes(tabla, filas, conflicto) {
       for (let i = 0; i < filas.length; i += 500) ok(await sb.from(tabla).upsert(filas.slice(i, i + 500), { onConflict: conflicto }));
     }
+    // ---------- planillas "Modificar desde Excel" de Mercado Libre: se devuelven con stock (y opcionalmente precio) del inventario ----------
+    let PLANILLAS = [];
+    const esPlanillaML = (wb) => { const ws = wb.Sheets.Publicaciones; if (!ws) return false; const h = (XLSX.utils.sheet_to_json(ws, { header: 1, range: 0 })[0] || []).map(String); return h.includes('ITEM_ID') && h.includes('QUANTITY'); };
+    const b64 = (buf) => { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+    const deB64 = (t) => { const s = atob(t), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; };
+    function guardarPlanillas(L) {
+      PLANILLAS = L.map((x) => ({ ...x, cargada: new Date().toISOString() }));
+      try { localStorage.setItem('tt_ml_planillas', JSON.stringify(PLANILLAS.map((x) => ({ nombre: x.nombre, cargada: x.cargada, b: b64(x.buf) })))); } catch (e) { /* sin espacio: queda solo en esta sesión */ }
+      pintarPlanillas();
+    }
+    function leerPlanillasGuardadas() {
+      if (PLANILLAS.length) return;
+      try { const j = JSON.parse(localStorage.getItem('tt_ml_planillas') || '[]'); PLANILLAS = j.map((x) => ({ nombre: x.nombre, cargada: x.cargada, buf: deB64(x.b) })); } catch (e) { PLANILLAS = []; }
+    }
+    async function cargarJSZip() {
+      if (window.JSZip) return window.JSZip;
+      await new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; sc.onload = ok; sc.onerror = () => no(new Error('no se pudo cargar el componente ZIP; revise la conexión')); document.head.appendChild(sc); });
+      return window.JSZip;
+    }
+    // Cambia solo las celdas de cantidad/precio dentro del XML de la hoja "Publicaciones": el resto del archivo de ML queda idéntico
+    async function parcharPlanilla(buf, cambios) {
+      const Z = await cargarJSZip(), z = await Z.loadAsync(buf);
+      const wbx = await z.file('xl/workbook.xml').async('string'), rels = await z.file('xl/_rels/workbook.xml.rels').async('string');
+      const hoja = (wbx.match(/<sheet\b[^>]*name="Publicaciones"[^>]*>/) || [''])[0], rid = (hoja.match(/r:id="([^"]+)"/) || [])[1];
+      const rel = (rels.match(new RegExp('<Relationship\\b[^>]*Id="' + rid + '"[^>]*>')) || [''])[0];
+      const ruta = 'xl/' + ((rel.match(/Target="([^"]+)"/) || [])[1] || '').replace(/^\/?xl\//, '');
+      if (!rid || !z.file(ruta)) throw new Error('el archivo no tiene la hoja "Publicaciones" de Mercado Libre');
+      let x = await z.file(ruta).async('string');
+      let ss = []; if (z.file('xl/sharedStrings.xml')) { const t = await z.file('xl/sharedStrings.xml').async('string'); ss = [...t.matchAll(/<si>([\s\S]*?)<\/si>/g)].map((m) => [...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map((q) => q[1]).join('')); }
+      const val = (c) => { const t = (c.match(/\bt="([^"]+)"/) || [])[1]; if (t === 'inlineStr') return [...c.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map((q) => q[1]).join(''); const v = (c.match(/<v>([\s\S]*?)<\/v>/) || [])[1]; return t === 's' ? ss[+v] : v; };
+      const celdaRe = (L) => new RegExp('<c\\b[^>]*?\\br="' + L + '(\\d+)"[^>]*?(?:/>|>[\\s\\S]*?</c>)');
+      const r1 = (x.match(/<row\b[^>]*?\br="1"[^>]*>([\s\S]*?)<\/row>/) || [])[1] || '';
+      const col = {}; [...r1.matchAll(/<c\b[^>]*?\br="([A-Z]+)1"[^>]*?(?:\/>|>[\s\S]*?<\/c>)/g)].forEach((m) => { col[val(m[0])] = m[1]; });
+      if (!col.ITEM_ID || !col.QUANTITY) throw new Error('no encontré las columnas ITEM_ID y QUANTITY');
+      const poner = (row, L, v) => { const re = celdaRe(L), m = row.match(re); if (!m) return row; const sAttr = (m[0].match(/\bs="(\d+)"/) || [])[0] || ''; return row.replace(re, '<c r="' + L + m[1] + '"' + (sAttr ? ' ' + sAttr : '') + ' t="n"><v>' + v + '</v></c>'); };
+      let n = 0;
+      x = x.replace(/<row\b[^>]*>[\s\S]*?<\/row>/g, (row) => {
+        const ic = row.match(celdaRe(col.ITEM_ID)); if (!ic) return row;
+        const c = cambios[val(ic[0])]; if (!c) return row;
+        if (c.q != null) row = poner(row, col.QUANTITY, c.q);
+        if (c.p != null && col.PRICE) row = poner(row, col.PRICE, c.p);
+        n++; return row;
+      });
+      z.file(ruta, x);
+      return { blob: await z.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), n };
+    }
+    function bajarBlob(blob, nombre) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+    async function prepararPlanillas() {
+      if (!R || !PLANILLAS.length) return;
+      let cfg = {}; try { cfg = (await sb.from('ml_config').select('stock_reserva, stock_maximo').eq('empresa_id', EMPRESA).maybeSingle()).data || {}; } catch (e) { cfg = {}; }
+      const reserva = Number(cfg.stock_reserva) || 0, tope = cfg.stock_maximo == null ? null : Number(cfg.stock_maximo);
+      const conPrecio = $('ml-pl-precio').checked, porItem = {}; R.pubs.forEach((p) => { porItem[p.item_id] = p; });
+      const cambios = {}, log = [];
+      for (const pl of PLANILLAS) {
+        const wb = XLSX.read(pl.buf, { type: 'array' }); const filas = XLSX.utils.sheet_to_json(wb.Sheets.Publicaciones, { header: 1, defval: null });
+        const h = (filas[0] || []).map(String), iI = h.indexOf('ITEM_ID'), iQ = h.indexOf('QUANTITY'), iP = h.indexOf('PRICE'), iM = h.indexOf('CURRENCY_ID');
+        filas.slice(1).forEach((f) => {
+          const it = String(f[iI] || ''); if (!/^MLV\d+$/.test(it)) return; const p = porItem[it]; if (!p || !p.codigo) return;
+          let q = Math.max(0, Math.floor((Number(p.stock) || 0) - reserva)); if (tope != null && q > tope) q = tope;
+          const qAnt = f[iQ] == null || f[iQ] === '' ? null : Number(f[iQ]); const c = {};
+          if (qAnt !== q) c.q = q;
+          const pAnt = Number(f[iP]) || null;
+          if (conPrecio && p.precio_min && pAnt != null && /US/.test(String(f[iM] || p.moneda)) && pAnt < p.precio_min) c.p = Math.ceil(p.precio_min * 4) / 4;
+          if (c.q != null || c.p != null) { cambios[it] = c; log.push({ 'Publicación ML': it, 'Código': p.codigo, 'Título': p.titulo, 'Estado ML': p.estado_ml, 'Stock ML antes': qAnt, 'Stock nuevo': c.q != null ? c.q : qAnt,
+            'Precio antes US$': pAnt, 'Precio nuevo US$': c.p != null ? c.p : pAnt, 'Motivo': [c.q != null ? (q === 0 ? 'Sin existencia: queda en 0 (ML la pausa)' : 'Stock según inventario') : '', c.p != null ? 'Precio bajo el mínimo' : ''].filter(Boolean).join(' · '), 'Archivo': pl.nombre }); }
+        });
+      }
+      if (!log.length) return msg($('ml-msg'), 'Las planillas ya coinciden con el inventario: no hay nada que cambiar.', 'ok');
+      msg($('ml-msg'), 'Preparando las planillas…');
+      try {
+        let tot = 0;
+        for (const pl of PLANILLAS) {
+          const sub = {}; log.filter((l) => l.Archivo === pl.nombre).forEach((l) => { sub[l['Publicación ML']] = cambios[l['Publicación ML']]; });
+          if (!Object.keys(sub).length) continue;
+          const r = await parcharPlanilla(pl.buf, sub); tot += r.n;
+          bajarBlob(r.blob, pl.nombre.replace(/\.xlsx$/i, '') + ' - ACTUALIZADA ' + new Date().toLocaleDateString('en-CA') + '.xlsx');
+        }
+        const wb = XLSX.utils.book_new(), ws = XLSX.utils.json_to_sheet(log); ws['!cols'] = Object.keys(log[0]).map((k) => ({ wch: /Título|Motivo|Archivo/.test(k) ? 40 : 16 })); XLSX.utils.book_append_sheet(wb, ws, 'Cambios');
+        XLSX.writeFile(wb, 'TOYOTENGO_MercadoLibre_cambios_' + new Date().toLocaleDateString('en-CA') + '.xlsx');
+        const ceros = log.filter((l) => l['Stock nuevo'] === 0 && l['Stock ML antes'] !== 0).length, pr = log.filter((l) => l['Precio nuevo US$'] !== l['Precio antes US$']).length;
+        msg($('ml-msg'), '✔ Planilla(s) lista(s): ' + tot + ' publicaciones cambian (' + ceros + ' quedan en 0' + (pr ? ', ' + pr + ' con precio nuevo' : '') + '). Súbala(s) en Mercado Libre → Publicaciones → Modificar desde Excel → "Sube la planilla que descargaste". También se descargó la lista de cambios.', 'ok');
+        bitacora('PLANILLA MERCADO LIBRE', tot + ' publicaciones cambian · ' + PLANILLAS.map((x) => x.nombre).join(', '));
+      } catch (e) { msg($('ml-msg'), '✖ No se pudo preparar la planilla: ' + e.message, 'err'); }
+    }
+    function pintarPlanillas() {
+      leerPlanillasGuardadas();
+      const box = $('ml-plan'); if (!box) return;
+      box.hidden = !puede();
+      const L = $('ml-pl-lista'); L.textContent = PLANILLAS.length ? PLANILLAS.map((x) => '✔ ' + x.nombre).join(' · ') + (PLANILLAS[0].cargada ? ' (subida ' + new Date(PLANILLAS[0].cargada).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ')' : '') : 'Todavía no hay planillas: suba aquí las que descargó de Mercado Libre.';
+      $('ml-pl-bajar').disabled = !PLANILLAS.length || !R || !R.k.hay;
+      if (R && R.k.hay && PLANILLAS.length) {
+        const s = R.pubs.filter((p) => p.codigo).length;
+        $('ml-pl-res').textContent = 'Se comparan ' + s.toLocaleString('es-VE') + ' publicaciones con código contra el inventario: ' + R.k.ss.length + ' activas sin existencia, ' + R.k.sd.length + ' con stock distinto, ' + R.k.du.length + ' duplicadas, ' + R.k.bc.length + ' bajo el costo.';
+      } else $('ml-pl-res').textContent = '';
+    }
+
     async function subir(files) {
       if (!puede()) return msg($('ml-msg'), 'Solo un Responsable o Administrador puede cargar datos de Mercado Libre.', 'err');
       if (!window.XLSX) return msg($('ml-msg'), 'No cargó el componente de Excel. Revise su internet.', 'err');
       msg($('ml-msg'), 'Leyendo ' + files.length + ' archivo(s)…');
       const pubs = new Map(), ventas = new Map(), vinc = [], nombres = [], ignorados = [];
+      const planillas = [];
       for (const f of files) {
-        const wb = XLSX.read(await f.arrayBuffer(), { type: 'array', cellDates: true });
+        const buf = await f.arrayBuffer();
+        const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+        if (esPlanillaML(wb)) planillas.push({ nombre: f.name, buf });
         let usado = false;
         wb.SheetNames.forEach((n) => {
           const r = leerHoja(XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null })); if (!r) return; usado = true;
@@ -4651,6 +4771,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
           partes.push(val.length + ' vínculos publicación ↔ código' + (malos.length ? ' (no existen en el inventario: ' + [...new Set(malos)].slice(0, 8).join(', ') + ')' : ''));
         }
         if (pubs.size || ventas.size) ok(await sb.from('ml_estado').upsert({ empresa_id: EMPRESA, origen: 'EXCEL', ultima_sync: ahora, ...(pubs.size ? { publicaciones: pubs.size } : {}), ...(ventas.size ? { ventas: ventas.size } : {}), mensaje: 'Archivo: ' + nombres.join(', ').slice(0, 200) + ' · por ' + YO.nombre }, { onConflict: 'empresa_id' }));
+        if (planillas.length) guardarPlanillas(planillas);
         bitacora('CARGA MERCADO LIBRE', partes.join(' · ') + ' · ' + nombres.join(', '));
         await recargar();
         msg($('ml-msg'), 'Cargado: ' + partes.join(' · ') + '.' + (ignorados.length ? ' Sin datos reconocibles: ' + ignorados.join(', ') + '.' : ''), 'ok');
@@ -4673,6 +4794,8 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     async function recargar() { if (!SERVER) return; SERVER.ml = await leerML(); if (!$('v-ml').hidden) pintar(); else contador(); }
     // eventos
     $('ml-subir-b').addEventListener('click', () => $('ml-file').click());
+    $('ml-pl-subir').addEventListener('click', () => $('ml-file').click());
+    $('ml-pl-bajar').addEventListener('click', prepararPlanillas);
     $('ml-file').addEventListener('change', (e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) subir(f); });
     $('ml-conectar').addEventListener('click', () => { const x = $('ml-cx'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     $('ml-abrir').addEventListener('click', () => bitacora('ABRIR MERCADO LIBRE', ''));
