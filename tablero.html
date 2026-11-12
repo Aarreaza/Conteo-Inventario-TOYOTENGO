@@ -888,14 +888,14 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <!-- CARGAR -->
   <section class="sh-view" id="v-cargar" hidden>
     <h2 class="sh-h2">Cargar datos</h2>
-    <p class="sh-sub">Mientras no exista la conexión con Profit, el inventario se carga con los <b>4 reportes de inventario a costo</b> que entrega Profit, uno por almacén (.xls), el <b>reporte de Stocks</b> (trae lo comprometido, para separarlo de lo disponible para la venta), y aparte la <b>lista de precios de venta</b> y las <b>ventas del mes</b> (reporte "Facturas por artículo", en .xls o .pdf; puede subir varios meses). Use una casilla por archivo, o arrastre todos juntos al recuadro: el tablero reconoce el almacén por el nombre del archivo (PRINCIPAL, TIENDA, TRANSITO, CONSIGNACION). Stock para vender = Principal + Tienda + Consignación; el tránsito se muestra aparte y suma al valor total. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
+    <p class="sh-sub">Mientras no exista la conexión con Profit, el inventario se carga con los <b>4 reportes de inventario a costo</b> que entrega Profit, uno por almacén (.xls), el <b>inventario con stock comprometido</b> (lo que ya salió pero aún no se factura; se resta de lo disponible para la venta), y aparte la <b>lista de precios de venta</b> y las <b>ventas del mes</b> (reporte "Facturas por artículo", en .xls o .pdf; puede subir varios meses). Use una casilla por archivo, o arrastre todos juntos al recuadro: el tablero reconoce el almacén por el nombre del archivo (PRINCIPAL, TIENDA, TRANSITO, CONSIGNACION). Stock para vender = Principal + Tienda + Consignación; el tránsito se muestra aparte y suma al valor total. Revise el resultado antes de guardar: al guardar se reemplaza la base anterior para todos los usuarios.</p>
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:900px">
       <div class="sh-slots" id="c-slots">
         <label class="sh-slot" data-alm="principal"><b>Almacén Principal</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot" data-alm="tienda"><b>Almacén Tienda</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot" data-alm="consignacion"><b>Consignación</b><small>Inventario a costo · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot" data-alm="transito"><b>Tránsito</b><small>Se muestra aparte · suma al total</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
-        <label class="sh-slot pr" data-alm="stocks"><b>Comprometido</b><small>Reporte de Stocks · Profit (Artículo, Comprometido, Disponible)</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
+        <label class="sh-slot pr" data-alm="stocks"><b>Comprometido (por facturar)</b><small>Stock con comprometido · Profit (Código, ACT., COM., DIS.)</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot pr" data-alm="precios"><b>Precios de venta</b><small>Lista de precios · Profit</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx" hidden></label>
         <label class="sh-slot pr" data-alm="ventas"><b>Ventas del mes</b><small>Facturas por artículo · Profit (.xls o .pdf)</small><span class="st">Sin archivo</span><span class="sh-elegir">📂 Elegir archivo</span><input type="file" accept=".xls,.xlsx,.pdf" multiple hidden></label>
       </div>
@@ -1001,7 +1001,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
     <div style="display:flex;flex-direction:column;gap:var(--cds-gap-md)">
       <div class="tt-tiles" id="kpi-tiles">
         <div class="tt-tile"><span class="k">Valor del inventario a costo</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_inventario">—</span><span class="s">para vender <span data-source="kpis" data-field="valor_total">—</span> · en tránsito <span data-source="kpis" data-field="valor_transito">—</span></span></div>
-        <div class="tt-tile" id="tile-disp"><span class="k">Disponible para la venta</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_disponible">—</span><span class="s"><span id="tile-disp-ok">comprometido <span data-source="kpis" data-field="valor_comprometido">—</span> (<span data-source="kpis" data-field="pct_comprometido">—</span>) en <span data-source="kpis" data-field="art_comp">—</span> códigos · <span data-source="kpis" data-field="unidades_disp">—</span> uds. libres</span><span id="tile-disp-no" hidden style="color:#b26a00">⚠ este corte no trae lo comprometido: suba el reporte de Stocks de Profit en «Cargar datos» (casilla Comprometido)</span></span></div>
+        <div class="tt-tile" id="tile-disp"><span class="k">Disponible para la venta</span><span class="v dash-skeleton" data-source="kpis" data-field="valor_disponible">—</span><span class="s"><span id="tile-disp-ok">comprometido <span data-source="kpis" data-field="valor_comprometido">—</span> (<span data-source="kpis" data-field="pct_comprometido">—</span>) en <span data-source="kpis" data-field="art_comp">—</span> códigos · <span data-source="kpis" data-field="unidades_disp">—</span> uds. libres</span><span id="tile-disp-no" hidden style="color:#b26a00">⚠ este corte no trae lo comprometido: suba el archivo de stock comprometido de Profit en «Cargar datos» (casilla Comprometido)</span></span></div>
         <div class="tt-tile"><span class="k">Valor a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">ganancia potencial <span data-source="kpis_precio" data-field="margen_usd">—</span> (<span data-source="kpis_precio" data-field="margen_pct">—</span>) · solo el <span data-source="kpis_precio" data-field="cobertura">—</span> del inventario tiene precio</span></div>
         <div class="tt-tile"><span class="k">Artículos con existencia</span><span class="v dash-skeleton" data-source="kpis" data-field="con_stock">—</span><span class="s">de <span data-source="kpis" data-field="articulos_total">—</span> códigos en el maestro</span></div>
         <div class="tt-tile"><span class="k">Unidades para vender</span><span class="v dash-skeleton" data-source="kpis" data-field="unidades">—</span><span class="s">costo promedio por unidad <span data-source="kpis" data-field="costo_prom">—</span></span></div>
@@ -1819,7 +1819,7 @@ window.TT = (() => {
         el.textContent = (r.hay_alm ? `El inventario vale ${fmt.usd0(r.valor_inventario)} a costo: ${fmt.usd0(r.valor_total)} para vender en ${fmt.int(r.con_stock)} artículos con existencia (Principal + Tienda + Consignación) y ${fmt.usd0(r.valor_transito)} en tránsito. `
           : `El inventario vale ${fmt.usd0(r.valor_total)} a costo en ${fmt.int(r.con_stock)} artículos con existencia. `) +
           `${fmt.int(r.articulos_80)} artículos (${fmt.pct(r.articulos_80_pct)}) concentran el 80 % del valor y la familia con más dinero es ${r.familia_top} (${fmt.pct(r.familia_top_pct)}). ` +
-          (r.hay_comp ? `De lo que está para vender, ${fmt.usd0(r.valor_comprometido)} (${fmt.pct(r.pct_comprometido)}) ya está comprometido en pedidos y ${fmt.usd0(r.valor_disponible)} está disponible para la venta. ` : `Este corte no trae lo comprometido (falta el reporte de Stocks de Profit), así que todo el stock se cuenta como disponible. `) +
+          (r.hay_comp ? `De lo que está para vender, ${fmt.usd0(r.valor_comprometido)} (${fmt.pct(r.pct_comprometido)}) ya está comprometido en pedidos y ${fmt.usd0(r.valor_disponible)} está disponible para la venta. ` : `Este corte no trae lo comprometido (falta el archivo de stock comprometido de Profit), así que todo el stock se cuenta como disponible. `) +
           `Hay ${fmt.int(r.hallazgos_alta)} hallazgos de prioridad alta que conviene resolver en la próxima toma física.`;
       } else el.textContent = K[f] ? K[f](r[f]) : r[f];
     });
@@ -3172,11 +3172,11 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     for (const n of wb.SheetNames) {
       const A = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: '', raw: true });
       for (let i = 0; i < Math.min(20, A.length); i++) {
-        const cab = A[i].map(quitarAcentos), jc = cab.findIndex((h) => /^comprometid/.test(h)), jk = cab.findIndex((h) => h === 'articulo' || h === 'codigo' || h === 'cod. articulo' || h === 'codigo del articulo');
+        const cab = A[i].map((h) => quitarAcentos(h).replace(/\s+/g, ' ')), jc = cab.findIndex((h) => /^(comprometid|com\.?$|comp\.?$)/.test(h)), jk = cab.findIndex((h) => h === 'articulo' || h === 'codigo' || h === 'cod. articulo' || h === 'codigo del articulo' || h === 'cod.');
         if (jc < 0 || jk < 0) continue;
-        const jd = cab.findIndex((h) => /^disponib/.test(h)), jl = cab.findIndex((h) => /^por llegar/.test(h)), jp = cab.findIndex((h) => /^por despachar/.test(h)), js = cab.findIndex((h) => /^(stock actual|stock|existencia|actual)$/.test(h)), jn = cab.findIndex((h) => /^descrip/.test(h));
+        const jd = cab.findIndex((h) => /^(disponib|dis\.?$|disp\.?$)/.test(h)), jl = cab.findIndex((h) => /^(por llegar|lle\.?$)/.test(h)), jp = cab.findIndex((h) => /^(por despachar|des\.?$|desp\.?$)/.test(h)), js = cab.findIndex((h) => /^(stock actual|stock|existencia|actual|act\.?)$/.test(h)), jn = cab.findIndex((h) => /^descrip/.test(h));
         const M = {};
-        A.slice(i + 1).forEach((r) => { const cod = String(r[jk] ?? '').trim(); if (!cod || /^total/i.test(cod)) return;
+        A.slice(i + 1).forEach((r) => { const cod = String(r[jk] ?? '').trim(); if (!cod || /^total/i.test(cod) || !r.some((v, k) => k !== jk && v !== '' && v != null)) return;
           const f = M[cod] || (M[cod] = { codigo: cod, descripcion: jn >= 0 ? String(r[jn] || '').trim() : '', comprometido: 0, disponible: 0, por_llegar: 0, por_despachar: 0, stock: 0 });
           f.comprometido += N(r[jc]); if (jd >= 0) f.disponible += N(r[jd]); if (jl >= 0) f.por_llegar += N(r[jl]); if (jp >= 0) f.por_despachar += N(r[jp]); if (js >= 0) f.stock += N(r[js]); });
         const filas = Object.values(M); if (!filas.length) continue;
@@ -3184,6 +3184,40 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
       }
     }
     return null;
+  }
+  function conciliarComp(x) {
+    const U = LOTE.some((l) => l.tipo === 'alm') ? unirAlmacenes() : null;
+    const base = U ? U.art : ((SERVER && SERVER.articulos) || []), M = {}; base.forEach((a) => { M[String(a.codigo).toUpperCase().trim()] = a; });
+    const filas = [], res = { codigos: 0, uds: 0, valor: 0, noExiste: 0, sinCosto: 0, sobre: 0, difStock: 0, actTot: 0, corteTot: 0, desde: U ? 'el corte que está subiendo' : 'el último corte cargado' };
+    x.filas.forEach((f) => { const a = M[String(f.codigo).toUpperCase().trim()]; res.actTot += f.stock || 0; });
+    base.forEach((a) => { res.corteTot += (Number(a.stock) || 0) + (Number(a.transito) || 0); });
+    x.filas.filter((f) => f.comprometido > 0).forEach((f) => {
+      const a = M[String(f.codigo).toUpperCase().trim()], costo = a && a.costo > 0 ? a.costo : null, val = costo ? f.comprometido * costo : null;
+      const enCorte = a ? (Number(a.stock) || 0) + (Number(a.transito) || 0) : null, obs = [];
+      if (!a) { obs.push('No existe en el inventario del corte'); res.noExiste++; }
+      else {
+        if (!costo) { obs.push('Sin costo en el inventario'); res.sinCosto++; }
+        if (f.comprometido > (Number(a.stock) || 0)) { obs.push('Comprometido mayor que el stock para vender'); res.sobre++; }
+        if (Math.abs((f.stock || 0) - enCorte) > 0.001) { obs.push('Stock en Profit (' + fmtNum(f.stock || 0) + ') distinto al del corte (' + fmtNum(enCorte) + ')'); res.difStock++; }
+      }
+      res.codigos++; res.uds += f.comprometido; res.valor += val || 0;
+      filas.push({ 'Código': String(f.codigo), 'Descripción': (a && a.descripcion) || f.descripcion, 'Familia': a ? a.familia : '', 'Stock en Profit (ACT.)': f.stock, 'Comprometido (COM.)': f.comprometido, 'Disponible (DIS.)': f.disponible,
+        'Stock para vender en el corte': a ? a.stock : null, 'Costo unitario US$': costo, 'Valor comprometido US$': val == null ? null : Math.round(val * 100) / 100, 'Disponible para la venta': a ? Math.max(0, (Number(a.stock) || 0) - f.comprometido) : null, 'Observación': obs.join(' · ') || 'OK' });
+    });
+    filas.sort((p, q) => (q['Valor comprometido US$'] || 0) - (p['Valor comprometido US$'] || 0));
+    return { filas, res };
+  }
+  function excelComp(x) {
+    const { filas, res } = conciliarComp(x); if (!filas.length) return;
+    const wb = XLSX.utils.book_new(), ws = XLSX.utils.json_to_sheet(filas);
+    ws['!cols'] = [{ wch: 18 }, { wch: 44 }, { wch: 20 }, ...Array(7).fill({ wch: 14 }), { wch: 60 }]; ws['!autofilter'] = { ref: ws['!ref'] };
+    for (let r = 1; r <= filas.length; r++) { const c = ws[XLSX.utils.encode_cell({ r, c: 0 })]; if (c) { c.t = 's'; c.v = String(c.v); } ['H', 'I'].forEach((L) => { const k = ws[L + (r + 1)]; if (k && k.t === 'n') k.z = '#,##0.00'; }); }
+    const rs = XLSX.utils.aoa_to_sheet([['Comprometido conciliado contra ' + res.desde], [''], ['Códigos con comprometido', res.codigos], ['Unidades comprometidas', res.uds], ['Valor comprometido a costo US$', Math.round(res.valor * 100) / 100],
+      ['No existen en el inventario', res.noExiste], ['Sin costo en el inventario', res.sinCosto], ['Comprometido mayor que el stock para vender', res.sobre], ['Stock de Profit distinto al del corte', res.difStock],
+      [''], ['Stock total en el archivo (ACT.)', res.actTot], ['Stock total en el corte (para vender + tránsito)', res.corteTot], [''], ['El comprometido se resta del stock para vender: Disponible para la venta = stock para vender − comprometido. Se valora al costo unitario del inventario.']]);
+    rs['!cols'] = [{ wch: 52 }, { wch: 16 }];
+    XLSX.utils.book_append_sheet(wb, rs, 'Resumen'); XLSX.utils.book_append_sheet(wb, ws, 'Comprometido');
+    const nom = 'TOYOTENGO_Comprometido_conciliado_' + new Date().toLocaleDateString('en-CA') + '.xlsx'; XLSX.writeFile(wb, nom); bitacora('DESCARGA COMPROMETIDO', nom);
   }
   const r4 = (v) => Math.round(v * 10000) / 10000;
   // Une los reportes por código: líneas listas para la base + hallazgos automáticos + totales
@@ -3344,7 +3378,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         if (forzado !== 'precios' && (forzado === 'stocks' || !forzado)) {
           const sk = leerStocks(wb);
           if (sk && sk.filas.length) { LOTE = LOTE.filter((x) => x.tipo !== 'stk'); LOTE.push({ tipo: 'stk', archivo: f.name, ...sk }); continue; }
-          if (forzado === 'stocks') { error = true; msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo. El reporte de Stocks de Profit debe traer las columnas Artículo (o Código) y Comprometido. Vuelva a elegirlo.', 'err'); continue; }
+          if (forzado === 'stocks') { error = true; msg($('c-msg'), '✖ ' + f.name + ': no reconozco este archivo. El archivo de comprometido de Profit debe traer las columnas Código y COM. (Comprometido). Vuelva a elegirlo.', 'err'); continue; }
         }
         if (forzado !== 'precios') {
           const r = leerAlmacen(wb);
@@ -3406,6 +3440,14 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
         linea_('Ventas de ' + meses.map(nomMes).join(', '), x.archivo + (x.desde ? ' · del ' + x.desde + ' al ' + x.hasta : '') + ' · ' + x.filas.length.toLocaleString('es-VE') + ' líneas · ' + fmtNum(uds) + ' uds. · ' + fmtU(tot) +
           ' · repuestos del inventario ' + fmtU(inv.reduce((t, f) => t + f.total, 0)) + (cuadra === true ? ' · ✔ cuadra con los totales del reporte' : cuadra === false ? ' · ⚠ no cuadra con los totales del reporte (' + fmtNum(x.tot.cantidad) + ' uds. · ' + fmtU(x.tot.total) + ')' : '') +
           (x.malas.length ? ' · ⚠ ' + x.malas.length + ' líneas no se pudieron leer' : ''), cuadra === false || x.malas.length ? 'warn' : '');
+        return;
+      }
+      if (x.tipo === 'stk') {
+        const { res } = conciliarComp(x);
+        const d = linea_('Comprometido (por facturar)', x.archivo + ' · ' + fmtNum(res.codigos) + ' códigos comprometidos · ' + fmtNum(res.uds) + ' uds. · valor a costo ' + fmtU(res.valor) + ' · se resta de lo disponible para la venta' +
+          ' · conciliado contra ' + res.desde + (res.noExiste ? ' · ⚠ ' + res.noExiste + ' no existen en el inventario' : '') + (res.sinCosto ? ' · ⚠ ' + res.sinCosto + ' sin costo' : '') + (res.sobre ? ' · ⚠ ' + res.sobre + ' con comprometido mayor que el stock' : '') + (res.difStock ? ' · ' + res.difStock + ' con stock distinto al del corte' : ''),
+          res.noExiste || res.sinCosto || res.sobre ? 'warn' : '');
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'sh-btn lt'; b.textContent = '⬇ Excel del comprometido conciliado'; b.addEventListener('click', () => excelComp(x)); d.appendChild(b);
         return;
       }
       const r = resumenDe(x);
