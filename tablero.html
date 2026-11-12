@@ -1261,7 +1261,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
       </div>
       <div class="tt-card" id="card-familias">
         <h3>Revisión de familias</h3>
-        <p class="note">El tablero revisó la descripción de cada artículo y propone la familia que le corresponde. Acepte o rechace cada propuesta (o todas las que se ven de una vez) y baje el archivo <b>.xls</b> para cargar las familias en Profit.</p>
+        <p class="note">El tablero revisó cada artículo por su descripción y, cuando es un número de parte Toyota (5 dígitos-5), por el sistema del vehículo que indican sus primeros dígitos (15xxx lubricación del motor, 48xxx suspensión, 81xxx faros…). La columna «Por qué» dice de dónde sale cada propuesta y marca ⚠ las que conviene mirar. Acepte o rechace cada propuesta (o todas las que se ven de una vez) y baje el archivo <b>.xls</b> para cargar las familias en Profit.</p>
         <div class="fm-res" id="fm-res"></div>
         <div class="fm-tr" id="fm-tr"></div>
         <div class="tt-tools">
@@ -1269,6 +1269,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
           <select class="tt-in" id="fm-f" aria-label="Familia actual"><option value="">Familia actual: todas</option></select>
           <select class="tt-in" id="fm-p" aria-label="Familia propuesta"><option value="">Familia propuesta: todas</option></select>
           <select class="tt-in" id="fm-s" aria-label="Stock"><option value="">Con y sin stock</option><option value="1">Solo con stock</option></select>
+          <select class="tt-in" id="fm-c" aria-label="Confianza"><option value="">Toda propuesta</option><option value="2">Confirmada por descripción y número de parte</option><option value="1">Revisar: descripción y número de parte no coinciden</option><option value="0">Solo por descripción (sin número Toyota)</option></select>
           <span class="tt-status" id="fm-n"></span>
         </div>
         <div class="fm-acc" id="fm-acc"></div>
@@ -1281,6 +1282,7 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
               <th data-field="stock" class="n"><button>Stock</button></th>
               <th data-field="familia"><button>Familia actual</button></th>
               <th data-field="propuesta"><button>Familia propuesta</button></th>
+              <th data-field="fuente" class="tt-hide-n"><button>Por qué</button></th>
               <th data-field="decision"><button>Decisión</button></th>
             </tr></thead>
             <tbody></tbody>
@@ -2146,10 +2148,10 @@ window.TT = (() => {
   const avisar = (t, k) => { if (window.TT_AVISO) window.TT_AVISO(t, k); else { const n = $('fm-n'); if (n) n.textContent = t; } };
   async function traerPend() { if (window.TT_PROF && window.TT_PROF.famPend) { try { PEND = await window.TT_PROF.famPend(); } catch (e) { PEND = {}; } } draw(); }
   function todas() {
-    const A = dash.data('articulos'); if (A.status !== 'ok') return null; const no = NO(), sug = window.TT_FAMSUG || ((d) => null);
-    return A.data.map((a) => { const prop = sug(a.descripcion) || a.familia, p = PEND[K(a.codigo)];
+    const A = dash.data('articulos'); if (A.status !== 'ok') return null; const no = NO(), info = window.TT_FAMINFO || ((d) => ({ familia: window.TT_FAMSUG ? window.TT_FAMSUG(d) : null, fuente: 'Descripción' }));
+    return A.data.map((a) => { const I = info(a.descripcion, a.codigo) || {}, prop = I.familia || a.familia, p = PEND[K(a.codigo)];
       const estado = p ? (p.exportado_en ? 'Bajada para Profit' : 'Aceptada') : prop === a.familia ? 'Correcta' : no.has(K(a.codigo)) ? 'Rechazada' : 'Propuesta';
-      return { fila: a.fila, codigo: a.codigo, descripcion: a.descripcion, stock: Number(a.stock) || 0, familia: a.familia, propuesta: p ? p.familia_nueva : prop, sugerida: prop, estado, decision: estado }; });
+      return { fila: a.fila, codigo: a.codigo, descripcion: a.descripcion, stock: Number(a.stock) || 0, familia: a.familia, propuesta: p ? p.familia_nueva : prop, sugerida: prop, fuente: I.fuente || 'Descripción', revisar: !!I.revisar, estado, decision: estado }; });
   }
   const puede = () => !!(window.TT_PROF && window.TT_PROF.familias);
   async function aceptar(L, nueva) {
@@ -2167,8 +2169,8 @@ window.TT = (() => {
     const T = todas(); if (!T) return;
     const FAMS = window.TT_FAMS ? window.TT_FAMS() : [...new Set(T.map((r) => r.familia))].sort();
     opts($('fm-f'), [...new Set(T.map((r) => r.familia))].sort(), 'Familia actual: todas'); opts($('fm-p'), [...new Set(T.map((r) => r.propuesta))].sort(), 'Familia propuesta: todas');
-    const V = $('fm-v').value, F = $('fm-f').value, P = $('fm-p').value, S = $('fm-s').value;
-    const base = T.filter((r) => (!F || r.familia === F) && (!P || r.propuesta === P) && (!S || r.stock > 0));
+    const V = $('fm-v').value, F = $('fm-f').value, P = $('fm-p').value, S = $('fm-s').value, Cf = $('fm-c').value;
+    const base = T.filter((r) => (!F || r.familia === F) && (!P || r.propuesta === P) && (!S || r.stock > 0) && (!Cf || (Cf === '2' ? /número de parte$/.test(r.fuente) : Cf === '1' ? r.revisar : r.fuente === 'Descripción')));
     const rows = base.filter((r) => !V || r.estado === V);
     // resumen por estado (botones)
     const C = {}; T.forEach((r) => { C[r.estado] = (C[r.estado] || 0) + 1; });
@@ -2189,6 +2191,7 @@ window.TT = (() => {
       estado: { render: (td, r) => chip(td, r.estado, r.estado === 'Correcta' ? 'ok' : r.estado === 'Propuesta' ? 'warn' : r.estado === 'Rechazada' ? '' : 'warn') },
       codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num },
       propuesta: { render: (td, r) => { td.textContent = r.propuesta; if (r.propuesta !== r.familia) td.className = 'fm-p'; } },
+      fuente: { render: (td, r) => { const s = document.createElement('small'); s.textContent = (/número de parte$/.test(r.fuente) ? '✔✔ ' : r.revisar ? '⚠ ' : '') + r.fuente; s.style.color = r.revisar ? '#9a5b00' : /número de parte$/.test(r.fuente) ? '#14532d' : ''; td.appendChild(s); } },
       decision: { render: (td, r) => {
         const w = document.createElement('div'); w.className = 'fm-d'; const btn = (t, c, f) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; if (c) b.className = c; b.addEventListener('click', async () => { b.disabled = true; try { await f(); } catch (e) { avisar('✖ ' + e.message, 'err'); } }); return b; };
         if (r.estado === 'Propuesta' || r.estado === 'Rechazada') { w.appendChild(btn('✔ Aceptar', '', () => aceptar([r]))); if (r.estado === 'Propuesta') w.appendChild(btn('✕ No', 'n', async () => rechazar([r]))); }
@@ -2217,7 +2220,7 @@ window.TT = (() => {
     }, 'Catálogo completo: cada artículo con la familia que debe tener en Profit (las aceptadas con la nueva; las demás con la actual)');
     A('⬇ Bajar solo los cambios aceptados (.xls)' + (nPend ? ' · ' + fmt.int(nPend) : ''), 'xls', !nPend, async () => { await window.TT_PROF.exportar({ solo: 'familias', xls: true }); await traerPend(); }, 'Archivo .xls con Código, Descripción, Familia actual y Familia nueva de todas las familias aceptadas');
   };
-  ['fm-v', 'fm-f', 'fm-p', 'fm-s'].forEach((i) => $(i).addEventListener('change', () => draw()));
+  ['fm-v', 'fm-f', 'fm-p', 'fm-s', 'fm-c'].forEach((i) => $(i).addEventListener('change', () => draw()));
   st.redraw = draw;
   dash.onData(draw);
   document.querySelectorAll('.tt-tab').forEach((t) => t.addEventListener('click', () => setTimeout(draw, 0))); if (window.TT.page === 'calidad') setTimeout(draw, 50);
@@ -3264,7 +3267,7 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     ['Filtros', 'FILTRO'],
     ['Lubricantes y químicos', 'WD ?40|ELEVADOR DE OCTANAJE|ACEITE|REFRIGERANTE|LIQUIDO|GRASA|SPRAY|PERMATEX|SILICON|ADITIVO|LIMPIADOR|DESENGRASANTE|ATF|COOLANT|10W|15W|20W|5W'],
     ['Encendido y eléctrico', 'TACOMETRO|AIRBAG|ACTUADOR|ANTENA|MOTOR ENVASE|BUJIA|BOBINA|BATERIA|SENSOR|CONECTOR|PILA|RELAY|RELE|FUSIBLE|SWITCH|INTERRUPTOR|ALTERNADOR|ARRANQUE|CABLE|SOCKET|FLOTANTE'],
-    ['Iluminación', 'H\\d+\\b|T10|BOMBILLO|STOP|FARO|LUZ|LED|CRUCE|MICA'],
+    ['Iluminación', 'H\\d+\\b|T10|BOMBILLO|STOP|FARO|LUZ|LED|CRUCE(?!TA)|MICA'],
     ['Motor y transmisión', 'MOTOR|CAMARA|KIT DE TIEMPO|KIT EMPAC|PIÑON|PLATO|COLLARIN|CONJUNTO DE GASOLINA|MODULO DE GASOLINA|RODAMIENTO|DIFERENCIAL|CARDAN|ACOPLADOR|EMPACADURA|ESTOPERA|CORREA|BOMBA|TERMOSTATO|VALVULA|MANGUERA|SELLO|PISTON|ANILLO|TENSOR|POLEA|CLUTCH|EMBRAGUE|CADENA|INYECTOR|RADIADOR|TAPA RADIADOR|CARTER|TORNILLO|ARANDELA|JUNTA|O-RING|ORING|CONCHA|RETEN'],
     ['Suspensión y dirección', 'COILOVER|CAJETIN|MOZO|CUBO|BUCHE|BUJE|BASE|ROTULA|TERMINAL|AMORTIGUADOR|MESETA|CRUCETA|ROLINERA|SOPORTE|GUARDAPOLVO|BRAZO|BARRA|LINK|MUÑON|ESPIRAL|RESORTE|TRIPOIDE|PUNTA|CAJA DIRECCION|COPA'],
     ['Carrocería y accesorios', 'PARR?ILLA|CHARNEL|CENTRO DE RIN|ESCAFANDRA|VOLANTE|RETROVISOR|SNORKEL|PLATINA|CUERO|CAUCHO|CARELOS|TAPA|EMBLEMA|LAME|CHAPALETA|REJILLA|MANILLA|POMO|STICKER|AMBIENTADOR|LIMPIA|PLUMILLA|GOMA|ESPEJO|PARACHOQUE|GUARDAFANGO|CUBRE|ALFOMBRA|MOLDURA|CLIP|GANCHO|KIT CUBREMANO|ESCOBILLA|VIDRIO|CERRADURA'],
@@ -3281,9 +3284,9 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     ['Frenos', 'FRENO|PASTILLA|ZAPATA|BOMBIN|CALIPER|MORDAZA|TAMBOR|DISCO|LIGA DE F|HIDROVAC|COMPENSADOR DE LIGA|MODULO DE ABS'],
     ['Iluminación', null, /^ ?(BOMBILLO|FOCO|FARO|STOP|LAMPARA|COCUYO|BALITA|SIDELAMP|\d+ ?CONTACTO|CONTACTO|AMBAR|DUAL COLOR|LUCES|LUZ|LED|T ?10|T ?15|T ?20|DS1|CONJUNTO DE LAMPARA)/],
     ['Encendido y eléctrico', 'TERMINAL (POSITIVO|NEGATIVO)|SUJETA BATERIA|ENCENDIDO|FUSIBLE|MOTOR ENVASE|MOTOR (DE )?WIPER|MOTOR LIMPIA|RELAY|RELE|SWITCH|SWTCHIERA|INTERRUPTOR|CABLE ESPIRAL|MEDIDOR|VOLTIMETRO|COMPUTADORA|FUSILERA|CLAXON|BOCINA|INVERTER|BORNE|LLAVE ENCENDIDO|DISTRIBUIDOR|RESISTENCIA|AMPLIFICADO|CINTA ADHESIVA NEGRA AISLANTE|CINTA AISLANTE|RELOJ TABLERO|BOTON (AIRE|ON|LUCES|DOBLE TANQUE|LO\\b)|CONTROLADOR DE AIRE|PERILLA AIRE|MODULO INFERIOR LUCES|SENSOR'],
-    ['Iluminación', 'BOMBILLO|FARO|STOP|LED|H\\d+\\b|T10|LUZ|LUCES|MICA|CRUCE|LAMPARA'],
+    ['Iluminación', 'BOMBILLO|FARO|STOP|LED|H\\d+\\b|T10|LUZ|LUCES|MICA|CRUCE(?!TA)|LAMPARA'],
     ['Encendido y eléctrico', 'BUJIA|BOBINA|BATERIA|ALTERNADOR|ARRANQUE|ACTUADOR|AIRBAG|ANTENA|TACOMETRO|CONECTOR|SOCKET|SOCATE|FLOTANTE|PILA'],
-    ['Carrocería y accesorios', 'TAPA (DE )?GASOLINA|GUAYA|SOPORTE.*PARACHOQUE|BASE PARACHOQUE|CINTURON|ASIENTO(?!S? (BUJE|DE FLAUTA))|PORTA ?VASO|SAPITO|AGARRA|RETROVISOR|CHAPALETA|SNORKEL|PARR?ILLA|REJILLA|GUARDA POLVO|SOPORTE GOMA CAPOT|SOPORTE MANILLA|BASE TAPA CONSOLA|CLIP(?! (MANGUERA|RETENEDOR TUBO))|TUERCA DE RIN|TUERCA RUEDA|RIN\\b|VIGA DE IMPACTO|TASA TABLERO|REGISTRO DEL TABLERO|SELECTORA WIPER'],
+    ['Carrocería y accesorios', 'BUCHE (DE )?(GUARDAFANGO|PUERTA|RUEDA)|DE BUCHE DE GUARDAFANGO|TAPA (DE )?GASOLINA|GUAYA|SOPORTE.*PARACHOQUE|BASE PARACHOQUE|CINTURON|ASIENTO(?!S? (BUJE|DE FLAUTA))|PORTA ?VASO|SAPITO|AGARRA|RETROVISOR|CHAPALETA|SNORKEL|PARR?ILLA|REJILLA|GUARDA POLVO|SOPORTE GOMA CAPOT|SOPORTE MANILLA|BASE TAPA CONSOLA|CLIP(?! (MANGUERA|RETENEDOR TUBO))|TUERCA DE RIN|TUERCA RUEDA|RIN\\b|VIGA DE IMPACTO|TASA TABLERO|REGISTRO DEL TABLERO|SELECTORA WIPER'],
     ['Carrocería y accesorios', null, /^ ?TAPON (?!.*(TRANSMISION|DRENAJE|BOBIN|CARTER))/],
     ['Motor y transmisión', 'TUBO|ADMISION|VARILLA|TOMA DE AGUA|TUBERIA|TRAMPA DE AGUA|VVTI|ELECTROVENTILADOR|SOPLADOR|CALEFACCION|TAPON|BOBIN INFERIOR|ESCAPE|TENSOR|BASE (DE )?CAJA|BASE (DE )?MOTOR|TANQUE|REGULADOR|BOMBA DE ACEITE|COMPRESOR|CONDENSADOR'],
     ['Suspensión y dirección', 'AMORTIGUADOR|COILOVER|ROTULA|TERMINAL|MESETA|BUJE|BUCHE|ESPIRAL|RESORTE|BARRA|LINK|BRAZO|CAJETIN|CREMALLERA|MUÑON|MUNON|PUNTA|TRIPOIDE|CRUCETA|ROLINERA|MOZO|CUBO|DIRECCION|DIRECCIÓN|COPA|GUARDAPOLVO|ESPARRAGO|EXC?ENTRICA|EXENTRICA|BP-51|BALLESTA|AXIALES|KIT AJUSTE ARA[NÑ]A|BRACKET RUEDA|SUSPENCION|SUSPENSION'],
@@ -3300,6 +3303,38 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     SUGF_G.forEach(([f, re], i) => { re.lastIndex = 0; for (const m of d.matchAll(re)) { const sc = m.index + (DEBIL.test(m[0]) ? 500 : 0); if (!mejor || sc < mejor[0] || (sc === mejor[0] && i < mejor[1])) mejor = [sc, i, f]; } });
     return mejor ? mejor[2] : familia(d);
   };
+  // segunda fuente: el número de parte Toyota (los 5 primeros dígitos dicen el sistema del vehículo: 15xxx lubricación del motor, 48xxx suspensión, 81xxx faros…)
+  const F_ = { M: 'Motor y transmisión', S: 'Suspensión y dirección', B: 'Frenos', E: 'Encendido y eléctrico', I: 'Iluminación', C: 'Carrocería y accesorios', F: 'Filtros', L: 'Lubricantes y químicos' };
+  function famPorCodigo(cod, desc) {
+    const T = (String(cod || '') + ' ' + String(desc || '')).toUpperCase(), m = T.match(/(?:^|[^0-9A-Z])(\d{5})-([0-9A-Z]{5})/); if (!m) return null;
+    if (/NISSAN|FRONTIER|SENTRA|TIIDA|PATROL/.test(T) || (/[A-Z]$/.test(m[2]) && (m[2].match(/[A-Z]/g) || []).length >= 2)) return null;   // números de Nissan: otro sistema
+    const p = m[1], p2 = p.slice(0, 2), p3 = p.slice(0, 3), p4 = p.slice(0, 4);
+    const X = { '04465': 'B', '04466': 'B', '04495': 'B', '04478': 'B', '04479': 'B', '04493': 'B', '04906': 'B', '04945': 'B', '04946': 'B', '04947': 'B', '04152': 'F', '04151': 'F', '04311': 'M', '04313': 'M', '04314': 'M',
+      '04427': 'S', '04428': 'S', '04429': 'S', '04437': 'S', '04438': 'S', '04445': 'S', '04446': 'S', '04434': 'S', '04435': 'S', '04423': 'S', '08880': 'L', '00279': 'L', '00272': 'L', '00289': 'L',
+      '23300': 'F', '23390': 'F', '17801': 'F', '15601': 'F', '15613': 'F', '15678': 'F', '87139': 'F', '90915': 'F', '90916': 'M', '90917': 'M', '90919': 'E', '90981': 'I', '90084': null };
+    if (p in X) return X[p] ? F_[X[p]] : null;
+    if (/^04(11|12|21)/.test(p)) return F_.M;
+    if (['4243', '4351'].includes(p4) || ['445', '446', '447'].includes(p3)) return F_.B;   // discos, tambores, ABS, hidrovac
+    if (['426', '451', '452', '386'].includes(p3)) return null;   // tapas de rin, volante, accesorios: decide la descripción
+    if (p3 === '421') return F_.M;   // diferencial
+    if (p4 === '3350' || p4 === '3630') return F_.C;   // pomos de palanca y de mocha
+    if (['850', '851', '852', '853'].includes(p3)) return F_.C;
+    if (p3 === '878' || p3 === '879') return F_.C; if (p2 === '87') return F_.M;
+    const G = { 11: 'M', 12: 'M', 13: 'M', 15: 'M', 16: 'M', 17: 'M', 21: 'M', 22: 'M', 23: 'M', 25: 'M', 19: 'E', 27: 'E', 28: 'E', 31: 'M', 32: 'M', 33: 'M', 35: 'M', 36: 'M', 37: 'M', 38: 'M', 41: 'M',
+      42: 'S', 43: 'S', 44: 'S', 45: 'S', 48: 'S', 46: 'B', 47: 'B', 51: 'C', 52: 'C', 53: 'C', 55: 'C', 56: 'C', 57: 'C', 58: 'C', 61: 'C', 62: 'C', 63: 'C', 64: 'C', 65: 'C', 66: 'C', 67: 'C', 68: 'C', 69: 'C',
+      71: 'C', 72: 'C', 73: 'C', 74: 'C', 75: 'C', 76: 'C', 77: 'M', 78: 'M', 81: 'I', 82: 'E', 83: 'E', 84: 'E', 85: 'E', 86: 'E', 88: 'M', 89: 'E' };
+    return G[p2] ? F_[G[p2]] : null;
+  }
+  // propuesta final con su fuente: descripción y número de parte; cuando no coinciden manda el número de parte (salvo filtros y bombillos, que la descripción no engaña)
+  function familiaInfo(desc, cod) {
+    const d = familiaSugerida(desc), c = famPorCodigo(cod, desc);
+    if (!c) return { familia: d, fuente: 'Descripción', revisar: d === 'Otros' };
+    if (c === d) return { familia: d, fuente: 'Descripción y número de parte', revisar: false };
+    if (/BATERIA|YUASA|AIRBAG|LLAVE.{0,12}ENCENDIDO|^\s*MOTOR\s+(DE\s+)?(LIMPIA|WIPER|ENVASE)/.test(String(desc || '').toUpperCase())) return { familia: F_.E, fuente: 'Descripción (pieza eléctrica)', revisar: c !== F_.E || d !== F_.E, otra: c };
+    if (d === 'Filtros' || d === 'Iluminación') return { familia: d, fuente: 'Descripción (el número de parte dice ' + c + ')', revisar: true, otra: c };
+    return { familia: c, fuente: 'Número de parte Toyota (la descripción decía ' + d + ')', revisar: true, otra: d };
+  }
+  window.TT_FAMINFO = familiaInfo;
   window.TT_FAMS = () => [...FAM.map((x) => x[0]), 'Otros'];
   window.TT_FAMSUG = familiaSugerida;
   const linea = (d) => { d = ' ' + String(d || '').toUpperCase(); const t = TOY.test(d), n = NIS.test(d); return t && !n ? 'Toyota' : n && !t ? 'Nissan' : t && n ? 'Toyota y Nissan' : 'Sin modelo en descripción'; };
