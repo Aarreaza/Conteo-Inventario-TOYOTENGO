@@ -131,6 +131,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-mbtn{cursor:pointer}.ml-mbtn:hover{outline:2px solid #2d5bd0;outline-offset:1px}.ml-mbtn::after{content:" ✏";font-size:.75em;opacity:.65}.ml-mnew{font-size:.72rem;color:#7a4b00;background:#fff1b8;border-radius:4px;padding:0 .3rem;margin-top:.15rem;display:inline-block}.ml-medit{display:flex;align-items:center;gap:.2rem;justify-content:flex-end}.ml-mprev{font-size:.72rem;color:#173f8a;margin-top:.15rem}.ml-mok,.ml-mno{font:600 .8rem inherit;border:1px solid #ccd;border-radius:5px;background:#fff;cursor:pointer;padding:.1rem .35rem}.ml-mok{background:#1d6f42;color:#fff;border-color:#1d6f42}.ml-mall{display:inline-flex;align-items:center;gap:.3rem;background:#fff;border:1px solid #b9cdf5;border-radius:999px;padding:.2rem .3rem .2rem .7rem;font-size:.82rem}
 .pf-bar{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.5rem 0 .4rem}.pf-bar.on{background:#fff8e6;border:1px solid #f0c060;border-left:5px solid #e8a400;border-radius:8px;padding:.45rem .6rem}.pf-b{font:600 .86rem inherit;border-radius:8px;padding:.45rem .85rem;cursor:pointer;border:1.5px solid transparent}.pf-b.ed{background:#fff;color:#7a4b00;border-color:#e8a400}.pf-b.ed.on{background:#b26a00;color:#fff;border-color:#b26a00}.pf-b.x{background:#1d6f42;color:#fff;border-color:#1d6f42}.pf-b.x:disabled{background:#fff;color:#1d6f42;opacity:.55;cursor:default}.pf-b.c{background:#e8eefc;color:#173f8a;border-color:#b9cdf5}.pf-n{font-size:.82rem;color:#7a4b00;font-weight:600}td.pf-td{background:#fffaf0}.pf-ed{width:6.4rem;font:inherit;text-align:right;padding:.25rem .35rem;border:1px solid #d7b46a;border-radius:6px;background:#fff}.pf-ed.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-ed.okk{background:#dff5e6;border-color:#1d6f42}.pf-ed.err{background:#fde8ea;border-color:#c0182a}.pf-m{display:block;font-size:.7rem;color:#555}.pf-m.bad{color:#c0182a}
 .ml-mprev{min-width:15rem;text-align:left;white-space:normal}.ml-pl{display:flex;justify-content:space-between;gap:.6rem;font-size:.74rem;color:#333;border-bottom:1px dotted #e3e6ee;padding:.05rem 0}.ml-pl b{font-weight:600}.ml-pl.ok b{color:#1d6f42}.ml-pl.bad b{color:#c0182a}.ml-pl.muted{color:#777;border:0}.ml-gan{font-weight:600;color:#1d6f42}.ml-gan.bad{color:#c0182a}
+.pf-fam{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem;margin-top:.3rem}.pf-fl{font-size:.72rem;color:#777}.pf-fs{font:inherit;font-size:.78rem;padding:.12rem .3rem;border:1px solid #d7b46a;border-radius:6px;background:#fff;max-width:13rem}.pf-fs.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-fs.okk{background:#dff5e6;border-color:#1d6f42}.pf-fs.err{background:#fde8ea;border-color:#c0182a}.pf-sug{font:600 .74rem inherit;border:1px dashed #2d5bd0;background:#eef4ff;color:#173f8a;border-radius:6px;padding:.1rem .45rem;cursor:pointer}.pf-sug:hover{background:#2d5bd0;color:#fff}
 .ml-al-x{white-space:nowrap;font:600 .78rem inherit;border:1px solid #1d6f42;color:#1d6f42;background:#fff;border-radius:6px;padding:.15rem .5rem;cursor:pointer;margin-left:.4rem}.ml-al-x:hover{background:#1d6f42;color:#fff}.ml-al-up{margin-left:auto;font:600 .8rem inherit;background:#1d6f42;color:#fff;border:0;border-radius:6px;padding:.35rem .7rem;cursor:pointer}.ml-al-up:hover{filter:brightness(1.1)}.ml-al-ayuda{font-size:.8rem;color:#555;margin:.3rem 0 .5rem}.mla-trab{margin-top:.7rem;padding-top:.6rem;border-top:1px dashed #ccd;font-size:.85rem}.mla-trab select{max-width:15rem}
 .ml-al-i{display:inline-flex;margin-top:.1rem}.ml-al-t{flex:1}.ml-al-a{white-space:nowrap;font-weight:600;font-size:.82rem;text-decoration:none}
 .ml-al.mal{background:#fff1f2;border-left-color:var(--color-bad)}.ml-al.mal .ml-al-i{color:var(--color-bad)}.ml-al.mal .ml-al-a{color:var(--color-bad)}
@@ -3048,6 +3049,21 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
   const TOY = new RegExp('(?:^|[^A-Z0-9_])(?:HILUX|COROLLA|YARIS|CAMRY|FORTUNER|4RUNNER|4 RUNNER|TUNDRA|SEQUOIA|LAND CRUISER|LANDCRUISER|MACHITO|PRADO|RAV4|RAV 4|TERIOS|TACOMA|AUTANA|MERU|BURBUJA|SAMURAI|ROCKY|DYNA|COASTER|TOYOTA|KAVAK|RORAIMA|LEXUS|STARLET|TERCEL|CELICA|PREVIA|SIENNA|HIACE|FJ|AVANZA|ETIOS)(?![A-Z0-9_])');
   const NIS = new RegExp('(?:^|[^A-Z0-9_])(?:NISSAN|FRONTIER|SENTRA|TIIDA|PATROL|X-TRAIL|XTRAIL|MURANO|PATHFINDER|VERSA|NAVARA|MARCH|ALTIMA|QASHQAI|NP300|D21|D22|TITAN|KICKS|ARMADA)(?![A-Z0-9_])');
   const familia = (d) => { d = ' ' + String(d || '').toUpperCase(); for (const [f, re] of FAM) if (re.test(d)) return f; return 'Otros'; };
+  // familia sugerida: reglas por prioridad (lo específico manda: «BOMBA DE FRENO» es Frenos, «TAPA CADENA» es Motor, «FILTRO DE ACEITE» es Filtros)
+  const SUGF = [
+    ['Filtros', 'FILTRO'],
+    ['Lubricantes y químicos', null, /^ ?(ACEITE|LIQUIDO|REFRIGERANTE|COOLANT|GRASA|WD ?-?40|ADITIVO|DESENGRASANTE|LIMPIADOR|SILICON|PERMATEX|SPRAY|LUBRICANTE|ATF|ELEVADOR DE OCTANAJE|H7 (?!.*(BOMBILLO|LED|LUZ|LUCES|HALOG|XENON|FARO)))|DESENGRASANTE|CU[ÑN]ETE|GARRAFA|AEROSOL|(^|[^0-9])(0|5|10|15|20|25)W-?(20|30|40|50|60)([^0-9]|$)/],
+    ['Motor y transmisión', 'EMBRAGUE|CLUTCH|CROCHE'],
+    ['Frenos', 'FRENO|PASTILLA|ZAPATA|BOMBIN|CALIPER|MORDAZA|TAMBOR|DISCO|LIGA DE F'],
+    ['Iluminación', 'BOMBILLO|FARO|STOP|LED|H\\d+\\b|T10|LUZ|LUCES|MICA|CRUCE'],
+    ['Encendido y eléctrico', 'BUJIA|BOBINA|BATERIA|ALTERNADOR|ARRANQUE|SENSOR|RELE|RELAY|FUSIBLE|SWITCH|INTERRUPTOR|ACTUADOR|AIRBAG|ANTENA|TACOMETRO|CONECTOR|SOCKET|FLOTANTE|PILA'],
+    ['Suspensión y dirección', 'AMORTIGUADOR|COILOVER|ROTULA|TERMINAL|MESETA|BUJE|BUCHE|ESPIRAL|RESORTE|BARRA|LINK|BRAZO|CAJETIN|CREMALLERA|MUÑON|PUNTA|TRIPOIDE|CRUCETA|ROLINERA|MOZO|CUBO|DIRECCION|DIRECCIÓN|COPA|GUARDAPOLVO'],
+    ['Motor y transmisión', 'EMBRAGUE|CLUTCH|CADENA|TIEMPO|EMPACADURA|ESTOPERA|PISTON|ANILLO|VALVULA|CORREA|TENSOR|TERMOSTATO|GASOLINA|INYECTOR|RADIADOR|MOTOR|CAJA|DIFERENCIAL|CARDAN|PLATO|COLLARIN|SELLO|MANGUERA|BOMBA|CAMARA|PIÑON|RODAMIENTO|ACOPLADOR|CIGUEÑAL|ARBOL DE LEVA|CULATA|CABEZA'],
+    ['Carrocería y accesorios', 'CAUCHO|RIN|TAPA|PARACHOQUE|ESPEJO|RETROVISOR|MANILLA|EMBLEMA|PARR?ILLA|CHARNEL|GOMA|PLUMILLA|LIMPIA|ASIENTO|ALFOMBRA|CARELOS|PLATINA|SNORKEL|VOLANTE|REJILLA|CHAPALETA|STICKER|AMBIENTADOR|POMO|ESCAFANDRA|GUARDAFANGO|CUERO|LAME|CENTRO DE RIN'],
+  ].map(([f, rx, re]) => [f, re || new RegExp('(?:^|[^A-Z0-9_ÑÁÉÍÓÚ])(?:' + rx + ')', 'u')]);
+  const familiaSugerida = (d) => { d = ' ' + String(d || '').toUpperCase(); for (const [f, re] of SUGF) if (re.test(d)) return f; return familia(d); };
+  window.TT_FAMS = () => [...FAM.map((x) => x[0]), 'Otros'];
+  window.TT_FAMSUG = familiaSugerida;
   const linea = (d) => { d = ' ' + String(d || '').toUpperCase(); const t = TOY.test(d), n = NIS.test(d); return t && !n ? 'Toyota' : n && !t ? 'Nissan' : t && n ? 'Toyota y Nissan' : 'Sin modelo en descripción'; };
   const N = (v) => (typeof v === 'number' ? v : (v === '' || v == null ? 0 : Number(String(v).replace(',', '.')) || 0));
   const Nn = (v) => (v === '' || v == null ? null : N(v));
@@ -6299,6 +6315,7 @@ function zoomEn(box){
     const FMT = {
       precios: { hoja: 'Precios', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Precio 1', (p) => p.precio_nuevo]] },
       costos: { hoja: 'Costos', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Costo', (p) => p.costo_nuevo]] },
+      familias: { hoja: 'Familias', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Familia actual', (p) => p.familia_antes], ['Familia nueva', (p) => p.familia_nueva]] },
       ajuste: { hoja: 'Ajuste de inventario', cols: [['Código', (p) => p.codigo], ['Descripción', (p) => p.descripcion], ['Almacén', (p) => p.almacen || 'PRINCIPAL'], ['Stock sistema', (p) => p.stock_antes], ['Stock contado', (p) => p.stock_contado], ['Ajuste', (p) => (p.stock_contado != null && p.stock_antes != null ? Math.round((p.stock_contado - p.stock_antes) * 100) / 100 : '')], ['Costo unitario', (p) => (p.costo_nuevo != null ? p.costo_nuevo : p.costo_antes)]] },
     };
     let PP = null, enDB = true, cargando = null;
@@ -6316,7 +6333,7 @@ function zoomEn(box){
         PP = {}; L.forEach((x) => { PP[String(x.codigo).toUpperCase()] = x; });
         // los que ya aparecen hechos en los reportes de Profit se cierran solos
         const hechos = Object.values(PP).filter((x) => { const a = art(x.codigo); if (!a) return false; const pa = precioActual(x.codigo);
-          return (x.costo_nuevo == null || (a.costo != null && Math.abs(Number(a.costo) - Number(x.costo_nuevo)) < 0.01)) && (x.precio_nuevo == null || (pa != null && Math.abs(pa - Number(x.precio_nuevo)) < 0.01)) && (x.stock_contado == null || Number(a.stock) === Number(x.stock_contado)); });
+          return !x.familia_nueva && (x.costo_nuevo == null || (a.costo != null && Math.abs(Number(a.costo) - Number(x.costo_nuevo)) < 0.01)) && (x.precio_nuevo == null || (pa != null && Math.abs(pa - Number(x.precio_nuevo)) < 0.01)) && (x.stock_contado == null || Number(a.stock) === Number(x.stock_contado)); });
         if (hechos.length) await cerrar(hechos.map((x) => x.codigo)).catch(() => {});
         cargando = null; botones(); return PP;
       })();
@@ -6330,14 +6347,29 @@ function zoomEn(box){
       await cargar(); const k = String(r.codigo).toUpperCase(), a = art(r.codigo) || {};
       const cur = { ...(PP[k] || { empresa_id: EMPRESA, codigo: r.codigo, descripcion: r.descripcion || a.descripcion || '', costo_antes: a.costo != null ? Number(a.costo) : (r.costo ?? null), precio_antes: precioActual(r.codigo) ?? (r.precio ?? r.precio_lista ?? null), stock_antes: a.stock != null ? Number(a.stock) : (r.stock ?? null) }) };
       cur[campo] = valor; cur.por = quien(); cur.en = new Date().toISOString(); cur.origen = origen || cur.origen || ''; cur.exportado_en = null; cur.exportado_por = null;
-      const vacio = cur.costo_nuevo == null && cur.precio_nuevo == null && cur.stock_contado == null;
+      if (campo === 'familia_nueva') cur.familia_antes = cur.familia_antes || a.familia || r.familia || null;
+      const vacio = cur.costo_nuevo == null && cur.precio_nuevo == null && cur.stock_contado == null && !cur.familia_nueva;
       if (enDB) { if (vacio) ok(await sb.from('profit_pendientes').delete().eq('empresa_id', EMPRESA).eq('codigo', r.codigo)); else ok(await sb.from('profit_pendientes').upsert(cur, { onConflict: 'empresa_id,codigo' })); }
       if (vacio) delete PP[k]; else PP[k] = cur; if (!enDB) local();
       botones();
     }
     // celdas editables (las llama TT.table después de pintar cada celda)
+    function celdaFamilia(tbl, td, r) {
+      const k = String(r.codigo).toUpperCase(), P = (PP || {})[k] || {}, a = art(r.codigo) || {}, actual = r.familia || a.familia || 'Otros', sug = window.TT_FAMSUG(r.descripcion || a.descripcion || ''), cur = P.familia_nueva || actual;
+      const w = document.createElement('div'); w.className = 'pf-fam';
+      const sel = document.createElement('select'); sel.className = 'pf-fs' + (P.familia_nueva ? ' pend' : ''); window.TT_FAMS().forEach((x) => sel.appendChild(new Option(x + (x === actual ? ' (actual)' : ''), x))); sel.value = cur; sel.title = 'Familia del artículo · actual: ' + actual;
+      const pon = async (v) => { try { await guardar(r, 'familia_nueva', v === actual ? null : v, (tbl.closest('.tt-card') && (tbl.closest('.tt-card').querySelector('h3') || {}).textContent) || tbl.id); sel.className = 'pf-fs ' + (v !== actual ? 'pend' : 'okk'); sel.value = v; if (sb2) sb2.hidden = v === sug; avisoCarga('✔ ' + r.codigo + ': familia ' + (v !== actual ? '«' + v + '» queda pendiente para el Excel de Profit.' : 'sin cambio.'), 'ok'); } catch (e) { sel.className = 'pf-fs err'; avisoCarga('✖ No se pudo guardar: ' + e.message, 'err'); } };
+      sel.addEventListener('change', () => pon(sel.value));
+      const lab = document.createElement('span'); lab.className = 'pf-fl'; lab.textContent = 'Familia:';
+      w.append(lab, sel);
+      let sb2 = null;
+      if (sug !== cur) { sb2 = document.createElement('button'); sb2.type = 'button'; sb2.className = 'pf-sug'; sb2.textContent = '💡 ' + sug; sb2.title = 'Familia sugerida según la descripción · toque para usarla'; sb2.addEventListener('click', () => pon(sug)); w.appendChild(sb2); }
+      td.appendChild(w);
+    }
     window.TT_EDCELL = (tbl, td, f, r) => {
       const F = window.TT_TF && window.TT_TF.get(tbl); if (!F || !F.prof || !r || r.codigo == null) return;
+      if (f === 'descripcion' && puedeEditar() && window.TT_FAMS) return celdaFamilia(tbl, td, r);
+      if (f === 'familia') return;
       const campo = CAMPO(f); if (!campo || !puedeEditar()) return;
       const P = (PP || {})[String(r.codigo).toUpperCase()] || {}, val = P[campo], actual = r[f];
       td.replaceChildren(); td.classList.add('pf-td');
@@ -6364,7 +6396,7 @@ function zoomEn(box){
       if (F.pfe || tbl.id === 'ml-tabla' || tbl.dataset.noprofit != null || !puedeEditar()) return; F.pfe = true; BARRAS.add(F);
       const box = document.createElement('div'); box.className = 'pf-bar';
       const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'pf-b ed'; ed.textContent = '✏ Corregir para Profit';
-      ed.title = 'Las columnas de costo, precio y stock se vuelven editables; lo corregido se junta en un Excel para cargar en Profit';
+      ed.title = 'Las columnas de costo, precio y stock y la familia se vuelven editables; lo corregido se junta en un Excel para cargar en Profit';
       ed.addEventListener('click', async () => { await cargar(); F.prof = !F.prof; ed.classList.toggle('on', F.prof); ed.textContent = F.prof ? '✔ Terminar de corregir' : '✏ Corregir para Profit'; box.classList.toggle('on', F.prof); botones(); if (F.redraw) F.redraw(); });
       const x = document.createElement('button'); x.type = 'button'; x.className = 'pf-b x'; x.addEventListener('click', () => exportar().catch((e) => avisoCarga('✖ ' + e.message, 'err')));
       const c = document.createElement('button'); c.type = 'button'; c.className = 'pf-b c'; c.hidden = true; c.title = 'Cierra las correcciones ya descargadas: úselo cuando las haya cargado en Profit';
@@ -6378,17 +6410,18 @@ function zoomEn(box){
       await cargar(); const L = Object.values(PP).sort((a, b) => String(a.codigo).localeCompare(String(b.codigo), 'es', { numeric: true })); if (!L.length) return avisoCarga('No hay correcciones pendientes.', 'ok');
       const wb = XLSX.utils.book_new(), hoja = (fm, rows) => { const ws = XLSX.utils.aoa_to_sheet([fm.cols.map((c) => c[0]), ...rows.map((p) => fm.cols.map((c) => { const v = c[1](p); return v == null ? '' : v; }))]); ws['!cols'] = fm.cols.map((c) => ({ wch: /Descrip/.test(c[0]) ? 45 : 14 }));
         for (let r = 1; r <= rows.length; r++) { const cel = ws[XLSX.utils.encode_cell({ r, c: 0 })]; if (cel) { cel.t = 's'; cel.v = String(cel.v); } } return ws; };
-      const pr = L.filter((p) => p.precio_nuevo != null), co = L.filter((p) => p.costo_nuevo != null), st = L.filter((p) => p.stock_contado != null);
+      const pr = L.filter((p) => p.precio_nuevo != null), co = L.filter((p) => p.costo_nuevo != null), st = L.filter((p) => p.stock_contado != null), fa = L.filter((p) => p.familia_nueva);
       if (pr.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.precios, pr), FMT.precios.hoja);
       if (co.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.costos, co), FMT.costos.hoja);
       if (st.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.ajuste, st), FMT.ajuste.hoja);
-      const det = XLSX.utils.json_to_sheet(L.map((p) => ({ 'Código': String(p.codigo), 'Descripción': p.descripcion, 'Costo antes': p.costo_antes, 'Costo nuevo': p.costo_nuevo, 'Precio antes': p.precio_antes, 'Precio nuevo': p.precio_nuevo, 'Margen nuevo': p.precio_nuevo && (p.costo_nuevo || p.costo_antes) ? Math.round((1 - (p.costo_nuevo || p.costo_antes) / p.precio_nuevo) * 1000) / 1000 : null, 'Stock antes': p.stock_antes, 'Stock contado': p.stock_contado, 'Corregido en': p.origen, 'Por': p.por, 'Fecha': String(p.en || '').slice(0, 16).replace('T', ' ') })));
-      det['!cols'] = [{ wch: 14 }, { wch: 45 }, ...Array(8).fill({ wch: 12 }), { wch: 28 }, { wch: 30 }, { wch: 16 }]; XLSX.utils.book_append_sheet(wb, det, 'Detalle (control)');
+      if (fa.length) XLSX.utils.book_append_sheet(wb, hoja(FMT.familias, fa), FMT.familias.hoja);
+      const det = XLSX.utils.json_to_sheet(L.map((p) => ({ 'Código': String(p.codigo), 'Descripción': p.descripcion, 'Costo antes': p.costo_antes, 'Costo nuevo': p.costo_nuevo, 'Precio antes': p.precio_antes, 'Precio nuevo': p.precio_nuevo, 'Margen nuevo': p.precio_nuevo && (p.costo_nuevo || p.costo_antes) ? Math.round((1 - (p.costo_nuevo || p.costo_antes) / p.precio_nuevo) * 1000) / 1000 : null, 'Stock antes': p.stock_antes, 'Stock contado': p.stock_contado, 'Familia antes': p.familia_antes, 'Familia nueva': p.familia_nueva, 'Corregido en': p.origen, 'Por': p.por, 'Fecha': String(p.en || '').slice(0, 16).replace('T', ' ') })));
+      det['!cols'] = [{ wch: 14 }, { wch: 45 }, ...Array(7).fill({ wch: 12 }), { wch: 22 }, { wch: 22 }, { wch: 28 }, { wch: 30 }, { wch: 16 }]; XLSX.utils.book_append_sheet(wb, det, 'Detalle (control)');
       const f = new Date().toLocaleDateString('en-CA'), nom = 'TOYOTENGO_Correcciones_para_Profit_' + f + '.xlsx'; XLSX.writeFile(wb, nom);
       const ahora = new Date().toISOString(), yo = quien(); L.forEach((p) => { p.exportado_en = ahora; p.exportado_por = yo; });
       if (enDB) { for (let i = 0; i < L.length; i += 300) ok(await sb.from('profit_pendientes').upsert(L.slice(i, i + 300), { onConflict: 'empresa_id,codigo' })); } else local();
-      bitacora('EXCEL PARA PROFIT', nom + ' · ' + pr.length + ' precios · ' + co.length + ' costos · ' + st.length + ' ajustes de stock'); botones();
-      avisoCarga('✔ Descargado ' + nom + ': ' + [pr.length ? pr.length + ' precios' : '', co.length ? co.length + ' costos' : '', st.length ? st.length + ' ajustes de stock' : ''].filter(Boolean).join(' · ') + '. Cárguelo en Profit; al subir los reportes nuevos se cierran solos (o toque «Ya cargué en Profit»).', 'ok');
+      bitacora('EXCEL PARA PROFIT', nom + ' · ' + pr.length + ' precios · ' + co.length + ' costos · ' + st.length + ' ajustes de stock · ' + fa.length + ' familias'); botones();
+      avisoCarga('✔ Descargado ' + nom + ': ' + [pr.length ? pr.length + ' precios' : '', co.length ? co.length + ' costos' : '', st.length ? st.length + ' ajustes de stock' : '', fa.length ? fa.length + ' familias' : ''].filter(Boolean).join(' · ') + '. Cárguelo en Profit; al subir los reportes nuevos se cierran solos (o toque «Ya cargué en Profit»).', 'ok');
     }
     return { enganchar, cargar, exportar, FMT };
   })();
