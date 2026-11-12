@@ -411,6 +411,8 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
 .tt-tab:hover{color:var(--color-fg);border-color:var(--color-border-line)}
 .tt-tab[aria-selected="true"]{color:var(--color-fg);background:var(--color-panel);border-color:var(--color-border-line);font-weight:var(--cds-font-weight-medium)}
 .tt-tab:focus-visible,.tt-btn:focus-visible,.tt-in:focus-visible{outline:2px solid var(--color-fg);outline-offset:2px}
+.ap-go{cursor:pointer;transition:border-color .15s,box-shadow .15s}.ap-go:hover,.ap-go:focus-visible{border-color:var(--cds-chart-status-critical,#c00);box-shadow:0 2px 8px rgba(0,0,0,.08);outline:none}.ap-go .k::after{content:' ›';opacity:.6}
+.ap-res{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:.2rem 0 .6rem;font-size:var(--cds-font-size-caption)}.ap-res div{display:flex;flex-direction:column}.ap-res span{color:var(--color-fg-muted)}.ap-res b{font-size:1rem;font-variant-numeric:tabular-nums}
 .tt-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:var(--cds-gap-md)}
 .tt-tile{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-md) var(--cds-pad-lg);display:flex;flex-direction:column;gap:var(--cds-gap-xs);min-width:0}
 .tt-tile .k{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
@@ -1148,12 +1150,12 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
   <section id="precios" class="tt-page" hidden>
     <div style="display:flex;flex-direction:column;gap:var(--cds-gap-md)">
       <div class="tt-tiles">
-        <div class="tt-tile"><span class="k">Inventario disponible a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">solo lo disponible (sin comprometido) con precio en la lista</span></div>
-        <div class="tt-tile"><span class="k">Ganancia bruta potencial</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="margen_usd">—</span><span class="s">si se vende todo lo disponible que tiene precio</span></div>
-        <div class="tt-tile"><span class="k">Margen de ganancia</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="margen_pct">—</span><span class="s">de cada venta es ganancia: (precio − costo) ÷ precio</span></div>
-        <div class="tt-tile"><span class="k">Artículos con stock sin precio</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="sin_precio">—</span><span class="s">inmovilizan <span data-source="kpis_precio" data-field="valor_sin_precio">—</span> a costo</span></div>
-        <div class="tt-tile"><span class="k">Precio por debajo del costo</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="bajo_costo">—</span><span class="s">artículos que se venderían con pérdida</span></div>
-        <div class="tt-tile"><span class="k">Cobertura de la lista</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="cobertura">—</span><span class="s">del valor en stock tiene precio cargado</span></div>
+        <div class="tt-tile ap-go" data-ap="cp" role="button" tabindex="0" title="Ver la tabla de estos artículos"><span class="k">Inventario disponible a precio de venta</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="valor_venta">—</span><span class="s">solo lo disponible (sin comprometido) con precio en la lista</span></div>
+        <div class="tt-tile ap-go" data-ap="cp" data-sort="ganancia_total" role="button" tabindex="0" title="Ver la tabla ordenada por ganancia"><span class="k">Ganancia bruta potencial</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="margen_usd">—</span><span class="s">si se vende todo lo disponible que tiene precio</span></div>
+        <div class="tt-tile ap-go" data-ap="cp" data-sort="margen" data-dir="1" role="button" tabindex="0" title="Ver la tabla ordenada del menor al mayor margen"><span class="k">Margen de ganancia</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="margen_pct">—</span><span class="s">de cada venta es ganancia: (precio − costo) ÷ precio</span></div>
+        <div class="tt-tile ap-go" data-ap="sp" role="button" tabindex="0" title="Ver y corregir los artículos sin precio"><span class="k">Artículos con stock sin precio</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="sin_precio">—</span><span class="s">inmovilizan <span data-source="kpis_precio" data-field="valor_sin_precio">—</span> a costo</span></div>
+        <div class="tt-tile ap-go" data-ap="bc" role="button" tabindex="0" title="Ver y corregir los artículos con precio menor al costo"><span class="k">Precio por debajo del costo</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="bajo_costo">—</span><span class="s">artículos que se venderían con pérdida</span></div>
+        <div class="tt-tile ap-go" data-ap="sp" role="button" tabindex="0" title="Ver lo que falta por tener precio, del mayor al menor valor"><span class="k">Cobertura de la lista</span><span class="v dash-skeleton" data-source="kpis_precio" data-field="cobertura">—</span><span class="s">del valor en stock tiene precio cargado</span></div>
       </div>
       <div class="tt-grid">
         <div class="tt-card" id="card-margen-fam">
@@ -1168,23 +1170,31 @@ td.code{cursor:pointer}td.code:hover{color:#2d3277;text-decoration:underline}
         </div>
       </div>
       <div class="tt-card" id="card-alertas-precio">
-        <h3>Alertas de precio</h3>
-        <p class="note">Artículos con stock que tienen precio menor al costo, margen mayor a 90 % o ningún precio en la lista, ordenados por valor a costo.</p>
+        <h3>Análisis de precios · tabla para corregir</h3>
+        <p class="note">Toque un recuadro de arriba, una familia o un rango de margen y aquí aparecen esos artículos. Solo lo disponible (sin comprometido). Para corregir costo, precio o familia active <b>✏ Corregir para Profit</b> en la barra de la tabla y luego baje el Excel para Profit.</p>
         <div class="tt-tools">
-          <select class="tt-in" id="ap-t" aria-label="Tipo de alerta"><option value="">Todas las alertas</option><option>Precio menor al costo</option><option>Margen mayor a 90 %</option><option>Sin precio en la lista</option></select>
+          <select class="tt-in" id="ap-t" aria-label="Qué ver"><option value="">Todos los artículos con stock disponible</option><option value="cp">Con precio (inventario a precio de venta)</option><option value="sp">Sin precio en la lista</option><option value="bc">Precio menor al costo</option><option value="mb">Margen bajo (0 a 20 %)</option><option value="ma">Margen mayor a 90 % (¿costo mal cargado?)</option><option value="al">Todas las alertas</option></select>
+          <select class="tt-in" id="ap-f" aria-label="Familia"><option value="">Todas las familias</option></select>
+          <select class="tt-in" id="ap-r" aria-label="Rango de margen"><option value="">Todos los márgenes</option><option>Negativo</option><option>0 a 20 %</option><option>20 a 40 %</option><option>40 a 60 %</option><option>60 a 90 %</option><option>Más de 90 %</option></select>
+          <button class="tt-in" type="button" id="ap-x" hidden>✕ Quitar filtros</button>
           <span class="tt-status" id="ap-n"></span>
         </div>
+        <div class="ap-res" id="ap-res"></div>
         <div class="tt-scroll">
-          <table class="tt-t" id="t-alertas" data-source="alertas_precio" data-row-key="fila">
+          <table class="tt-t" id="t-alertas" data-source="analisis_precio" data-row-key="fila">
             <thead><tr>
-              <th data-field="alerta"><button>Alerta</button></th>
+              <th data-field="alerta"><button>Situación</button></th>
               <th data-field="codigo"><button>Código</button></th>
               <th data-field="descripcion" class="tt-hide-n"><button>Descripción</button></th>
-              <th data-field="stock" class="n"><button>Stock</button></th>
+              <th data-field="familia" class="tt-hide-n"><button>Familia</button></th>
+              <th data-field="disponible" class="n"><button>Disponible</button></th>
               <th data-field="costo" class="n"><button>Costo</button></th>
-              <th data-field="precio" class="n"><button>Precio</button></th>
+              <th data-field="precio" class="n"><button>Precio venta</button></th>
               <th data-field="margen" class="n"><button>Margen</button></th>
+              <th data-field="ganancia_u" class="n"><button>Ganancia por unidad</button></th>
               <th data-field="valor" class="n tt-hide-n"><button>Valor a costo</button></th>
+              <th data-field="valor_venta" class="n tt-hide-n"><button>Valor a precio de venta</button></th>
+              <th data-field="ganancia_total" class="n tt-hide-n"><button>Ganancia total</button></th>
             </tr></thead>
             <tbody></tbody>
           </table>
@@ -2156,6 +2166,23 @@ dash.calc('margen_rangos', {
   },
 });
 
+dash.calc('analisis_precio', {
+  inputs: ['articulos', 'margen_art'],
+  title: 'Análisis de precios por artículo',
+  description: 'Artículos con stock disponible (sin comprometido) con su costo, precio, margen, rango de margen, ganancia y situación.',
+  fn: (articulos, margen_art) => {
+    const M = {}; margen_art.forEach((m) => { M[m.fila] = m; });
+    const RG = [['Negativo', -Infinity, 0], ['0 a 20 %', 0, 0.2], ['20 a 40 %', 0.2, 0.4], ['40 a 60 %', 0.4, 0.6], ['60 a 90 %', 0.6, 0.9], ['Más de 90 %', 0.9, Infinity]];
+    return articulos.filter(conDisp).map((a) => {
+      const m = M[a.fila], d = udisp(a), costo = Number(a.costo) || 0, precio = m ? m.precio : null, margen = m ? m.margen : null;
+      const rango = margen == null ? null : (RG.find((r) => margen >= r[1] && margen < r[2]) || [null])[0];
+      const alerta = !m ? 'Sin precio' : margen != null && margen < 0 ? 'Precio menor al costo' : margen != null && margen > 0.9 ? 'Margen mayor a 90 %' : margen != null && margen < 0.2 ? 'Margen bajo' : 'Correcto';
+      return { fila: a.fila, alerta, codigo: a.codigo, descripcion: a.descripcion, familia: a.familia, disponible: d, costo: a.costo, precio, margen, rango,
+        ganancia_u: precio != null ? precio - costo : null, valor: vdisp(a), valor_venta: precio != null ? d * precio : null, ganancia_total: precio != null ? d * precio - vdisp(a) : null };
+    }).sort((x, y) => y.valor - x.valor);
+  },
+});
+
 dash.calc('alertas_precio', {
   inputs: ['articulos', 'margen_art'],
   title: 'Alertas de precio',
@@ -2173,8 +2200,17 @@ dash.calc('alertas_precio', {
 (() => {
   const { fmt, fail, hbar, table, chip } = window.TT;
   const KP = { valor_venta: fmt.usd0, margen_usd: fmt.usd0, margen_pct: fmt.pct, markup: fmt.pct, ganancia_100: fmt.usd0, ganancia_100c: fmt.usd0, sin_precio: fmt.int, valor_sin_precio: fmt.usd0, bajo_costo: fmt.int, cobertura: fmt.pct };
-  const apT = document.getElementById('ap-t');
+  const apT = document.getElementById('ap-t'), apR = document.getElementById('ap-r'), apF = document.getElementById('ap-f');
   const st = { sort: 'valor', dir: -1, limit: 400 };
+  // ir a la tabla de análisis con un filtro (recuadros, familias y rangos de margen)
+  const irAP = (o) => {
+    if ('t' in o) apT.value = o.t || ''; if ('f' in o) { if (o.f && ![...apF.options].some((x) => x.value === o.f)) apF.appendChild(new Option(o.f, o.f)); apF.value = o.f || ''; } if ('r' in o) apR.value = o.r || '';
+    if (o.sort) { st.sort = o.sort; st.dir = o.dir || -1; } else { st.sort = 'valor'; st.dir = -1; }
+    draw(); const c = document.getElementById('card-alertas-precio'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  document.querySelectorAll('#precios .ap-go').forEach((t) => { const go = () => irAP({ t: t.dataset.ap, f: '', r: '', sort: t.dataset.sort, dir: t.dataset.dir ? Number(t.dataset.dir) : -1 }); t.addEventListener('click', go); t.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }); });
+  apR.addEventListener('change', () => draw()); apF.addEventListener('change', () => draw());
+  document.getElementById('ap-x').addEventListener('click', () => irAP({ t: '', f: '', r: '' }));
   const draw = () => {
     const k = dash.data('kpis_precio');
     document.querySelectorAll('[data-source="kpis_precio"][data-field]').forEach((el) => {
@@ -2186,24 +2222,33 @@ dash.calc('alertas_precio', {
     const mf = dash.data('margen_familia'), elF = document.getElementById('ch-margen-fam');
     if (mf.status === 'ok') hbar(elF, mf.data.map((r) => ({ label: r.familia, value: r.margen_pct, r, color: r.margen_pct < 0 ? 'var(--cds-chart-status-critical)' : dash.colors[0] })), {
       fmt: fmt.pct, tip: (d) => ['Margen ' + fmt.pct(d.r.margen_pct), 'Costo ' + fmt.usd0(d.r.valor_costo) + ' · Venta ' + fmt.usd0(d.r.valor_venta), fmt.int(d.r.articulos) + ' artículos'],
-      onClick: (d) => window.TT.filterFamilia && window.TT.filterFamilia(d.label),
+      onClick: (d) => irAP({ t: '', f: d.label, r: '' }),
     }); else if (mf.status === 'error') fail(elF);
     const mr = dash.data('margen_rangos'), elR = document.getElementById('ch-margen-rango');
     if (mr.status === 'ok') hbar(elR, mr.data.map((r) => ({ label: r.rango, value: r.articulos, r, color: r.rango === 'Negativo' ? 'var(--cds-chart-status-critical)' : (r.rango === 'Más de 90 %' ? 'var(--cds-chart-muted)' : dash.colors[0]) })), {
-      fmt: (v) => fmt.int(v), tip: (d) => [fmt.int(d.r.articulos) + ' artículos', 'Valor a costo ' + fmt.usd0(d.r.valor)],
+      fmt: (v) => fmt.int(v), tip: (d) => [fmt.int(d.r.articulos) + ' artículos', 'Valor a costo ' + fmt.usd0(d.r.valor), 'Toque para ver la tabla'], onClick: (d) => irAP({ t: '', f: '', r: d.label }),
     }); else if (mr.status === 'error') fail(elR);
-    const al = dash.data('alertas_precio');
+    const al = dash.data('analisis_precio');
     if (al.status === 'ok') {
       st.redraw = draw;
-      const rows = al.data.filter((r) => !apT.value || r.alerta === apT.value);
+      const fs = document.getElementById('ap-f');
+      if (fs.options.length <= 1) [...new Set(al.data.map((r) => r.familia || 'Otros'))].sort().forEach((f) => fs.appendChild(new Option(f, f)));
+      const T = apT.value, F = fs.value, RG = apR.value;
+      const rows = al.data.filter((r) => (!T || (T === 'cp' ? r.precio != null : T === 'sp' ? r.precio == null : T === 'bc' ? r.alerta === 'Precio menor al costo' : T === 'mb' ? r.alerta === 'Margen bajo' : T === 'ma' ? r.alerta === 'Margen mayor a 90 %' : T === 'al' ? r.alerta !== 'Correcto' : true))
+        && (!F || (r.familia || 'Otros') === F) && (!RG || r.rango === RG));
       const n = table(document.getElementById('t-alertas'), rows, {
-        alerta: { render: (td, r) => chip(td, r.alerta, r.alerta === 'Precio menor al costo' ? 'bad' : 'warn') },
-        codigo: { cls: 'code' }, stock: { num: true, fmt: fmt.num }, costo: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) },
-        precio: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) }, margen: { num: true, fmt: (v) => (v == null ? '—' : fmt.pct(v)) }, valor: { num: true, fmt: fmt.usd2 },
+        alerta: { render: (td, r) => chip(td, r.alerta, r.alerta === 'Precio menor al costo' ? 'bad' : r.alerta === 'Correcto' ? 'ok' : 'warn') },
+        codigo: { cls: 'code' }, disponible: { num: true, fmt: fmt.num }, costo: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) },
+        precio: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) }, margen: { num: true, fmt: (v) => (v == null ? '—' : fmt.pct(v)) },
+        ganancia_u: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd2(v)) }, valor: { num: true, fmt: fmt.usd2 }, valor_venta: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd0(v)) }, ganancia_total: { num: true, fmt: (v) => (v == null ? '—' : fmt.usd0(v)) },
       }, (r) => r.fila, st);
-      document.getElementById('ap-n').textContent = fmt.int(n) + ' alertas' + (n > st.limit ? ' · se muestran las primeras ' + st.limit : '');
-    }
-  };
+      document.getElementById('ap-n').textContent = fmt.int(n) + ' artículos' + (n > st.limit ? ' · se muestran ' + st.limit + ', ordene o filtre' : '');
+      document.getElementById('ap-x').hidden = !(T || F || RG);
+      const cp = rows.filter((r) => r.precio != null), vc = rows.reduce((s, r) => s + (r.valor || 0), 0), vcp = cp.reduce((s, r) => s + (r.valor || 0), 0), vv = cp.reduce((s, r) => s + (r.valor_venta || 0), 0);
+      const res = document.getElementById('ap-res'); res.replaceChildren();
+      [['Artículos', fmt.int(rows.length)], ['Valor a costo', fmt.usd0(vc)], ['A precio de venta', fmt.usd0(vv)], ['Ganancia potencial', fmt.usd0(vv - vcp)], ['Margen', vv ? fmt.pct((vv - vcp) / vv) : '—'], ['Sin precio', fmt.int(rows.length - cp.length)]]
+        .forEach(([k, v]) => { const d = document.createElement('div'); const a = document.createElement('span'); a.textContent = k; const b = document.createElement('b'); b.textContent = v; d.append(a, b); res.appendChild(d); });
+    }  };
   apT.addEventListener('change', draw);
   const prev = window.TT.redraw; window.TT.redraw = () => { prev && prev(); draw(); };
   dash.onData(draw);
