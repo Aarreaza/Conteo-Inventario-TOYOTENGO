@@ -130,6 +130,7 @@ body{background:var(--color-bg);color:var(--color-fg);font-family:var(--font-ant
 .ml-edhint{background:#eef4ff;border:1px solid #b9cdf5;border-left:5px solid #2d5bd0;border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;font-size:.88rem;line-height:1.45}.ml-edhint b{color:#173f8a}.ml-edhint .ir{display:inline-flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}.ml-edhint button{font:600 .8rem inherit;border-radius:999px;padding:.3rem .75rem;cursor:pointer;border:1px solid #2d5bd0;background:#fff;color:#173f8a}.ml-edhint button:hover{background:#2d5bd0;color:#fff}.ml-sug{font:600 .75rem inherit;border:1px dashed #1d6f42;background:#eaf7ef;color:#14532d;border-radius:6px;padding:.15rem .45rem;margin:.15rem .25rem 0 0;cursor:pointer}
 .ml-mbtn{cursor:pointer}.ml-mbtn:hover{outline:2px solid #2d5bd0;outline-offset:1px}.ml-mbtn::after{content:" ✏";font-size:.75em;opacity:.65}.ml-mnew{font-size:.72rem;color:#7a4b00;background:#fff1b8;border-radius:4px;padding:0 .3rem;margin-top:.15rem;display:inline-block}.ml-medit{display:flex;align-items:center;gap:.2rem;justify-content:flex-end}.ml-mprev{font-size:.72rem;color:#173f8a;margin-top:.15rem}.ml-mok,.ml-mno{font:600 .8rem inherit;border:1px solid #ccd;border-radius:5px;background:#fff;cursor:pointer;padding:.1rem .35rem}.ml-mok{background:#1d6f42;color:#fff;border-color:#1d6f42}.ml-mall{display:inline-flex;align-items:center;gap:.3rem;background:#fff;border:1px solid #b9cdf5;border-radius:999px;padding:.2rem .3rem .2rem .7rem;font-size:.82rem}
 .pf-b.xl{background:#eef7f0;border-color:#9fd5b0;color:#14532d}.pf-b.xl.up{background:#14532d;color:#fff;border-color:#14532d}
+.cc-sinc{border-radius:8px;padding:.5rem .8rem;margin-bottom:.6rem;font-weight:600;font-size:.88rem}.cc-sinc.ok{background:#e7f6ec;color:#14532d;border:1px solid #9fd5b0}.cc-sinc.aviso{background:#fff6dd;color:#7a4b00;border:1px solid #f0d27a}.cc-sinc.mal{background:#fdeaea;color:#8a1c1c;border:1px solid #f0a8a8}
 .pf-top{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;background:#fff8e6;border:1px solid #f0c060;border-radius:10px;padding:.7rem 1rem}.pf-top .sh-btn{margin-left:auto}.pf-card{border:1px solid #ddd;border-radius:10px;padding:.8rem 1rem;background:#fff}.pf-card.hay{border-left:5px solid #1d6f42}.pf-h{display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline}.pf-h b{font-size:1.05rem}.pf-cnt{font-weight:700;color:#1d6f42}.pf-h small{color:#666;width:100%}.pf-fmt,.pf-ej{font-size:.8rem;color:#555;margin:.35rem 0}.pf-bts{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}.pf-b.xls{background:#1d6f42;color:#fff;border-color:#1d6f42}.pf-b.mod{background:#f4f6fb}.pf-b.ok{background:#e7f6ec;color:#14532d;border-color:#9fd5b0}.pf-b:disabled{opacity:.5}.pf-nota{font-size:.82rem;color:#666}
 .pf-bar{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.5rem 0 .4rem}.pf-bar.on{background:#fff8e6;border:1px solid #f0c060;border-left:5px solid #e8a400;border-radius:8px;padding:.45rem .6rem}.pf-b{font:600 .86rem inherit;border-radius:8px;padding:.45rem .85rem;cursor:pointer;border:1.5px solid transparent}.pf-b.ed{background:#fff;color:#7a4b00;border-color:#e8a400}.pf-b.ed.on{background:#b26a00;color:#fff;border-color:#b26a00}.pf-b.x{background:#1d6f42;color:#fff;border-color:#1d6f42}.pf-b.x:disabled{background:#fff;color:#1d6f42;opacity:.55;cursor:default}.pf-b.c{background:#e8eefc;color:#173f8a;border-color:#b9cdf5}.pf-n{font-size:.82rem;color:#7a4b00;font-weight:600}td.pf-td{background:#fffaf0}.pf-ed{width:6.4rem;font:inherit;text-align:right;padding:.25rem .35rem;border:1px solid #d7b46a;border-radius:6px;background:#fff}.pf-ed.pend{background:#fff1b8;border-color:#e8a400;font-weight:600}.pf-ed.okk{background:#dff5e6;border-color:#1d6f42}.pf-ed.err{background:#fde8ea;border-color:#c0182a}.pf-m{display:block;font-size:.7rem;color:#555}.pf-m.bad{color:#c0182a}
 .ml-mprev{min-width:15rem;text-align:left;white-space:normal}.ml-pl{display:flex;justify-content:space-between;gap:.6rem;font-size:.74rem;color:#333;border-bottom:1px dotted #e3e6ee;padding:.05rem 0}.ml-pl b{font-weight:600}.ml-pl.ok b{color:#1d6f42}.ml-pl.bad b{color:#c0182a}.ml-pl.muted{color:#777;border:0}.ml-gan{font-weight:600;color:#1d6f42}.ml-gan.bad{color:#c0182a}
@@ -3485,8 +3486,33 @@ const CONTEO_API = "https://dwltkoxhnexehikjuaji.supabase.co/functions/v1/invent
     it.forEach((x) => { x.falta = !x.en && (hayInv && x.inv ? true : !x.ult); x.viejo = !x.en && !!x.ult && !x.mes && hoy && x.ult < hoy; });
     return { it, hayInv, ff };
   }
+  // ¿el generador de etiquetas y la app de conteo ya tienen el último corte y la última lista de precios?
+  // El servidor los pasa solo (al cargar y, de respaldo, cada 5 minutos). Aquí se confirma y se avisa.
+  let SINC = { t: null, pend: false };
+  async function estadoSinc() {
+    const el = $('c-sinc'); if (!el) return;
+    try {
+      const [co, li, ar] = await Promise.all([
+        sb.from('cortes').select('id,fecha_corte,cargado_en').eq('empresa_id', EMPRESA).order('fecha_corte', { ascending: false }).order('id', { ascending: false }).limit(1),
+        sb.from('listas_precios').select('id,fecha,cargado_en').eq('empresa_id', EMPRESA).order('fecha', { ascending: false }).order('id', { ascending: false }).limit(1),
+        sb.from('articulos').select('actualizado_en').eq('empresa_id', EMPRESA).order('actualizado_en', { ascending: false, nullsFirst: false }).limit(1)]);
+      const c = (co.data || [])[0], l = (li.data || [])[0], a = (ar.data || [])[0];
+      if (!c || ar.error) { el.hidden = true; return; }
+      const ult = Math.max(new Date(c.cargado_en).getTime(), l ? new Date(l.cargado_en).getTime() : 0), sinc = a && a.actualizado_en ? new Date(a.actualizado_en).getTime() : 0;
+      const hh = (t) => new Date(t).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }), al = sinc >= ult - 1000;
+      el.hidden = false; el.className = 'cc-sinc ' + (al ? 'ok' : 'aviso');
+      el.textContent = al ? '🔗 Generador de etiquetas y App de conteo: al día con el corte del ' + String(c.fecha_corte).split('-').reverse().join('-') + (l ? ' y la lista del ' + String(l.fecha).split('-').reverse().join('-') : '') + ' (actualizados ' + hh(sinc) + ')'
+        : '⏳ Generador de etiquetas y App de conteo: se están actualizando con el corte del ' + String(c.fecha_corte).split('-').reverse().join('-') + ' (tarda hasta 5 minutos). Esta línea se pone en verde sola.';
+      if (al && SINC.pend) avisoCarga('✔ Listo: el Generador de etiquetas y la App de conteo ya tienen el inventario nuevo.', 'ok');
+      SINC.pend = !al; clearTimeout(SINC.t);
+      if (!al && Date.now() - ult < 15 * 60000) SINC.t = setTimeout(estadoSinc, 20000);
+      else if (!al) { el.className = 'cc-sinc mal'; el.textContent = '✖ El Generador de etiquetas y la App de conteo NO se han actualizado con el corte del ' + String(c.fecha_corte).split('-').reverse().join('-') + ' después de 15 minutos. Avise al administrador.'; }
+    } catch (e) { el.hidden = true; }
+  }
+  window.TT_SINC = estadoSinc;
   function pintarControl() {
     const box = $('c-check'); if (!box) return; const { it, hayInv, ff } = controlCarga(); box.replaceChildren();
+    const si = document.createElement('div'); si.id = 'c-sinc'; si.hidden = true; box.appendChild(si); estadoSinc();
     const h = document.createElement('div'); h.className = 'cc-h'; h.textContent = '📋 Archivos que alimentan el panel'; box.appendChild(h);
     const ul = document.createElement('div'); ul.className = 'cc-l';
     it.forEach((x) => { const d = document.createElement('div'); const cls = x.en ? 'ok' : x.falta ? 'mal' : x.viejo ? 'aviso' : 'gris'; d.className = 'cc-i ' + cls;
