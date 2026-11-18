@@ -334,6 +334,10 @@ function pintarDisp() {
   V.grupos.forEach((g, k) => { const p = P && P.grupos.find((x) => x.nombre === g.nombre), dv = p ? g.valor - p.valor : null; const t = mk('div', 'tile'); t.style.borderTopColor = GCOL[k % GCOL.length];
     t.append(mk('div', 'k', g.nombre), mk('div', 'v', usd(g.valor, 2))); const s = mk('div', 's'); s.append(V.subtotal ? num(g.valor / V.subtotal * 100, 1) + ' % del total' : ''); if (dv != null && Math.abs(dv) > 0.004) { s.append(' · '); s.appendChild(mk('span', dv >= 0 ? 'up' : 'dn', (dv >= 0 ? '+' : '−') + usd(Math.abs(dv), 2).replace('US$ ', 'US$ '))); }
     if (g.moneda === 'Bs' && D0.tasa) s.append(' · Bs ' + num(g.valor / (MODO === 'BCV' ? factorBs(D0) : 1) * D0.tasa, 2)); t.appendChild(s); T.appendChild(t); });
+  { const t = mk('div', 'tile apa'), dv = P ? V.apartados - P.apartados : null; t.style.borderTopColor = 'var(--rojo)'; t.title = V.aparts.map((x) => x.nombre + ': ' + usd(x.valor, 2)).join('\n');
+    t.append(mk('div', 'k', 'Apartados'), mk('div', 'v dn', usd(V.apartados, 2))); const s = mk('div', 's'); s.append((Math.abs(V.subtotal) ? num(Math.abs(V.apartados) / Math.abs(V.subtotal) * 100, 1) + ' % de lo disponible · ' : '') + V.aparts.length + ' conceptos');
+    if (dv != null && Math.abs(dv) > 0.004) { s.append(' · '); s.appendChild(mk('span', dv >= 0 ? 'up' : 'dn', (dv >= 0 ? '+' : '−') + usd(Math.abs(dv), 2))); }
+    t.appendChild(s); t.style.cursor = 'pointer'; t.addEventListener('click', () => $('t-apa').scrollIntoView({ behavior: 'smooth', block: 'center' })); T.appendChild(t); }
   donut(V); porCuenta(V); evolucion(); detalle(V, P); apartados(V);
 }
 function donut(V) {
