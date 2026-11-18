@@ -824,7 +824,7 @@ function leerVentasXls(wb) {
 }
 async function articulosCostos() {
   if (ARTC) return ARTC; const M = {};
-  for (const x of ok(await sb.rpc('disp_articulos_costos', { p_empresa: EMPRESA }))) M[String(x.codigo).toUpperCase()] = x;
+  for (let i = 0; ; i += 1000) { const L = ok(await sb.rpc('disp_articulos_costos', { p_empresa: EMPRESA }).range(i, i + 999)); L.forEach((x) => { M[String(x.codigo).toUpperCase()] = x; }); if (L.length < 1000) break; }
   return (ARTC = M);
 }
 // misma clasificación que el tablero de inventario
