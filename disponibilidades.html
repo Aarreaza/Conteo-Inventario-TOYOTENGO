@@ -222,7 +222,7 @@ async function inicio() {
   if (!perfil || perfil.estado !== 'ACTIVO') { $('v-login').hidden = false; aviso($('l-msg'), 'Su usuario no está activo. Pida acceso al administrador.', 'err'); return; }
   let roles = []; try { roles = ok(await sb.from('permisos').select('rol').eq('user_id', uid).eq('empresa_id', EMPRESA).eq('modulo_id', MOD)).map((r) => r.rol); } catch (e) {}
   ROL = perfil.admin_global || roles.includes('ADMIN') ? 'ADMIN' : roles.includes('CARGA') ? 'CARGA' : roles.length ? 'LECTOR' : null;
-  YO = { uid, correo: perfil.correo, nombre: perfil.nombre || perfil.correo };
+  YO = { uid, correo: perfil.correo, nombre: perfil.nombre || perfil.correo, general: !!perfil.admin_global };
   $('quien').hidden = false; $('q-nom').textContent = YO.nombre + ' · ' + ({ ADMIN: 'Administrador', CARGA: 'Carga', LECTOR: 'Lector' }[ROL] || 'sin acceso');
   if (!ROL) { $('main').hidden = false; aviso($('aviso'), 'No tiene acceso a las disponibilidades. Pídale acceso al administrador.', 'err'); return; }
   document.querySelectorAll('[data-rol="carga"]').forEach((b) => { b.hidden = !(ROL === 'ADMIN' || ROL === 'CARGA'); });
@@ -603,7 +603,7 @@ function tablaUsuarios() {
     tr.appendChild(t2);
     tr.appendChild(mk('td', '', u.ultimo_ingreso ? new Date(u.ultimo_ingreso).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Nunca'));
     const t4 = mk('td'), box = mk('div', 'ccl');
-    if (!u.admin_general || u.user_id === YO.uid) { const b = mk('button', 'btn lt', 'Cambiar clave'); b.addEventListener('click', () => {
+    if (u.user_id === YO.uid || (u.correo !== 'ararreaza@gmail.com' && (!u.admin_general || YO.general))) { const b = mk('button', 'btn lt', 'Cambiar clave'); b.addEventListener('click', () => {
         box.replaceChildren(); const i = mk('input', 'in'); i.value = claveAzar(); i.style.width = '9rem'; const g = mk('button', 'btn rojo', 'Guardar'), x = mk('button', 'btn lt', 'Cancelar');
         x.addEventListener('click', () => tablaUsuarios());
         g.addEventListener('click', async () => { const c = i.value.trim(); if (!claveOk(c)) return aviso($('a-msg'), 'La clave debe tener al menos 8 caracteres, con letras y números.', 'err'); g.disabled = true;
