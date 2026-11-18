@@ -76,6 +76,10 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
 .uform{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.7rem;align-items:end}.uform label{display:flex;flex-direction:column;gap:.25rem;font-size:.82rem;color:var(--muted)}.uin{display:flex;gap:.3rem}.uin .in{flex:1;min-width:0}
 .cred{margin-top:.7rem;border:1px dashed var(--ok);border-radius:10px;padding:.7rem .9rem;display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:center;font-size:.9rem}.cred code{background:var(--soft);padding:.1rem .35rem;border-radius:4px}
 .ccl{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center}
+.bdg{display:inline-block;min-width:1.3rem;padding:0 .35rem;margin-left:.3rem;border-radius:999px;font-size:.72rem;font-weight:700;line-height:1.3rem;text-align:center;color:#fff;background:var(--ok)}.bdg.w{background:#d98a00}.bdg.e{background:var(--bad)}
+.est-b{display:flex;align-items:center;gap:.7rem;border-radius:10px;padding:.75rem 1rem;font-weight:600;margin-bottom:.8rem}.est-b.ok{background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ok)}.est-b.w{background:#fff4dc;color:#8a5a00}.est-b.e{background:color-mix(in srgb,var(--bad) 10%,transparent);color:var(--bad)}.est-b big{font-size:1.5rem}
+.est{display:grid;grid-template-columns:2rem minmax(150px,1.1fr) 2.4fr auto;gap:.4rem .8rem;align-items:start;padding:.65rem 0;border-top:1px solid var(--line);font-size:.88rem}.est:first-of-type{border-top:0}.est .i{font-size:1.2rem;line-height:1.2}.est ul{margin:.25rem 0 0;padding-left:1.1rem;color:var(--muted)}.est ul li.e{color:var(--bad)}.est ul li.w{color:#8a5a00}
+@media (max-width:640px){.est{grid-template-columns:2rem 1fr}.est>div:nth-child(3),.est>div:nth-child(4){grid-column:2}}
 .pill{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:.05rem .45rem;background:var(--soft);color:var(--muted);margin-left:.35rem;vertical-align:1px}
 </style>
 </head>
@@ -101,7 +105,7 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
   <button data-v="cx">Por cobrar y por pagar</button>
   <button data-v="ventas">Ventas mensuales</button>
   <button data-v="excel">Excel cargado</button>
-  <button data-v="cargar" data-rol="carga">Cargar Excel</button>
+  <button data-v="cargar" data-rol="carga">Cargar Excel <span class="bdg" id="c-bdg" hidden></span></button>
   <button data-v="accesos" data-rol="admin">Usuarios</button>
 </div></nav>
 
@@ -177,6 +181,7 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
   </section>
 
   <section class="vista" id="v-cargar" hidden>
+    <div class="card" id="c-estado"></div>
     <div class="card"><h2>Cargar Excel de disponibilidades</h2>
       <p class="note">Escoja el Excel y listo: se guarda solo y el resumen se actualiza. Cada día se carga el Excel con los saldos al cierre del día anterior; la fecha se toma del propio Excel (la última columna con saldos). Los bolívares se toman como vienen en el Excel (ya convertidos a dólares con la tasa Binance de la hoja).</p>
       <div class="slots"><label class="slot" id="c-drop"><b>Disponibilidades</b><small>Excel diario de administración</small><span class="st" id="c-arch">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" id="c-file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" hidden></label></div>
@@ -364,7 +369,7 @@ function vista(d) {
 }
 
 // ---------------- vista Disponibilidades ----------------
-function pintarTodo() { pintarDisp(); pintarVentas(); pintarTiles(); pintarCx(); }
+function pintarTodo() { pintarDisp(); pintarVentas(); pintarTiles(); pintarCx(); pintarEstado(); }
 function pintarDisp() {
   const sel = $('d-dia'); sel.replaceChildren(); DIAS.slice().reverse().forEach((d) => sel.appendChild(new Option(fecTxt(d.fecha), d.fecha))); if (DIA) sel.value = DIA;
   sel.onchange = () => { DIA = sel.value; pintarDisp(); };
@@ -586,6 +591,7 @@ function pintarHist() {
         await Promise.all([cargarCargas(), cargarCx()]); pintarTodo(); pintarHist(); } catch (e) { aviso($('c-msg'), '✖ ' + e.message, 'err'); } }); td.appendChild(x); }
     tr.appendChild(td); body.appendChild(tr); });
   tb.appendChild(body); $('c-hist').replaceChildren(L.length ? tb : mk('p', 'note', 'Sin cargas todavía.'));
+  pintarEstado();
 }
 
 // ---------------- cuentas por cobrar y por pagar ----------------
@@ -613,9 +619,9 @@ function leerCx(wb, tipo, nombreArch) {
   const iso = (v) => (v instanceof Date ? new Date(v.getTime() - v.getTimezoneOffset() * 6e4).toISOString().slice(0, 10) : null);
   const nu = (v) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' && !isNaN(Number(v.replace(',', '.'))) ? Number(v.replace(',', '.')) : 0);
   const tx = (i, f) => (i < 0 ? '' : f[i] instanceof Date ? iso(f[i]) : String(f[i] ?? '').trim());
-  const filas = [];
+  const filas = []; let excelSaldo = null;
   for (let r = hr + 1; r < A.length; r++) {
-    const f = A[r]; if (f.slice(0, 3).some((v) => /^total/i.test(String(v).trim()))) break;
+    const f = A[r]; if (f.slice(0, 3).some((v) => /^total/i.test(String(v).trim()))) { if (c.saldo >= 0 && typeof f[c.saldo] === 'number') excelSaldo = f[c.saldo]; break; }
     const nom = tx(c.nom, f).toUpperCase().replace(/\s+/g, ' '), m = nu(f[c.monto]), ab = c.abono < 0 ? 0 : nu(f[c.abono]);
     if (!nom && !m && !ab) continue;
     const sal = c.saldo >= 0 && typeof f[c.saldo] === 'number' ? f[c.saldo] : m - ab;
@@ -623,7 +629,7 @@ function leerCx(wb, tipo, nombreArch) {
   }
   if (!filas.length) throw new Error('la tabla no tiene documentos');
   const t = filas.reduce((s, x) => ({ monto: s.monto + x.monto, abono: s.abono + x.abono, saldo: s.saldo + x.saldo }), { monto: 0, abono: 0, saldo: 0 });
-  t.docs = filas.length; t.nombres = new Set(filas.map((x) => x.nombre)).size;
+  t.docs = filas.length; t.excel = excelSaldo; t.nombres = new Set(filas.map((x) => x.nombre)).size;
   return { hoja: nm, filas, totales: t };
 }
 document.querySelectorAll('.cxs').forEach((sl) => {
@@ -637,8 +643,8 @@ document.querySelectorAll('.cxs').forEach((sl) => {
       if (CX_OK) ok(await sb.from('cx_cargas').insert(fila));
       else { let L = []; try { L = JSON.parse(localStorage.getItem('tt_cx_local') || '[]'); } catch (e) {} L.unshift({ ...fila, hojas: null, id: Date.now(), cargado_en: new Date().toISOString() }); try { localStorage.setItem('tt_cx_local', JSON.stringify(L.slice(0, 30))); } catch (e) {} }
       st.textContent = '✔ ' + f.name; sl.classList.add('ok'); inp.value = '';
-      aviso($('cx-msg'), '✔ ' + CXT[t] + ': ' + R.totales.docs + ' documentos de ' + R.totales.nombres + (t === 'CXP' ? ' proveedores' : ' personas') + ' · saldo ' + usd(R.totales.saldo, 2), 'ok');
-      await cargarCx(); pintarCx(); pintarHist();
+      const rv = revisarCx({ tipo: t, filas: R.filas, totales: R.totales }); aviso($('cx-msg'), (rv.err.length + rv.warn.length ? '⚠ ' : '✔ ') + CXT[t] + ': ' + R.totales.docs + ' documentos de ' + R.totales.nombres + (t === 'CXP' ? ' proveedores' : ' personas') + ' · saldo ' + usd(R.totales.saldo, 2) + (rv.err.length + rv.warn.length ? ' · revise: ' + rv.err.concat(rv.warn).join('; ') : ' · todo cuadra con el Excel'), rv.err.length ? 'warn' : 'ok');
+      await cargarCx(); pintarCx(); pintarHist(); $('c-estado').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) { st.textContent = 'Sin archivo'; inp.value = ''; aviso($('cx-msg'), '✖ ' + CXT[t] + ': ' + e.message, 'err'); }
   };
   inp.addEventListener('change', () => { if (inp.files[0]) go(inp.files[0]); });
@@ -728,6 +734,58 @@ function pintarDet() {
       if (H && H.length) XLSX.writeFile(libroDe(H), u.archivo || CXV + '_' + u.fecha + '.xlsx');
       else { const ws = XLSX.utils.json_to_sheet(u.filas.map((x) => ({ Fecha: x.fecha, Vencimiento: x.venc, Sistema: x.sis, Documento: x.doc, Nombre: x.nombre, Descripcion: x.desc, Monto: x.monto, Abono: x.abono, Saldo: x.saldo }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, CXV); XLSX.writeFile(wb, CXV + '_' + u.fecha + '.xlsx'); } }
     catch (e) { aviso($('x-vacio'), '✖ ' + e.message, 'err'); } };
+}
+
+// ---------------- estado de la carga: ¿quedó todo bien? ----------------
+const ayer = () => new Date(new Date(hoyISO() + 'T12:00:00').getTime() - 864e5).toISOString().slice(0, 10);
+function revisarCx(c) {
+  const err = [], warn = [], F = c.filas || [], t = c.totales || {}, prov = c.tipo === 'CXP';
+  if (t.excel != null && Math.abs(t.excel - (t.saldo || 0)) > 0.5) err.push('el saldo leído (' + usd(t.saldo, 2) + ') no cuadra con el Total del Excel (' + usd(t.excel, 2) + ')');
+  const sinNom = F.filter((x) => x.nombre === '(sin nombre)').length; if (sinNom) err.push(sinNom + ' fila(s) sin ' + (prov ? 'proveedor' : 'nombre'));
+  const ok2 = (x) => Math.abs(x.saldo - (x.monto - x.abono)) > 0.01; const mal = F.filter(ok2).length; if (mal) err.push(mal + ' fila(s) donde el saldo no es monto − abono');
+  const sinFL = F.filter((x) => !x.fecha && (x.monto || x.abono)), sinF = sinFL.length; if (sinF && c.tipo !== 'CXC_EMP') warn.push(sinF + ' documento(s) sin fecha: ' + sinFL.slice(0, 3).map((x) => x.nombre + (x.doc || x.sis ? ' ' + (x.doc && x.doc !== 'S/N' ? x.doc : x.sis) : '')).join(', ') + (sinF > 3 ? '…' : ''));
+  if (prov) { const sv = F.filter((x) => x.saldo > 0 && !x.venc); if (sv.length) warn.push(sv.length + ' factura(s) sin fecha de vencimiento (' + usd(sv.reduce((s, x) => s + x.saldo, 0), 2) + ')'); }
+  const vistos = {}, dup = new Set(); F.forEach((x) => { const d = String(x.doc || '').trim(); if (!/\d/.test(d)) return; const k = x.nombre + '|' + d; if (vistos[k]) dup.add(d); vistos[k] = 1; });
+  if (dup.size) warn.push('documento(s) repetidos: ' + [...dup].slice(0, 5).join(', ') + (dup.size > 5 ? '…' : ''));
+  if (!prov) { const neg = porNombre(F).filter((g) => g.saldo < -0.005); if (neg.length) warn.push(neg.length + ' persona(s) con saldo a favor (abonaron de más): ' + neg.slice(0, 3).map((g) => g.nombre).join(', ') + (neg.length > 3 ? '…' : '')); }
+  return { err, warn };
+}
+function revisarDisp(d, prev) {
+  const err = [], warn = [];
+  if (!d.tasa) err.push('no encontré la tasa Binance en la hoja');
+  const sg = d.grupos.reduce((s, g) => s + g.valor, 0); if (Math.abs(sg - d.subtotal) > 1) warn.push('los grupos suman ' + usd(sg, 2) + ' y el SUBTOTAL BANCO dice ' + usd(d.subtotal, 2));
+  if (Math.abs(d.subtotal + d.apartados - d.total) > 1) err.push('SUBTOTAL BANCO + APARTADOS no da el TOTAL BANCO del Excel');
+  d.grupos.filter((g) => g.valor < -0.005).forEach((g) => warn.push('«' + g.nombre + '» está en negativo'));
+  if (prev && Math.abs(prev.total) > 1 && Math.abs(d.total - prev.total) / Math.abs(prev.total) > 0.5) warn.push('la disponibilidad neta cambió más de 50 % vs el ' + fecTxt(prev.fecha) + ' (' + usd(prev.total, 2) + ' → ' + usd(d.total, 2) + '); confirme que es correcto');
+  return { err, warn };
+}
+function pintarEstado() {
+  const box = $('c-estado'); if (!box) return; box.replaceChildren(); const hoy = hoyISO(), ay = ayer(); let nE = 0, nW = 0, nF = 0;
+  const filas = [];
+  { const d = DIAS[DIAS.length - 1], p = DIAS[DIAS.length - 2]; const r = { k: 'disp', t: 'Disponibilidades', abre: () => $('c-file').click() };
+    if (!d) { r.st = 'e'; r.txt = 'Falta cargar'; r.l = { err: [], warn: [] }; nF++; }
+    else { r.l = revisarDisp(d, p); r.txt = 'Saldos al cierre del ' + fecTxt(d.fecha) + ' · neta ' + usd(d.total, 2) + (d._en ? ' · subido ' + new Date(d._en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '');
+      if (d.fecha < ay) { r.l.err.unshift('falta el cierre del ' + fecTxt(ay) + ' (el último es del ' + fecTxt(d.fecha) + ')'); }
+      r.st = r.l.err.length ? 'e' : r.l.warn.length ? 'w' : 'ok'; }
+    filas.push(r); }
+  ['CXC_CLI', 'CXC_EMP', 'CXP'].forEach((t) => { const { u } = cxDe(t); const r = { k: t, t: CXT[t], abre: () => document.querySelector('.cxs[data-t=' + t + '] input').click() };
+    if (!u) { r.st = 'e'; r.txt = 'Falta cargar'; r.l = { err: [], warn: [] }; nF++; }
+    else { r.l = revisarCx(u); r.txt = u.totales.docs + ' documentos · saldo ' + usd(sal(u), 2) + ' · subido ' + new Date(u.cargado_en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      if (u.fecha < hoy) r.l.warn.unshift('la última carga es del ' + fecTxt(u.fecha) + '; falta la de hoy');
+      r.st = r.l.err.length ? 'e' : r.l.warn.length ? 'w' : 'ok'; }
+    filas.push(r); });
+  filas.forEach((r) => { if (r.txt !== 'Falta cargar') { nE += r.l.err.length; nW += r.l.warn.length; } });
+  const tipo = nF || nE ? 'e' : nW ? 'w' : 'ok';
+  const ban = mk('div', 'est-b ' + tipo); ban.append(mk('big', '', tipo === 'ok' ? '✔' : tipo === 'w' ? '⚠' : '✖'), mk('span', '', tipo === 'ok' ? 'Todo cargado y cuadrado. No hay nada que revisar.' : (nF ? 'Falta cargar ' + nF + ' archivo(s)' : '') + (nF && (nE || nW) ? ' y ' : '') + (nE ? nE + ' error(es) que corregir' : '') + (nE && nW ? ' y ' : '') + (nW ? nW + ' cosa(s) por revisar' : '') + '.'));
+  box.append(mk('h2', '', 'Estado de la carga'), ban);
+  filas.forEach((r) => { const e = mk('div', 'est'); e.appendChild(mk('div', 'i', r.st === 'ok' ? '✅' : r.st === 'w' ? '⚠️' : '❌'));
+    const n = mk('div'); n.appendChild(mk('b', '', r.t)); e.appendChild(n);
+    const d = mk('div'); d.appendChild(mk('div', '', r.txt)); if (r.l.err.length + r.l.warn.length) { const ul = mk('ul'); r.l.err.forEach((x) => ul.appendChild(mk('li', 'e', x))); r.l.warn.forEach((x) => ul.appendChild(mk('li', 'w', x))); d.appendChild(ul); } else if (r.txt !== 'Falta cargar') d.appendChild(mk('div', 'note', 'Cuadra con el Excel.'));
+    e.appendChild(d);
+    const b = mk('button', r.st === 'ok' ? 'btn lt' : 'btn rojo', r.txt === 'Falta cargar' ? '📂 Cargar' : r.st === 'ok' ? 'Volver a cargar' : '📂 Cargar corregido'); b.addEventListener('click', r.abre); const w = mk('div'); w.appendChild(b); e.appendChild(w);
+    box.appendChild(e); });
+  const bd = $('c-bdg'); bd.hidden = false; bd.className = 'bdg' + (tipo === 'ok' ? '' : tipo === 'w' ? ' w' : ' e'); bd.textContent = tipo === 'ok' ? '✔' : String(nF + nE + nW);
+  bd.title = ban.textContent;
 }
 
 // ---------------- usuarios ----------------
