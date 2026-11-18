@@ -44,6 +44,11 @@ table.x{border-collapse:collapse;font-size:.84rem;font-variant-numeric:tabular-n
 table.x td{border:1px solid var(--line);padding:.25rem .45rem;vertical-align:top;white-space:pre-wrap}
 table.x td.n{text-align:right;white-space:nowrap}table.x td.b{font-weight:700}table.x td.tot{background:rgba(225,0,26,.07);font-weight:700}table.x td.h{background:var(--soft);font-weight:700}
 .hojas{display:flex;gap:.3rem;flex-wrap:wrap;margin:.2rem 0 .6rem}.hojas button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:.25rem .8rem;cursor:pointer}.hojas button.on{background:var(--navy2);color:#fff;border-color:var(--navy2)}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem;margin:.4rem 0 .8rem}
+.slot{display:flex;flex-direction:column;gap:.2rem;padding:.75rem .85rem;border:1.5px dashed color-mix(in srgb,var(--rojo) 45%,transparent);border-radius:10px;cursor:pointer;background:var(--panel);transition:border-color .15s,background .15s}
+.slot:hover,.slot.on{border-color:var(--bad)}.slot b{font-size:.95rem}.slot small{opacity:.7;font-size:.75rem}.slot .st{font-size:.8rem;margin-top:.25rem;word-break:break-all;opacity:.8}
+.slot.ok{border-style:solid;border-color:var(--ok);background:color-mix(in srgb,var(--ok) 8%,transparent)}.slot.ok .st{opacity:1;color:var(--ok);font-weight:600}
+.elegir{margin-top:.5rem;align-self:flex-start;padding:.3rem .7rem;border-radius:6px;font-size:.8rem;font-weight:600;border:1px solid var(--line);background:var(--bg)}.slot:hover .elegir{border-color:var(--bad);color:var(--bad)}.slot.ok .elegir{font-weight:500;opacity:.8}
 .msg{border-radius:8px;padding:.6rem .8rem;margin:.5rem 0;font-size:.9rem}.msg.ok{background:#e7f6ec;color:#14532d;border:1px solid #9fd5b0}.msg.err{background:#fdeaea;color:#8a1c1c;border:1px solid #f0a8a8}.msg.warn{background:#fff6dd;color:#7a4b00;border:1px solid #f0d27a}
 .login{max-width:380px;margin:3rem auto}.login .card{padding:1.4rem}.login img{display:block;margin:0 auto .6rem;height:110px}.login label{display:block;font-size:.85rem;color:var(--muted);margin:.6rem 0 .2rem}.login .in{width:100%}
 .chart svg{width:100%;height:auto;display:block}.chart .ax{fill:var(--muted);font-size:11px}.chart .gl{stroke:var(--line)}.leg{display:flex;flex-wrap:wrap;gap:.3rem .9rem;font-size:.8rem;color:var(--muted);margin-top:.3rem}.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
@@ -86,12 +91,12 @@ table.x td.n{text-align:right;white-space:nowrap}table.x td.b{font-weight:700}ta
       <div class="card"><h2>Ventas por mes</h2><p class="note">De las ventas cargadas en el tablero de inventario (facturas por artículo de Profit), en US$.</p><div class="chart" id="ch-ventas"></div></div>
       <div class="card"><h2>Disponibilidades en el tiempo</h2><p class="note">Total de cada Excel de disponibilidades cargado.</p><div class="chart" id="ch-disp"></div></div>
     </div>
-    <div class="card"><h2>Disponibilidades más recientes</h2><p class="note" id="r-disp-n"></p><div class="scroll" id="r-disp" style="max-height:28rem"></div></div>
+    <div class="card"><h2>Disponibilidades más recientes <button class="btn rojo ir-cargar" data-rol="carga" style="float:right;font-size:.85rem">📂 Cargar Excel</button></h2><p class="note" id="r-disp-n"></p><div class="scroll" id="r-disp" style="max-height:28rem"></div></div>
   </section>
 
   <section class="vista" id="v-disp" hidden>
     <div class="card"><h2>Disponibilidades</h2><p class="note">El Excel se muestra tal cual se cargó, con todas sus hojas.</p>
-      <div class="tools"><label>Fecha <select class="in" id="d-sel"></select></label><button class="btn lt" id="d-xls">⬇ Bajar este Excel</button><button class="btn lt" onclick="window.print()">🖨 Imprimir</button><span class="note" id="d-info"></span></div>
+      <div class="tools"><label>Fecha <select class="in" id="d-sel"></select></label><button class="btn rojo ir-cargar" data-rol="carga">📂 Cargar Excel</button><button class="btn lt" id="d-xls">⬇ Bajar este Excel</button><button class="btn lt" onclick="window.print()">🖨 Imprimir</button><span class="note" id="d-info"></span></div>
       <div class="hojas" id="d-hojas"></div>
       <div class="scroll" id="d-tabla" style="max-height:70vh"></div>
     </div>
@@ -108,7 +113,8 @@ table.x td.n{text-align:right;white-space:nowrap}table.x td.b{font-weight:700}ta
   <section class="vista" id="v-cargar" hidden>
     <div class="card"><h2>Cargar Excel de disponibilidades</h2>
       <p class="note">Suba el Excel tal como lo prepara administración. Se guarda completo (todas las hojas) y se muestra igual. Indique la fecha que corresponde y cuál fila es el total de disponibilidades para los indicadores.</p>
-      <div class="tools"><input type="file" id="c-file" accept=".xlsx,.xls,.xlsm,.csv" class="in"><label>Fecha <input type="date" class="in" id="c-fecha"></label><label>Moneda del total <select class="in" id="c-mon"><option>US$</option><option>Bs</option></select></label></div>
+      <div class="slots"><label class="slot" id="c-drop"><b>Disponibilidades</b><small>Excel de administración · todas las hojas</small><span class="st" id="c-arch">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" id="c-file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods,.csv" hidden></label></div>
+      <div class="tools"><label>Fecha <input type="date" class="in" id="c-fecha"></label><label>Moneda del total <select class="in" id="c-mon"><option>US$</option><option>Bs</option></select></label></div>
       <div id="c-cand"></div>
       <label class="note" style="display:block">Nota (opcional) <input class="in" id="c-nota" style="width:100%" maxlength="300"></label>
       <div class="tools"><button class="btn rojo" id="c-guardar" disabled>Guardar disponibilidades</button></div>
@@ -318,8 +324,12 @@ function candidatos(H) {
   const pref = out.find((c) => /total.*disponib|disponib.*total/i.test(c.etiqueta)) || out.filter((c) => /total/i.test(c.etiqueta) && c.hi === 0).pop() || out[out.length - 1];
   return { out, pref };
 }
+document.querySelectorAll('.ir-cargar').forEach((b) => b.addEventListener('click', () => { ver('cargar'); $('c-file').click(); }));
+{ const d = $('c-drop'); ['dragenter', 'dragover'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.add('on'); }));
+  ['dragleave', 'drop'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.remove('on'); }));
+  d.addEventListener('drop', (e) => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (!f) return; const dt = new DataTransfer(); dt.items.add(f); $('c-file').files = dt.files; $('c-file').dispatchEvent(new Event('change')); }); }
 $('c-file').addEventListener('change', async () => {
-  const f = $('c-file').files[0]; NUEVO = null; $('c-guardar').disabled = true; aviso($('c-msg'), ''); if (!f) return;
+  const f = $('c-file').files[0]; $('c-arch').textContent = f ? '✔ ' + f.name : 'Sin archivo'; $('c-drop').classList.toggle('ok', !!f); NUEVO = null; $('c-guardar').disabled = true; aviso($('c-msg'), ''); if (!f) return;
   try {
     const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: 'array', cellDates: true }); const H = leerHojas(wb);
     const m = f.name.match(/(20\d\d)[-_. ]?(\d\d)[-_. ]?(\d\d)/) || f.name.match(/(\d\d)[-_. ](\d\d)[-_. ](20\d\d)/);
@@ -342,7 +352,7 @@ $('c-guardar').addEventListener('click', async () => {
     if (TABLA_OK) { ok(await sb.from('disp_cargas').insert(fila)); sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MOD, p_accion: 'CARGÓ DISPONIBILIDADES', p_detalle: fila.fecha + ' · ' + fila.archivo }).then(() => {}, () => {}); }
     else { const L = JSON.parse(localStorage.getItem('tt_disp_local') || '[]'); L.unshift({ ...fila, id: Date.now(), cargado_en: new Date().toISOString() }); L.sort((a, b) => b.fecha.localeCompare(a.fecha)); localStorage.setItem('tt_disp_local', JSON.stringify(L.slice(0, 30))); }
     aviso($('c-msg'), '✔ Guardadas las disponibilidades del ' + fecTxt(fila.fecha) + (TABLA_OK ? '' : ' (solo en este navegador)') + '.', 'ok');
-    NUEVO = null; $('c-file').value = ''; $('c-cand').replaceChildren(); $('c-hojas').replaceChildren(); $('c-prev').replaceChildren(); $('c-nota').value = '';
+    NUEVO = null; $('c-file').value = ''; $('c-arch').textContent = 'Sin archivo'; $('c-drop').classList.remove('ok'); $('c-cand').replaceChildren(); $('c-hojas').replaceChildren(); $('c-prev').replaceChildren(); $('c-nota').value = '';
     await cargarCargas(); pintarTodo(); pintarHist();
   } catch (er) { aviso($('c-msg'), '✖ ' + er.message, 'err'); b.disabled = false; }
 });
