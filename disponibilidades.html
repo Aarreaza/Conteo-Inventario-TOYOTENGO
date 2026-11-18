@@ -80,6 +80,9 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
 .est-b{display:flex;align-items:center;gap:.7rem;border-radius:10px;padding:.75rem 1rem;font-weight:600;margin-bottom:.8rem}.est-b.ok{background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ok)}.est-b.w{background:#fff4dc;color:#8a5a00}.est-b.e{background:color-mix(in srgb,var(--bad) 10%,transparent);color:var(--bad)}.est-b big{font-size:1.5rem}
 .est{display:grid;grid-template-columns:2rem minmax(150px,1.1fr) 2.4fr auto;gap:.4rem .8rem;align-items:start;padding:.65rem 0;border-top:1px solid var(--line);font-size:.88rem}.est:first-of-type{border-top:0}.est .i{font-size:1.2rem;line-height:1.2}.est ul{margin:.25rem 0 0;padding-left:1.1rem;color:var(--muted)}.est ul li.e{color:var(--bad)}.est ul li.w{color:#8a5a00}
 @media (max-width:640px){.est{grid-template-columns:2rem 1fr}.est>div:nth-child(3),.est>div:nth-child(4){grid-column:2}}
+#av-bar{display:flex;align-items:center;gap:.7rem;background:#fff4dc;color:#8a5a00;border:1px solid #f2d39b;border-radius:10px;padding:.6rem .9rem;margin-bottom:1rem;font-weight:600;cursor:pointer}#av-bar.e{background:color-mix(in srgb,var(--bad) 10%,transparent);color:var(--bad);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}#av-bar[hidden]{display:none}
+.av{background:var(--panel);border:1px solid var(--line);border-left:5px solid #d98a00;border-radius:12px;padding:.9rem 1.1rem;margin-bottom:.8rem}.av.e{border-left-color:var(--bad)}.av h3{margin:0;font-size:1rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.av .como{margin:.45rem 0;font-size:.88rem}.av .como b{color:var(--fg)}.av .acc{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem;align-items:center}.av .acc .in{flex:1;min-width:180px}
+.chip{font-size:.72rem;font-weight:700;border-radius:999px;padding:.1rem .5rem;background:var(--soft);color:var(--muted)}.chip.e{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}.chip.w{background:#fff1dc;color:#8a4b00}
 .pill{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:.05rem .45rem;background:var(--soft);color:var(--muted);margin-left:.35rem;vertical-align:1px}
 </style>
 </head>
@@ -105,12 +108,14 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
   <button data-v="cx">Por cobrar y por pagar</button>
   <button data-v="ventas">Ventas mensuales</button>
   <button data-v="excel">Excel cargado</button>
+  <button data-v="avisos" data-rol="carga">🔔 Avisos <span class="bdg" id="a-bdg" hidden></span></button>
   <button data-v="cargar" data-rol="carga">Cargar Excel <span class="bdg" id="c-bdg" hidden></span></button>
   <button data-v="accesos" data-rol="admin">Usuarios</button>
 </div></nav>
 
 <main id="main" hidden>
   <div id="aviso"></div>
+  <div id="av-bar" hidden></div>
 
   <section class="vista" id="v-disp">
     <div class="barra">
@@ -178,6 +183,15 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
       <div class="hojas" id="x-hojas"></div>
       <div class="scroll" id="x-tabla" style="max-height:70vh"></div>
     </div>
+  </section>
+
+  <section class="vista" id="v-avisos" hidden>
+    <div class="card"><h2>Avisos para revisar y corregir</h2>
+      <p class="note">Lo que el panel encontró en los archivos cargados. Corríjalo en el Excel y vuelva a cargarlo, o márquelo como revisado con una nota si está bien así.</p>
+      <div id="av-res"></div>
+    </div>
+    <div id="av-lista"></div>
+    <div class="card" id="av-ok-card" hidden><h2>Revisados</h2><p class="note">Avisos marcados como correctos. Vuelven a aparecer si los datos cambian.</p><div class="scroll" id="av-ok"></div></div>
   </section>
 
   <section class="vista" id="v-cargar" hidden>
@@ -266,7 +280,7 @@ async function inicio() {
   document.querySelectorAll('[data-rol="carga"]').forEach((b) => { b.hidden = !(ROL === 'ADMIN' || ROL === 'CARGA'); });
   document.querySelectorAll('[data-rol="admin"]').forEach((b) => { b.hidden = ROL !== 'ADMIN'; });
   $('nav').hidden = false; $('main').hidden = false;
-  await Promise.all([cargarVentas(), cargarCargas(), cargarTasas(), cargarCx()]);
+  await Promise.all([cargarVentas(), cargarCargas(), cargarTasas(), cargarCx(), cargarAck()]);
   pintarTodo();
 }
 $('f-login').addEventListener('submit', async (e) => {
@@ -280,7 +294,7 @@ document.querySelectorAll('.ir-cargar').forEach((b) => b.addEventListener('click
 function ver(v) {
   document.querySelectorAll('.nav button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.vista').forEach((s) => { s.hidden = s.id !== 'v-' + v; });
-  if (v === 'accesos') pintarAccesos(); if (v === 'cx') pintarCx(); if (v === 'cargar') pintarHist(); if (v === 'excel') pintarExcelSel();
+  if (v === 'accesos') pintarAccesos(); if (v === 'cx') pintarCx(); if (v === 'avisos') pintarAvisos(); $('av-bar').style.display = v === 'avisos' ? 'none' : ''; if (v === 'cargar') pintarHist(); if (v === 'excel') pintarExcelSel();
 }
 
 // ---------------- datos ----------------
@@ -609,6 +623,7 @@ function leerCx(wb, tipo, nombreArch) {
   let ws = null, nm = '', A = null, hr = -1;
   for (const n of wb.SheetNames) { const a = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: '' }); const r = a.findIndex((f) => f.some((v) => /^saldo$/i.test(String(v).trim())) && f.some((v) => /cliente|proveedor/i.test(String(v)))); if (r >= 0) { ws = wb.Sheets[n]; nm = n; A = a; hr = r; break; } }
   if (!ws) throw new Error('no encuentro la tabla (columnas Cliente/Proveedor y Saldo)');
+  const r0 = XLSX.utils.decode_range(ws['!ref']).s.r;
   const H = A[hr].map((v) => String(v).trim().toUpperCase()), col = (re) => H.findIndex((h) => re.test(h));
   const c = { fecha: col(/^FECHA/), venc: col(/VENC/), sis: col(/SISTEMA/), doc: col(/FACT|^NE|DOCUMENTO/), nom: col(/CLIENTE|PROVEEDOR/), desc: col(/DESCRIP|COLUMNA|NOTA|OBSERV/), monto: col(/BASE|MONTO|IMPORTE/), abono: col(/ABONO/), saldo: col(/^SALDO/) };
   const esProv = /PROVEEDOR/.test(H[c.nom] || ''), pista = (nm + ' ' + nombreArch).toUpperCase();
@@ -625,7 +640,7 @@ function leerCx(wb, tipo, nombreArch) {
     const nom = tx(c.nom, f).toUpperCase().replace(/\s+/g, ' '), m = nu(f[c.monto]), ab = c.abono < 0 ? 0 : nu(f[c.abono]);
     if (!nom && !m && !ab) continue;
     const sal = c.saldo >= 0 && typeof f[c.saldo] === 'number' ? f[c.saldo] : m - ab;
-    filas.push({ fecha: iso(f[c.fecha]), venc: c.venc >= 0 ? iso(f[c.venc]) : null, sis: tx(c.sis, f), doc: tx(c.doc, f), nombre: nom || '(sin nombre)', desc: tx(c.desc, f), monto: m, abono: ab, saldo: Math.round(sal * 100) / 100 });
+    filas.push({ fila: r0 + r + 1, fecha: iso(f[c.fecha]), venc: c.venc >= 0 ? iso(f[c.venc]) : null, sis: tx(c.sis, f), doc: tx(c.doc, f), nombre: nom || '(sin nombre)', desc: tx(c.desc, f), monto: m, abono: ab, saldo: Math.round(sal * 100) / 100 });
   }
   if (!filas.length) throw new Error('la tabla no tiene documentos');
   const t = filas.reduce((s, x) => ({ monto: s.monto + x.monto, abono: s.abono + x.abono, saldo: s.saldo + x.saldo }), { monto: 0, abono: 0, saldo: 0 });
@@ -643,7 +658,7 @@ document.querySelectorAll('.cxs').forEach((sl) => {
       if (CX_OK) ok(await sb.from('cx_cargas').insert(fila));
       else { let L = []; try { L = JSON.parse(localStorage.getItem('tt_cx_local') || '[]'); } catch (e) {} L.unshift({ ...fila, hojas: null, id: Date.now(), cargado_en: new Date().toISOString() }); try { localStorage.setItem('tt_cx_local', JSON.stringify(L.slice(0, 30))); } catch (e) {} }
       st.textContent = '✔ ' + f.name; sl.classList.add('ok'); inp.value = '';
-      const rv = revisarCx({ tipo: t, filas: R.filas, totales: R.totales }); aviso($('cx-msg'), (rv.err.length + rv.warn.length ? '⚠ ' : '✔ ') + CXT[t] + ': ' + R.totales.docs + ' documentos de ' + R.totales.nombres + (t === 'CXP' ? ' proveedores' : ' personas') + ' · saldo ' + usd(R.totales.saldo, 2) + (rv.err.length + rv.warn.length ? ' · revise: ' + rv.err.concat(rv.warn).join('; ') : ' · todo cuadra con el Excel'), rv.err.length ? 'warn' : 'ok');
+      const rv = resumenAv(avisosCx({ tipo: t, fecha: hoyISO(), filas: R.filas, totales: R.totales })); aviso($('cx-msg'), (rv.err.length + rv.warn.length ? '⚠ ' : '✔ ') + CXT[t] + ': ' + R.totales.docs + ' documentos de ' + R.totales.nombres + (t === 'CXP' ? ' proveedores' : ' personas') + ' · saldo ' + usd(R.totales.saldo, 2) + (rv.err.length + rv.warn.length ? ' · revise: ' + rv.err.concat(rv.warn).join('; ') : ' · todo cuadra con el Excel'), rv.err.length ? 'warn' : 'ok');
       await cargarCx(); pintarCx(); pintarHist(); $('c-estado').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) { st.textContent = 'Sin archivo'; inp.value = ''; aviso($('cx-msg'), '✖ ' + CXT[t] + ': ' + e.message, 'err'); }
   };
@@ -736,56 +751,107 @@ function pintarDet() {
     catch (e) { aviso($('x-vacio'), '✖ ' + e.message, 'err'); } };
 }
 
-// ---------------- estado de la carga: ¿quedó todo bien? ----------------
+// ---------------- avisos: qué revisar y corregir en los archivos cargados ----------------
 const ayer = () => new Date(new Date(hoyISO() + 'T12:00:00').getTime() - 864e5).toISOString().slice(0, 10);
-function revisarCx(c) {
-  const err = [], warn = [], F = c.filas || [], t = c.totales || {}, prov = c.tipo === 'CXP';
-  if (t.excel != null && Math.abs(t.excel - (t.saldo || 0)) > 0.5) err.push('el saldo leído (' + usd(t.saldo, 2) + ') no cuadra con el Total del Excel (' + usd(t.excel, 2) + ')');
-  const sinNom = F.filter((x) => x.nombre === '(sin nombre)').length; if (sinNom) err.push(sinNom + ' fila(s) sin ' + (prov ? 'proveedor' : 'nombre'));
-  const ok2 = (x) => Math.abs(x.saldo - (x.monto - x.abono)) > 0.01; const mal = F.filter(ok2).length; if (mal) err.push(mal + ' fila(s) donde el saldo no es monto − abono');
-  const sinFL = F.filter((x) => !x.fecha && (x.monto || x.abono)), sinF = sinFL.length; if (sinF && c.tipo !== 'CXC_EMP') warn.push(sinF + ' documento(s) sin fecha: ' + sinFL.slice(0, 3).map((x) => x.nombre + (x.doc || x.sis ? ' ' + (x.doc && x.doc !== 'S/N' ? x.doc : x.sis) : '')).join(', ') + (sinF > 3 ? '…' : ''));
-  if (prov) { const sv = F.filter((x) => x.saldo > 0 && !x.venc); if (sv.length) warn.push(sv.length + ' factura(s) sin fecha de vencimiento (' + usd(sv.reduce((s, x) => s + x.saldo, 0), 2) + ')'); }
-  const vistos = {}, dup = new Set(); F.forEach((x) => { const d = String(x.doc || '').trim(); if (!/\d/.test(d)) return; const k = x.nombre + '|' + d; if (vistos[k]) dup.add(d); vistos[k] = 1; });
-  if (dup.size) warn.push('documento(s) repetidos: ' + [...dup].slice(0, 5).join(', ') + (dup.size > 5 ? '…' : ''));
-  if (!prov) { const neg = porNombre(F).filter((g) => g.saldo < -0.005); if (neg.length) warn.push(neg.length + ' persona(s) con saldo a favor (abonaron de más): ' + neg.slice(0, 3).map((g) => g.nombre).join(', ') + (neg.length > 3 ? '…' : '')); }
-  return { err, warn };
+let ACK = {}, ACK_OK = true;
+async function cargarAck() {
+  try { ok(await sb.from('disp_avisos_ok').select('clave,titulo,nota,por,en').eq('empresa_id', EMPRESA)).forEach((a) => { ACK[a.clave] = a; }); ACK_OK = true; }
+  catch (e) { ACK_OK = false; try { ACK = JSON.parse(localStorage.getItem('tt_avisos_ok') || '{}'); } catch (er) { ACK = {}; } }
 }
-function revisarDisp(d, prev) {
-  const err = [], warn = [];
-  if (!d.tasa) err.push('no encontré la tasa Binance en la hoja');
-  const sg = d.grupos.reduce((s, g) => s + g.valor, 0); if (Math.abs(sg - d.subtotal) > 1) warn.push('los grupos suman ' + usd(sg, 2) + ' y el SUBTOTAL BANCO dice ' + usd(d.subtotal, 2));
-  if (Math.abs(d.subtotal + d.apartados - d.total) > 1) err.push('SUBTOTAL BANCO + APARTADOS no da el TOTAL BANCO del Excel');
-  d.grupos.filter((g) => g.valor < -0.005).forEach((g) => warn.push('«' + g.nombre + '» está en negativo'));
-  if (prev && Math.abs(prev.total) > 1 && Math.abs(d.total - prev.total) / Math.abs(prev.total) > 0.5) warn.push('la disponibilidad neta cambió más de 50 % vs el ' + fecTxt(prev.fecha) + ' (' + usd(prev.total, 2) + ' → ' + usd(d.total, 2) + '); confirme que es correcto');
-  return { err, warn };
+const huella = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+// cada aviso: {id, sev:'e'|'w', arch, titulo, como, cols, filas, tipo, clave}
+function avisosCx(c) {
+  const A = [], F = c.filas || [], t = c.totales || {}, prov = c.tipo === 'CXP', arch = CXT[c.tipo], nomC = prov ? 'Proveedor' : CXT[c.tipo].includes('Emple') ? 'Empleado' : 'Cliente';
+  const cols = [['fila', 'Fila Excel'], ['fecha', 'Fecha'], ['doc', 'Documento'], ['nombre', nomC], ['monto', 'Monto'], ['abono', 'Abono'], ['saldo', 'Saldo']];
+  const add = (id, sev, titulo, como, filas, cc) => A.push({ id, sev, arch, tipo: c.tipo, titulo, como, filas: filas || [], cols: cc || cols });
+  if (c.fecha && c.fecha < hoyISO()) add('vieja', 'w', 'La última carga es del ' + fecTxt(c.fecha), 'Cargue el archivo actualizado de hoy.');
+  if (t.excel != null && Math.abs(t.excel - (t.saldo || 0)) > 0.5) add('total', 'e', 'El saldo leído (' + usd(t.saldo, 2) + ') no cuadra con el Total del Excel (' + usd(t.excel, 2) + ')', 'Revise que la fila <b>Total</b> sume toda la columna Saldo y que no queden filas fuera de la tabla o debajo del Total.');
+  const sn = F.filter((x) => x.nombre === '(sin nombre)'); if (sn.length) add('sinnom', 'e', sn.length + ' fila(s) sin ' + nomC.toLowerCase(), 'Escriba el ' + nomC.toLowerCase() + ' en esas filas o bórrelas si están vacías.', sn);
+  const ms = F.filter((x) => Math.abs(x.saldo - (x.monto - x.abono)) > 0.01); if (ms.length) add('saldo', 'e', ms.length + ' fila(s) donde el saldo no es monto − abono', 'En esas filas la fórmula de <b>Saldo</b> fue cambiada o escrita a mano. Debe ser Base imponible − Abono.', ms);
+  const sf = F.filter((x) => !x.fecha && (x.monto || x.abono)); if (sf.length && c.tipo !== 'CXC_EMP') add('sinfecha', 'w', sf.length + ' documento(s) sin fecha', 'Coloque la fecha del documento en la columna <b>Fecha</b>.', sf);
+  if (prov) { const sv = F.filter((x) => x.saldo > 0 && !x.venc); if (sv.length) add('sinvenc', 'w', sv.length + ' factura(s) sin fecha de vencimiento · ' + usd(sv.reduce((s, x) => s + x.saldo, 0), 2), 'Coloque la fecha en la columna <b>VENCIMIENTO</b>. Si la factura es de contado o no tiene vencimiento, márquela como revisada con una nota.', sv, [['fila', 'Fila Excel'], ['fecha', 'Fecha'], ['sis', '# Sistema'], ['doc', '# Factura'], ['nombre', 'Proveedor'], ['desc', 'Descripción'], ['saldo', 'Saldo']]); }
+  const g = {}; F.forEach((x) => { const d = String(x.doc || '').trim(); if (!/\d/.test(d)) return; (g[x.nombre + '|' + d] = g[x.nombre + '|' + d] || []).push(x); });
+  const dup = Object.values(g).filter((l) => l.length > 1).flat(); if (dup.length) add('dup', 'w', 'Documentos repetidos (' + dup.length + ' filas)', 'El mismo número de documento aparece dos veces para el mismo ' + nomC.toLowerCase() + '. Si es un error, borre una; si son pagos parciales, márquelo como revisado.', dup);
+  if (!prov) { const neg = porNombre(F).filter((x) => x.saldo < -0.005); if (neg.length) add('afavor', 'w', neg.length + ' ' + nomC.toLowerCase() + '(s) con saldo a favor (abonaron de más)', 'Revise que los abonos estén bien registrados; quizás falta cargar un documento.', neg.map((x) => ({ nombre: x.nombre, docs: x.docs, monto: x.monto, abono: x.abono, saldo: x.saldo })), [['nombre', nomC], ['docs', 'Docs'], ['monto', 'Monto'], ['abono', 'Abonos'], ['saldo', 'Saldo']]); }
+  A.forEach((a) => { a.clave = c.tipo + ':' + a.id + ':' + huella(a.titulo + '|' + a.filas.map((x) => [x.nombre, x.doc, x.fecha, x.saldo].join('/')).join(';')); });
+  return A;
+}
+function avisosDisp(d, prev) {
+  const A = [], arch = 'Disponibilidades', add = (id, sev, titulo, como) => A.push({ id, sev, arch, tipo: 'DISP', titulo, como, filas: [], cols: [] });
+  if (d.fecha < ayer()) add('vieja', 'e', 'Falta el cierre del ' + fecTxt(ayer()) + ' (el último es del ' + fecTxt(d.fecha) + ')', 'Cargue el Excel de disponibilidades con los saldos de ayer.');
+  if (!d.tasa) add('tasa', 'e', 'No encontré la tasa Binance en la hoja', 'Escriba la tasa en la celda junto a «Tasa Binance USD/BS».');
+  const sg = d.grupos.reduce((s, g) => s + g.valor, 0); if (Math.abs(sg - d.subtotal) > 1) add('grupos', 'w', 'Los grupos suman ' + usd(sg, 2) + ' y el SUBTOTAL BANCO dice ' + usd(d.subtotal, 2), 'Revise la fórmula de <b>SUBTOTAL BANCO</b>: debe sumar todos los grupos (bancos nacionales, custodio USD y EUR, USDT, cuentas $ y caja).');
+  if (Math.abs(d.subtotal + d.apartados - d.total) > 1) add('total', 'e', 'SUBTOTAL BANCO + APARTADOS no da el TOTAL BANCO', 'Revise la fórmula de <b>TOTAL BANCO</b>.');
+  d.grupos.filter((g) => g.valor < -0.005).forEach((g) => add('neg-' + g.nombre, 'w', '«' + g.nombre + '» está en negativo (' + usd(g.valor, 2) + ')', 'Confirme los saldos de ese grupo.'));
+  if (prev && Math.abs(prev.total) > 1 && Math.abs(d.total - prev.total) / Math.abs(prev.total) > 0.5) add('salto', 'w', 'La disponibilidad neta cambió más de 50 % (' + usd(prev.total, 2) + ' el ' + fecTxt(prev.fecha) + ' → ' + usd(d.total, 2) + ')', 'Confirme que los saldos y apartados son correctos; si lo son, márquelo como revisado.');
+  A.forEach((a) => { a.clave = 'DISP:' + d.fecha + ':' + a.id + ':' + huella(a.titulo); });
+  return A;
+}
+function todosAvisos() {
+  const L = [], falta = [];
+  const d = DIAS[DIAS.length - 1]; if (!d) falta.push({ t: 'Disponibilidades', abre: () => $('c-file').click() }); else L.push(...avisosDisp(d, DIAS[DIAS.length - 2]));
+  ['CXC_CLI', 'CXC_EMP', 'CXP'].forEach((t) => { const { u } = cxDe(t); if (!u) falta.push({ t: CXT[t], abre: () => document.querySelector('.cxs[data-t=' + t + '] input').click() }); else L.push(...avisosCx(u)); });
+  return { activos: L.filter((a) => !ACK[a.clave]), revisados: L.filter((a) => ACK[a.clave]), falta };
+}
+function resumenAv(L) { const act = L.filter((a) => !ACK[a.clave]); return { err: act.filter((a) => a.sev === 'e').map((a) => a.titulo), warn: act.filter((a) => a.sev === 'w').map((a) => a.titulo) }; }
+const abrirCarga = (tipo) => { ver('cargar'); setTimeout(() => (tipo === 'DISP' ? $('c-file') : document.querySelector('.cxs[data-t=' + tipo + '] input')).click(), 50); };
+function celda(x, k) { const v = x[k]; if (v == null || v === '') return '—'; if (k === 'fecha' || k === 'venc') return fecTxt(v); if (['monto', 'abono', 'saldo'].includes(k)) return usd(v, 2); return String(v); }
+function bajarAviso(a) { const ws = XLSX.utils.aoa_to_sheet([a.cols.map((c) => c[1]), ...a.filas.map((x) => a.cols.map((c) => (['monto', 'abono', 'saldo', 'fila', 'docs'].includes(c[0]) ? x[c[0]] ?? '' : x[c[0]] ? celda(x, c[0]) : '')))]); ws['!cols'] = a.cols.map(() => ({ wch: 16 })); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Revisar'); XLSX.writeFile(wb, 'Revisar_' + a.arch.replace(/[^A-Za-z]+/g, '_') + '_' + a.id + '.xlsx'); }
+async function marcar(a, nota) {
+  const r = { clave: a.clave, titulo: a.arch + ' · ' + a.titulo, nota, por: YO.nombre, en: new Date().toISOString() };
+  if (ACK_OK) ok(await sb.from('disp_avisos_ok').insert({ empresa_id: EMPRESA, clave: r.clave, titulo: r.titulo, nota: r.nota, por: r.por }));
+  else { const L = JSON.parse(localStorage.getItem('tt_avisos_ok') || '{}'); L[r.clave] = r; localStorage.setItem('tt_avisos_ok', JSON.stringify(L)); }
+  ACK[a.clave] = r;
+}
+async function desmarcar(clave) {
+  if (ACK_OK) ok(await sb.from('disp_avisos_ok').delete().eq('empresa_id', EMPRESA).eq('clave', clave));
+  else { const L = JSON.parse(localStorage.getItem('tt_avisos_ok') || '{}'); delete L[clave]; localStorage.setItem('tt_avisos_ok', JSON.stringify(L)); }
+  delete ACK[clave];
+}
+function pintarAvisos() {
+  const { activos, revisados, falta } = todosAvisos(), nE = activos.filter((a) => a.sev === 'e').length + falta.length, nW = activos.filter((a) => a.sev === 'w').length;
+  const res = $('av-res'); res.replaceChildren(); const tipo = nE ? 'e' : nW ? 'w' : 'ok';
+  const ban = mk('div', 'est-b ' + tipo); ban.append(mk('big', '', tipo === 'ok' ? '✔' : tipo === 'w' ? '⚠' : '✖'), mk('span', '', tipo === 'ok' ? 'Sin avisos. Todo está cargado y cuadrado.' : [falta.length ? 'Falta cargar ' + falta.length + ' archivo(s)' : '', activos.filter((a) => a.sev === 'e').length ? activos.filter((a) => a.sev === 'e').length + ' error(es) que corregir' : '', nW ? nW + ' aviso(s) por revisar' : ''].filter(Boolean).join(' · ') + '.')); res.appendChild(ban);
+  const box = $('av-lista'); box.replaceChildren();
+  falta.forEach((f) => { const c = mk('div', 'av e'); const h = mk('h3'); h.append('❌ ', mk('span', 'chip e', f.t), 'Falta cargar el archivo'); const acc = mk('div', 'acc'), b = mk('button', 'btn rojo', '📂 Cargar ahora'); b.addEventListener('click', () => { ver('cargar'); setTimeout(f.abre, 50); }); acc.appendChild(b); c.append(h, acc); box.appendChild(c); });
+  activos.sort((a, b) => (a.sev === b.sev ? 0 : a.sev === 'e' ? -1 : 1)).forEach((a) => {
+    const c = mk('div', 'av ' + a.sev), h = mk('h3'); h.append(a.sev === 'e' ? '❌ ' : '⚠️ ', mk('span', 'chip ' + a.sev, a.arch), a.titulo); c.appendChild(h);
+    const como = mk('div', 'como'); como.innerHTML = '<b>Cómo corregirlo:</b> ' + a.como; c.appendChild(como);
+    if (a.filas.length) { const det = mk('details'), sm = mk('summary', '', 'Ver las ' + a.filas.length + ' fila(s)'); sm.style.cursor = 'pointer'; sm.style.fontSize = '.86rem'; det.appendChild(sm);
+      const tb = mk('table', 't'); tb.innerHTML = '<thead><tr>' + a.cols.map((x) => '<th' + (['monto', 'abono', 'saldo', 'docs', 'fila'].includes(x[0]) ? ' class="n"' : '') + '>' + x[1] + '</th>').join('') + '</tr></thead>'; const body = mk('tbody');
+      a.filas.slice(0, 300).forEach((x) => { const tr = mk('tr'); a.cols.forEach(([k]) => tr.appendChild(mk('td', ['monto', 'abono', 'saldo', 'docs', 'fila'].includes(k) ? 'n' : '', celda(x, k)))); body.appendChild(tr); }); tb.appendChild(body);
+      const sc = mk('div', 'scroll'); sc.style.maxHeight = '22rem'; sc.style.marginTop = '.4rem'; sc.appendChild(tb); det.appendChild(sc); c.appendChild(det); }
+    const acc = mk('div', 'acc');
+    if (a.filas.length) { const bx = mk('button', 'btn lt', '⬇ Bajar lista en Excel'); bx.addEventListener('click', () => bajarAviso(a)); acc.appendChild(bx); }
+    const bc = mk('button', 'btn rojo', '📂 Cargar corregido'); bc.addEventListener('click', () => abrirCarga(a.tipo)); acc.appendChild(bc);
+    if (a.id !== 'vieja') { const nota = mk('input', 'in'); nota.placeholder = 'Nota (por qué está bien así)'; const bo = mk('button', 'btn', '✔ Marcar como revisado');
+      bo.addEventListener('click', async () => { if (!nota.value.trim()) { nota.focus(); nota.placeholder = 'Escriba una nota para marcarlo'; return; } bo.disabled = true; try { await marcar(a, nota.value.trim()); pintarAvisos(); pintarEstado(); } catch (e) { bo.disabled = false; aviso($('av-res'), '✖ ' + e.message, 'err'); } });
+      acc.append(nota, bo); }
+    c.appendChild(acc); box.appendChild(c); });
+  const okc = $('av-ok-card'); okc.hidden = !revisados.length;
+  if (revisados.length) { const tb = mk('table', 't'); tb.innerHTML = '<thead><tr><th>Aviso</th><th>Nota</th><th>Por</th><th>Cuándo</th><th></th></tr></thead>'; const body = mk('tbody');
+    revisados.forEach((a) => { const k = ACK[a.clave], tr = mk('tr'); const t0 = mk('td', '', a.arch + ' · ' + a.titulo); t0.style.whiteSpace = 'normal'; tr.append(t0, mk('td', '', k.nota || ''), mk('td', '', k.por || ''), mk('td', '', new Date(k.en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })));
+      const td = mk('td'), b = mk('button', 'btn lt', 'Volver a activar'); b.addEventListener('click', async () => { try { await desmarcar(a.clave); pintarAvisos(); pintarEstado(); } catch (e) { aviso($('av-res'), '✖ ' + e.message, 'err'); } }); td.appendChild(b); tr.appendChild(td); body.appendChild(tr); });
+    tb.appendChild(body); $('av-ok').replaceChildren(tb); }
 }
 function pintarEstado() {
-  const box = $('c-estado'); if (!box) return; box.replaceChildren(); const hoy = hoyISO(), ay = ayer(); let nE = 0, nW = 0, nF = 0;
-  const filas = [];
-  { const d = DIAS[DIAS.length - 1], p = DIAS[DIAS.length - 2]; const r = { k: 'disp', t: 'Disponibilidades', abre: () => $('c-file').click() };
-    if (!d) { r.st = 'e'; r.txt = 'Falta cargar'; r.l = { err: [], warn: [] }; nF++; }
-    else { r.l = revisarDisp(d, p); r.txt = 'Saldos al cierre del ' + fecTxt(d.fecha) + ' · neta ' + usd(d.total, 2) + (d._en ? ' · subido ' + new Date(d._en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '');
-      if (d.fecha < ay) { r.l.err.unshift('falta el cierre del ' + fecTxt(ay) + ' (el último es del ' + fecTxt(d.fecha) + ')'); }
-      r.st = r.l.err.length ? 'e' : r.l.warn.length ? 'w' : 'ok'; }
-    filas.push(r); }
-  ['CXC_CLI', 'CXC_EMP', 'CXP'].forEach((t) => { const { u } = cxDe(t); const r = { k: t, t: CXT[t], abre: () => document.querySelector('.cxs[data-t=' + t + '] input').click() };
-    if (!u) { r.st = 'e'; r.txt = 'Falta cargar'; r.l = { err: [], warn: [] }; nF++; }
-    else { r.l = revisarCx(u); r.txt = u.totales.docs + ' documentos · saldo ' + usd(sal(u), 2) + ' · subido ' + new Date(u.cargado_en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-      if (u.fecha < hoy) r.l.warn.unshift('la última carga es del ' + fecTxt(u.fecha) + '; falta la de hoy');
-      r.st = r.l.err.length ? 'e' : r.l.warn.length ? 'w' : 'ok'; }
-    filas.push(r); });
-  filas.forEach((r) => { if (r.txt !== 'Falta cargar') { nE += r.l.err.length; nW += r.l.warn.length; } });
-  const tipo = nF || nE ? 'e' : nW ? 'w' : 'ok';
-  const ban = mk('div', 'est-b ' + tipo); ban.append(mk('big', '', tipo === 'ok' ? '✔' : tipo === 'w' ? '⚠' : '✖'), mk('span', '', tipo === 'ok' ? 'Todo cargado y cuadrado. No hay nada que revisar.' : (nF ? 'Falta cargar ' + nF + ' archivo(s)' : '') + (nF && (nE || nW) ? ' y ' : '') + (nE ? nE + ' error(es) que corregir' : '') + (nE && nW ? ' y ' : '') + (nW ? nW + ' cosa(s) por revisar' : '') + '.'));
+  const box = $('c-estado'); if (!box) return; const { activos, falta } = todosAvisos(), hoy = hoyISO();
+  const nE = activos.filter((a) => a.sev === 'e').length, nW = activos.filter((a) => a.sev === 'w').length, nF = falta.length, n = nE + nW + nF, tipo = nF || nE ? 'e' : nW ? 'w' : 'ok';
+  box.replaceChildren(); const ban = mk('div', 'est-b ' + tipo); ban.append(mk('big', '', tipo === 'ok' ? '✔' : tipo === 'w' ? '⚠' : '✖'), mk('span', '', tipo === 'ok' ? 'Todo cargado y cuadrado. No hay nada que revisar.' : [nF ? 'Falta cargar ' + nF + ' archivo(s)' : '', nE ? nE + ' error(es) que corregir' : '', nW ? nW + ' aviso(s) por revisar' : ''].filter(Boolean).join(' · ') + '.'));
+  if (tipo !== 'ok') { const b = mk('button', 'btn', '🔔 Ver avisos'); b.style.marginLeft = 'auto'; b.addEventListener('click', () => ver('avisos')); ban.appendChild(b); }
   box.append(mk('h2', '', 'Estado de la carga'), ban);
-  filas.forEach((r) => { const e = mk('div', 'est'); e.appendChild(mk('div', 'i', r.st === 'ok' ? '✅' : r.st === 'w' ? '⚠️' : '❌'));
-    const n = mk('div'); n.appendChild(mk('b', '', r.t)); e.appendChild(n);
-    const d = mk('div'); d.appendChild(mk('div', '', r.txt)); if (r.l.err.length + r.l.warn.length) { const ul = mk('ul'); r.l.err.forEach((x) => ul.appendChild(mk('li', 'e', x))); r.l.warn.forEach((x) => ul.appendChild(mk('li', 'w', x))); d.appendChild(ul); } else if (r.txt !== 'Falta cargar') d.appendChild(mk('div', 'note', 'Cuadra con el Excel.'));
-    e.appendChild(d);
-    const b = mk('button', r.st === 'ok' ? 'btn lt' : 'btn rojo', r.txt === 'Falta cargar' ? '📂 Cargar' : r.st === 'ok' ? 'Volver a cargar' : '📂 Cargar corregido'); b.addEventListener('click', r.abre); const w = mk('div'); w.appendChild(b); e.appendChild(w);
-    box.appendChild(e); });
-  const bd = $('c-bdg'); bd.hidden = false; bd.className = 'bdg' + (tipo === 'ok' ? '' : tipo === 'w' ? ' w' : ' e'); bd.textContent = tipo === 'ok' ? '✔' : String(nF + nE + nW);
-  bd.title = ban.textContent;
+  const filas = [{ t: 'Disponibilidades', k: 'DISP' }, ...['CXC_CLI', 'CXC_EMP', 'CXP'].map((t) => ({ t: CXT[t], k: t }))];
+  filas.forEach((r) => { const mios = activos.filter((a) => a.tipo === r.k), fal = falta.some((f) => f.t === r.t), st = fal || mios.some((a) => a.sev === 'e') ? 'e' : mios.length ? 'w' : 'ok';
+    let txt = 'Falta cargar'; if (!fal) { if (r.k === 'DISP') { const d = DIAS[DIAS.length - 1]; txt = 'Saldos al cierre del ' + fecTxt(d.fecha) + ' · neta ' + usd(d.total, 2) + (d._en ? ' · subido ' + new Date(d._en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''); } else { const u = cxDe(r.k).u; txt = u.totales.docs + ' documentos · saldo ' + usd(sal(u), 2) + ' · subido ' + new Date(u.cargado_en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } }
+    const e = mk('div', 'est'); e.appendChild(mk('div', 'i', st === 'ok' ? '✅' : st === 'w' ? '⚠️' : '❌')); const nn = mk('div'); nn.appendChild(mk('b', '', r.t)); e.appendChild(nn);
+    const d = mk('div'); d.appendChild(mk('div', '', txt)); if (mios.length) { const ul = mk('ul'); mios.forEach((a) => ul.appendChild(mk('li', a.sev, a.titulo))); d.appendChild(ul); } else if (!fal) d.appendChild(mk('div', 'note', 'Cuadra con el Excel.')); e.appendChild(d);
+    const b = mk('button', st === 'ok' ? 'btn lt' : 'btn rojo', fal ? '📂 Cargar' : st === 'ok' ? 'Volver a cargar' : '📂 Cargar corregido'); b.addEventListener('click', () => (r.k === 'DISP' ? $('c-file') : document.querySelector('.cxs[data-t=' + r.k + '] input')).click()); const w = mk('div'); w.appendChild(b); e.appendChild(w); box.appendChild(e); });
+  // contadores en el menú y barra de aviso para quien carga
+  const puede = ROL === 'ADMIN' || ROL === 'CARGA';
+  [['c-bdg'], ['a-bdg']].forEach(([id]) => { const bd = $(id); if (!bd) return; bd.hidden = !puede; bd.className = 'bdg' + (tipo === 'ok' ? '' : tipo === 'w' ? ' w' : ' e'); bd.textContent = tipo === 'ok' ? '✔' : String(n); bd.title = ban.textContent; });
+  const bar = $('av-bar'); bar.hidden = !puede || tipo === 'ok'; bar.className = tipo === 'e' ? 'e' : ''; bar.replaceChildren();
+  if (!bar.hidden) { bar.append(mk('span', '', '🔔'), mk('span', '', ban.querySelector('span').textContent + ' Toque aquí para ver qué revisar.')); bar.onclick = () => ver('avisos'); }
+  if (!$('v-avisos').hidden) pintarAvisos();
 }
 
 // ---------------- usuarios ----------------
