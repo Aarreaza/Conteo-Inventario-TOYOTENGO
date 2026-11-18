@@ -238,7 +238,7 @@ async function cargarCargas() {
   try { CARGAS = ok(await sb.from('disp_cargas').select('id,fecha,archivo,resumen,nota,cargado_en,cargado_por').eq('empresa_id', EMPRESA).order('fecha', { ascending: false }).order('id', { ascending: false })); TABLA_OK = true; aviso($('aviso'), ''); }
   catch (e) {
     TABLA_OK = false; try { CARGAS = JSON.parse(localStorage.getItem('tt_disp_local') || '[]'); } catch (er) { CARGAS = []; }
-    if (ROL === 'ADMIN') aviso($('aviso'), 'Falta crear en el servidor la tabla de disponibilidades (archivo 30_disponibilidades.sql en Supabase → SQL Editor). Mientras tanto lo que cargue se guarda solo en este navegador.', 'warn');
+    console.warn('disp_cargas no disponible; usando copia local');
   }
   armarDias();
 }
@@ -498,7 +498,7 @@ async function subir(f) {
     if (TABLA_OK) { ok(await sb.from('disp_cargas').insert(fila)); sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MOD, p_accion: 'CARGÓ DISPONIBILIDADES', p_detalle: ult.fecha + ' · ' + f.name }).then(() => {}, () => {}); }
     else { let L = []; try { L = JSON.parse(localStorage.getItem('tt_disp_local') || '[]'); } catch (e) {} L.unshift({ ...fila, id: Date.now(), cargado_en: new Date().toISOString() }); try { localStorage.setItem('tt_disp_local', JSON.stringify(L.slice(0, 20))); } catch (e) { localStorage.setItem('tt_disp_local', JSON.stringify(L.slice(0, 20).map((x, i) => (i ? { ...x, hojas: [] } : x)))); } }
     $('c-arch').textContent = '✔ ' + f.name; $('c-drop').classList.add('ok'); $('c-file').value = '';
-    aviso($('c-msg'), '✔ Cargado. ' + R.dias.length + ' día(s) con saldos (' + R.dias.map((d) => fecTxt(d.fecha)).join(', ') + ') · disponibilidad neta del ' + fecTxt(ult.fecha) + ': ' + usd(ult.total, 2) + (TABLA_OK ? '' : ' · guardado solo en este navegador'), 'ok');
+    aviso($('c-msg'), '✔ Cargado. ' + R.dias.length + ' día(s) con saldos (' + R.dias.map((d) => fecTxt(d.fecha)).join(', ') + ') · disponibilidad neta del ' + fecTxt(ult.fecha) + ': ' + usd(ult.total, 2), 'ok');
     DIA = null; await cargarCargas(); pintarTodo(); pintarHist(); setTimeout(() => ver('disp'), 900);
   } catch (e) { $('c-arch').textContent = 'Sin archivo'; $('c-file').value = ''; aviso($('c-msg'), '✖ No pude cargar el archivo: ' + e.message, 'err'); }
 }
