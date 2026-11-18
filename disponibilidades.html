@@ -86,6 +86,9 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
 .hero.h3{grid-template-columns:repeat(4,1fr)}.hero.h3 .hb3{position:relative;z-index:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:.8rem 1rem}.hero.h3 .hb3:hover{background:rgba(255,255,255,.1)}.hero.h3 .big{font-size:clamp(1.3rem,2.1vw,1.9rem);white-space:nowrap}.hero.h3 .pie{grid-column:1/-1;color:#d5dce4;font-size:.84rem;position:relative;z-index:1}
 @media (max-width:1100px){.hero.h3{grid-template-columns:1fr 1fr}}@media (max-width:640px){.hero.h3{grid-template-columns:1fr}}
 .grid3{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}.grid3>*{min-width:0}@media (max-width:1200px){.grid3{grid-template-columns:1fr 1fr}}@media (max-width:640px){.grid3{grid-template-columns:1fr}}
+table.t tr.frow th{padding:.25rem .35rem;background:var(--panel);z-index:1}.fin{width:100%;min-width:72px;font:inherit;font-size:.78rem;font-weight:400;padding:.2rem .4rem;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+table.t th.ord{cursor:pointer;user-select:none}table.t th.ord:hover{color:var(--rojo)}table.t th.ord::after{content:attr(data-o);margin-left:.25rem;color:var(--rojo);font-size:.75em}
+.fbar{display:flex;gap:.6rem;align-items:center;font-size:.8rem;color:var(--muted);margin:.25rem 0 .35rem}.fbar.on{color:#8a5a00;font-weight:600}
 .pill{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:.05rem .45rem;background:var(--soft);color:var(--muted);margin-left:.35rem;vertical-align:1px}
 </style>
 </head>
@@ -1037,6 +1040,76 @@ function pintarEstado() {
   if (!bar.hidden) { bar.append(mk('span', '', '🔔'), mk('span', '', ban.querySelector('span').textContent + ' Toque aquí para ver qué revisar.')); bar.onclick = () => ver('avisos'); }
   if (!$('v-avisos').hidden) pintarAvisos();
 }
+
+// ---------------- filtros y orden en todas las tablas (como en Excel) ----------------
+// Cada tabla .t recibe una fila de filtros bajo el encabezado y orden al tocar el título de la columna.
+// Texto: contiene. Números y fechas: >100, <500, 100..500, =0 (fechas en dd-mm-aaaa). Columnas con pocos valores: lista.
+const FILTROS = {};   // estado por tabla (se mantiene cuando la tabla se vuelve a dibujar)
+const sinAc = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+function numDe(t) {
+  t = String(t).replace(/[−–]/g, '-'); const m = t.match(/(-)?\s*(?:US\$\s*|Bs\s*)?(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?)/); if (!m) return null;
+  const v = Number(m[2].replace(/\./g, '').replace(',', '.')); return (m[1] || /^\s*-/.test(t) ? -1 : 1) * v;
+}
+function fecDe(t) { const m = String(t).match(/(\d{2})[-/](\d{2})[-/](\d{4})/); return m ? m[3] + '-' + m[2] + '-' + m[1] : null; }
+function valCelda(td) { if (!td) return ''; const s = td.querySelector('select'); if (s) return s.options[s.selectedIndex] ? s.options[s.selectedIndex].text : ''; const i = td.querySelector('input'); if (i && !td.textContent.trim()) return i.value; return td.textContent.replace(/^[\s▸▾]+/, '').trim(); }
+function cumple(txt, f, tipo) {
+  if (!f) return true; f = f.trim(); if (!f) return true;
+  if (tipo === 'lista') return txt === f;
+  if (tipo === 'num' || tipo === 'fec') {
+    const v = tipo === 'num' ? numDe(txt) : fecDe(txt), cv = (x) => (tipo === 'num' ? numDe(x) : fecDe(x));
+    const r = f.match(/^(.+?)\s*\.\.\s*(.+)$/); if (r) { const a = cv(r[1]), b = cv(r[2]); return v != null && (a == null || v >= a) && (b == null || v <= b); }
+    const o = f.match(/^(>=|<=|>|<|=)\s*(.+)$/); if (o) { const x = cv(o[2]); if (x == null || v == null) return false; return o[1] === '>' ? v > x : o[1] === '<' ? v < x : o[1] === '>=' ? v >= x : o[1] === '<=' ? v <= x : v === x; }
+  }
+  return sinAc(txt).includes(sinAc(f));
+}
+function filtrable(tb) {
+  if (tb.dataset.filtro || !tb.tHead || !tb.tBodies[0]) return; tb.dataset.filtro = '1';
+  const cont = tb.closest('[id]'), key = (cont ? cont.id : 'tabla') + ':' + [...tb.tHead.rows[0].cells].map((c) => c.textContent).join('|').replace(/\d{2}-\d{2}-\d{4}/g, 'F');
+  const st = FILTROS[key] || (FILTROS[key] = { f: {}, s: null });
+  const heads = [...tb.tHead.rows[0].cells], body = tb.tBodies[0], todas = [...body.rows];
+  const hier = todas.some((r) => r.classList.contains('g'));
+  const tot = todas.filter((r) => r.classList.contains('tot'));
+  // bloques: una fila principal con sus filas hijas (detalle desplegado)
+  const bloques = []; todas.filter((r) => !r.classList.contains('tot')).forEach((r) => { const hija = !hier && (r.classList.contains('c') || r.classList.contains('e')); if (hija && bloques.length) bloques[bloques.length - 1].hijas.push(r); else bloques.push({ r, hijas: [] }); });
+  if (bloques.length < 2) return;
+  const filasDato = hier ? todas.filter((r) => r.classList.contains('c')) : bloques.map((b) => b.r);
+  const tipos = heads.map((h, i) => {
+    const vals = filasDato.map((r) => valCelda(r.cells[i])).filter((v) => v && v !== '—');
+    if (!vals.length || h.textContent.trim() === '' || /acciones/i.test(h.textContent)) return 'no';
+    if (vals.filter((v) => fecDe(v)).length >= vals.length * 0.7) return 'fec';
+    if (h.classList.contains('n') && vals.filter((v) => numDe(v) != null).length >= vals.length * 0.7) return 'num';
+    const dist = new Set(vals); return dist.size <= 12 && dist.size < vals.length && vals.every((v) => v.length < 40) ? 'lista' : 'txt';
+  });
+  // fila de filtros
+  const fr = mk('tr', 'frow'); heads.forEach((h, i) => { const th = mk('th'); const t = tipos[i];
+    if (t === 'lista') { const s = mk('select', 'fin'); s.appendChild(new Option('Todos', '')); [...new Set(filasDato.map((r) => valCelda(r.cells[i])).filter(Boolean))].sort().forEach((v) => s.appendChild(new Option(v, v))); s.value = st.f[i] || ''; s.addEventListener('change', () => { st.f[i] = s.value; aplicar(); }); th.appendChild(s); }
+    else if (t !== 'no') { const inp = mk('input', 'fin'); inp.type = 'search'; inp.placeholder = t === 'num' ? '>100 · 10..50' : t === 'fec' ? '>01-10-2026' : 'Filtrar…'; inp.title = t === 'txt' ? 'Escriba parte del texto' : 'Ejemplos: >100   <500   100..500   =0' + (t === 'fec' ? '   (fechas dd-mm-aaaa)' : ''); inp.value = st.f[i] || ''; inp.addEventListener('input', () => { st.f[i] = inp.value; aplicar(); }); th.appendChild(inp); }
+    fr.appendChild(th); });
+  tb.tHead.appendChild(fr);
+  requestAnimationFrame(() => { const hgt = tb.tHead.rows[0].getBoundingClientRect().height; [...fr.cells].forEach((c) => { c.style.top = hgt + 'px'; }); });
+  // orden al tocar el título
+  heads.forEach((h, i) => { if (tipos[i] === 'no' || hier) return; h.classList.add('ord'); h.title = 'Ordenar'; h.addEventListener('click', () => { st.s = st.s && st.s[0] === i ? [i, -st.s[1]] : [i, tipos[i] === 'txt' || tipos[i] === 'lista' ? 1 : -1]; aplicar(); }); });
+  const orig = tot.map((r) => [...r.cells].map((c) => c.textContent));
+  const barra = mk('div', 'fbar'); const cnt = mk('span'), lim = mk('button', 'btn lt', 'Limpiar filtros'); lim.style.padding = '.15rem .55rem'; lim.addEventListener('click', () => { st.f = {}; st.s = null; fr.querySelectorAll('.fin').forEach((x) => { x.value = ''; }); aplicar(); }); barra.append(cnt, lim);
+  const host = tb.parentElement && tb.parentElement.classList.contains('scroll') ? tb.parentElement : tb; if (host.previousElementSibling && host.previousElementSibling.classList.contains('fbar')) host.previousElementSibling.remove(); host.parentElement.insertBefore(barra, host);
+  function aplicar() {
+    const act = Object.entries(st.f).filter(([, v]) => v && v.trim()), ok3 = (r) => act.every(([i, v]) => cumple(valCelda(r.cells[i]), v, tipos[i]));
+    let vis = 0, total = 0;
+    if (hier) { let g = null, e = null, gv = false, ev = false; const fin = () => { if (g) g.hidden = !gv; }; todas.forEach((r) => { if (r.classList.contains('tot')) return; if (r.classList.contains('g')) { fin(); g = r; gv = !act.length; e = null; return; } if (r.classList.contains('e')) { e = r; r.hidden = !!act.length; return; } if (r.classList.contains('c')) { total++; const v = ok3(r); r.hidden = !v; if (v) { vis++; gv = true; if (e) e.hidden = false; } } }); fin(); }
+    else {
+      let L = bloques.slice(); if (st.s) { const [i, d] = st.s, t = tipos[i], k = (b) => { const v = valCelda(b.r.cells[i]); return t === 'num' ? numDe(v) ?? -1e18 : t === 'fec' ? fecDe(v) || '' : sinAc(v); }; L.sort((a, b) => { const x = k(a), y = k(b); return (x > y ? 1 : x < y ? -1 : 0) * d; }); }
+      L.forEach((b) => { total++; const v = ok3(b.r); b.r.hidden = !v; b.hijas.forEach((h) => { h.hidden = !v; }); if (v) vis++; body.appendChild(b.r); b.hijas.forEach((h) => body.appendChild(h)); });
+      tot.forEach((r) => body.appendChild(r));
+    }
+    heads.forEach((h, i) => { h.dataset.o = st.s && st.s[0] === i ? (st.s[1] > 0 ? '▲' : '▼') : ''; });
+    // totales: se recalculan con lo que queda visible
+    tot.forEach((r, ri) => [...r.cells].forEach((c, i) => { if (!act.length) { c.textContent = orig[ri][i]; return; } if (i === 0) { c.textContent = 'Total filtrado (' + vis + ')'; return; } const o = orig[ri][i]; if (!/US\$/.test(o) && !(tipos[i] === 'num' && /^\d[\d.]*$/.test(o.trim()))) { c.textContent = /%|días/.test(o) ? '' : o; return; }
+      const fs = (hier ? todas.filter((x) => x.classList.contains('c')) : bloques.map((b) => b.r)).filter((x) => !x.hidden), sum = fs.reduce((s, x) => s + (numDe(valCelda(x.cells[i])) || 0), 0); c.textContent = /US\$/.test(o) ? usd(sum, 2) : num(sum); }));
+    cnt.textContent = act.length ? 'Mostrando ' + vis + ' de ' + total : total + ' filas'; lim.style.display = !act.length && !st.s ? 'none' : ''; barra.classList.toggle('on', !!act.length);
+  }
+  aplicar();
+}
+new MutationObserver((ms) => { ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType !== 1) return; (n.matches && n.matches('table.t') ? [n] : [...n.querySelectorAll('table.t')]).forEach(filtrable); })); }).observe(document.body, { childList: true, subtree: true });
 
 // ---------------- usuarios ----------------
 const LINK = 'https://aarreaza.github.io/Conteo-Inventario-TOYOTENGO/disponibilidades.html';
