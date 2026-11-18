@@ -109,7 +109,7 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
       <div class="tasa"><span>BCV</span><b id="t-bcv">—</b><span id="t-bcv-s"></span></div>
       <div class="tasa"><span>Brecha</span><b id="t-bre">—</b></div>
       <div class="tasa"><span>Bolívares a tasa</span><div class="sw" id="sw"><button data-t="BIN" class="on">Binance</button><button data-t="BCV">BCV</button></div></div>
-      <button class="btn rojo ir-cargar" data-rol="carga" style="margin-left:auto">📂 Cargar Excel del día</button>
+      <button class="btn rojo ir-cargar" data-rol="carga" style="margin-left:auto">📂 Cargar Excel</button>
     </div>
     <div id="d-vacio"></div>
     <div id="d-todo" hidden>
@@ -150,7 +150,7 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
 
   <section class="vista" id="v-cargar" hidden>
     <div class="card"><h2>Cargar Excel de disponibilidades</h2>
-      <p class="note">Escoja el Excel del día y listo: se guarda solo y el resumen se actualiza. Los bolívares se toman como vienen en el Excel (ya convertidos a dólares con la tasa Binance de la hoja).</p>
+      <p class="note">Escoja el Excel y listo: se guarda solo y el resumen se actualiza. Cada día se carga el Excel con los saldos al cierre del día anterior; la fecha se toma del propio Excel (la última columna con saldos). Los bolívares se toman como vienen en el Excel (ya convertidos a dólares con la tasa Binance de la hoja).</p>
       <div class="slots"><label class="slot" id="c-drop"><b>Disponibilidades</b><small>Excel diario de administración</small><span class="st" id="c-arch">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" id="c-file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" hidden></label></div>
       <div id="c-msg"></div>
     </div>
@@ -293,7 +293,7 @@ function leerDisp(wb) {
 }
 function armarDias() {
   const M = {};   // por fecha, gana la carga más reciente
-  CARGAS.slice().sort((a, b) => String(a.cargado_en).localeCompare(String(b.cargado_en))).forEach((c) => { ((c.resumen && c.resumen.dias) || []).forEach((d) => { M[d.fecha] = d; }); });
+  CARGAS.slice().sort((a, b) => String(a.cargado_en).localeCompare(String(b.cargado_en))).forEach((c) => { ((c.resumen && c.resumen.dias) || []).forEach((d) => { M[d.fecha] = { ...d, _en: c.cargado_en, _por: c.cargado_por }; }); });
   DIAS = Object.values(M).sort((a, b) => a.fecha.localeCompare(b.fecha));
   if (!DIA || !M[DIA]) DIA = DIAS.length ? DIAS[DIAS.length - 1].fecha : null;
 }
@@ -317,13 +317,13 @@ function pintarDisp() {
   $('t-bin').textContent = D0 && D0.tasa ? 'Bs ' + num(D0.tasa, 2) : tb ? 'Bs ' + num(tb.v, 2) : '—'; $('t-bin-s').textContent = D0 && D0.tasa ? '(del Excel)' : tb ? '(mercado)' : '';
   $('t-bcv').textContent = tv ? 'Bs ' + num(tv.v, 2) : '—'; $('t-bcv-s').textContent = tv ? '(' + new Date(tv.en).toLocaleDateString('es-VE') + ')' : '';
   const bin = D0 && D0.tasa ? D0.tasa : tb && tb.v; $('t-bre').textContent = bin && tv ? pct(bin / tv.v - 1) : '—';
-  if (!D0) { $('d-todo').hidden = true; aviso($('d-vacio'), ROL === 'LECTOR' ? 'Todavía no se ha cargado el Excel de disponibilidades.' : 'Todavía no se ha cargado el Excel de disponibilidades. Toque «📂 Cargar Excel del día».', 'warn'); return; }
+  if (!D0) { $('d-todo').hidden = true; aviso($('d-vacio'), ROL === 'LECTOR' ? 'Todavía no se ha cargado el Excel de disponibilidades.' : 'Todavía no se ha cargado el Excel de disponibilidades. Toque «📂 Cargar Excel».', 'warn'); return; }
   aviso($('d-vacio'), ''); $('d-todo').hidden = false;
   const V = vista(D0), P = i > 0 ? vista(DIAS[i - 1]) : null, mon = MODO === 'BCV' ? ' · bolívares a tasa BCV' : '';
   const sem = DIAS.slice(0, i + 1).reverse().find((d) => d.fecha <= new Date(new Date(DIA + 'T12:00:00').getTime() - 7 * 864e5).toISOString().slice(0, 10)), ini = DIAS.find((d) => d.fecha.slice(0, 7) === DIA.slice(0, 7) && d.fecha < DIA);
   $('h-neto').textContent = usd(V.total, 2);
   const hv = $('h-var'); hv.replaceChildren(); if (P) { const dv = V.total - P.total; const s = mk('span', 'var ' + (dv >= 0 ? 'up' : 'dn'), (dv >= 0 ? '▲ ' : '▼ ') + usd(Math.abs(dv), 2) + (P.total ? ' (' + pct(dv / Math.abs(P.total)) + ')' : '') + ' vs ' + fecTxt(P.fecha)); hv.appendChild(s); }
-  $('h-sub').textContent = fecLarga(DIA) + mon + ' · = en bancos y wallets − apartados';
+  $('h-sub').textContent = 'Saldos al cierre del ' + fecLarga(DIA) + mon + (D0._en ? ' · cargado el ' + new Date(D0._en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + (D0._por ? ' por ' + D0._por : '') : '');
   const mini = $('h-mini'); mini.replaceChildren();
   const m = (k, v, s) => { const d = mk('div'); d.append(mk('span', '', k), mk('b', '', v)); if (s) d.appendChild(mk('small', '', s)); mini.appendChild(d); };
   m('En bancos y wallets', usd(V.subtotal, 2), P ? pct(P.subtotal ? (V.subtotal - P.subtotal) / Math.abs(P.subtotal) : null) + ' vs día anterior' : '');
@@ -512,7 +512,7 @@ async function subir(f) {
     if (TABLA_OK) { ok(await sb.from('disp_cargas').insert(fila)); sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MOD, p_accion: 'CARGÓ DISPONIBILIDADES', p_detalle: ult.fecha + ' · ' + f.name }).then(() => {}, () => {}); }
     else { let L = []; try { L = JSON.parse(localStorage.getItem('tt_disp_local') || '[]'); } catch (e) {} L.unshift({ ...fila, id: Date.now(), cargado_en: new Date().toISOString() }); try { localStorage.setItem('tt_disp_local', JSON.stringify(L.slice(0, 20))); } catch (e) { localStorage.setItem('tt_disp_local', JSON.stringify(L.slice(0, 20).map((x, i) => (i ? { ...x, hojas: [] } : x)))); } }
     $('c-arch').textContent = '✔ ' + f.name; $('c-drop').classList.add('ok'); $('c-file').value = '';
-    aviso($('c-msg'), '✔ Cargado. ' + R.dias.length + ' día(s) con saldos (' + R.dias.map((d) => fecTxt(d.fecha)).join(', ') + ') · disponibilidad neta del ' + fecTxt(ult.fecha) + ': ' + usd(ult.total, 2), 'ok');
+    aviso($('c-msg'), '✔ Cargado: saldos al cierre del ' + fecTxt(ult.fecha) + ' · disponibilidad neta ' + usd(ult.total, 2), 'ok');
     DIA = null; await cargarCargas(); pintarTodo(); pintarHist(); setTimeout(() => ver('disp'), 900);
   } catch (e) { $('c-arch').textContent = 'Sin archivo'; $('c-file').value = ''; aviso($('c-msg'), '✖ No pude cargar el archivo: ' + e.message, 'err'); }
 }
