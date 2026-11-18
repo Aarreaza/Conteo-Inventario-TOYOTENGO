@@ -55,6 +55,23 @@ table.x td.n{text-align:right;white-space:nowrap}table.x td.b{font-weight:700}ta
 .cand{display:flex;flex-direction:column;gap:.3rem;margin:.4rem 0}.cand label{display:flex;gap:.5rem;align-items:center;font-size:.88rem;border:1px solid var(--line);border-radius:8px;padding:.35rem .55rem;cursor:pointer}.cand label b{margin-left:auto;font-variant-numeric:tabular-nums}
 #tip{position:fixed;pointer-events:none;background:var(--navy);color:#fff;font-size:.8rem;padding:.35rem .55rem;border-radius:6px;z-index:50;display:none;white-space:nowrap}
 @media print{.nav,.top .der,.tools,.btn{display:none!important}body{background:#fff}}
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#22324a 100%);color:#fff;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1rem;display:grid;grid-template-columns:1.3fr 1fr;gap:1rem;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(225,0,26,.18)}
+@media (max-width:820px){.hero{grid-template-columns:1fr}}
+.hero .k{color:#b9c3cf;font-size:.85rem;letter-spacing:.3px;text-transform:uppercase}.hero .big{font-size:2.6rem;font-weight:700;line-height:1.1;margin:.2rem 0;font-variant-numeric:tabular-nums}
+.hero .var{display:inline-flex;gap:.4rem;align-items:center;font-weight:600;font-size:.92rem;border-radius:999px;padding:.15rem .6rem;background:rgba(255,255,255,.1)}.hero .var.up{color:#7ee2a8}.hero .var.dn{color:#ff9aa8}
+.hero .sub{color:#d5dce4;font-size:.86rem;margin-top:.4rem}
+.hero .mini{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;align-content:center;position:relative;z-index:1}
+.hero .mini div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:.55rem .7rem}.hero .mini span{display:block;color:#b9c3cf;font-size:.75rem}.hero .mini b{font-size:1.12rem;font-variant-numeric:tabular-nums}.hero .mini small{display:block;color:#b9c3cf;font-size:.75rem}
+.barra{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:.9rem}
+.tasa{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.4rem .7rem;font-size:.85rem}.tasa b{font-variant-numeric:tabular-nums;font-size:1rem}.tasa span{color:var(--muted)}
+.sw{display:inline-flex;border:1px solid var(--navy2);border-radius:999px;overflow:hidden}.sw button{border:0;background:var(--panel);padding:.4rem .9rem;font-weight:600;cursor:pointer;color:var(--fg)}.sw button.on{background:var(--navy2);color:#fff}
+.donut{display:grid;grid-template-columns:200px 1fr;gap:1rem;align-items:center}@media (max-width:560px){.donut{grid-template-columns:1fr}}
+.ll{display:flex;flex-direction:column;gap:.35rem}.ll .it{display:grid;grid-template-columns:12px 1fr auto auto;gap:.5rem;align-items:center;font-size:.86rem}.ll .it i{width:12px;height:12px;border-radius:3px}.ll .it b{font-variant-numeric:tabular-nums}.ll .it em{color:var(--muted);font-style:normal;font-size:.8rem;min-width:3.2rem;text-align:right}
+.hb{display:flex;flex-direction:column;gap:.45rem}.hb .r{display:grid;grid-template-columns:minmax(120px,1.2fr) 2fr auto;gap:.6rem;align-items:center;font-size:.84rem}.hb .tr{background:var(--soft);border-radius:6px;height:14px;overflow:hidden}.hb .tr div{height:100%;border-radius:6px}.hb .r b{font-variant-numeric:tabular-nums}
+table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-child{padding-left:1.2rem;color:var(--muted);font-size:.8rem}table.t tr.c td:first-child{padding-left:2rem}table.t td.dn{color:var(--bad)}table.t td.up{color:var(--ok)}
+.grid2>*{min-width:0}.nav-in{overflow-x:auto}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:.05rem .45rem;background:var(--soft);color:var(--muted);margin-left:.35rem;vertical-align:1px}
 </style>
 </head>
 <body>
@@ -75,9 +92,9 @@ table.x td.n{text-align:right;white-space:nowrap}table.x td.b{font-weight:700}ta
 </div></div>
 
 <nav class="nav" id="nav" hidden><div class="nav-in">
-  <button data-v="resumen" class="on">Resumen</button>
-  <button data-v="disp">Disponibilidades</button>
+  <button data-v="disp" class="on">Disponibilidades</button>
   <button data-v="ventas">Ventas mensuales</button>
+  <button data-v="excel">Excel cargado</button>
   <button data-v="cargar" data-rol="carga">Cargar Excel</button>
   <button data-v="accesos" data-rol="admin">Accesos</button>
 </div></nav>
@@ -85,24 +102,36 @@ table.x td.n{text-align:right;white-space:nowrap}table.x td.b{font-weight:700}ta
 <main id="main" hidden>
   <div id="aviso"></div>
 
-  <section class="vista" id="v-resumen">
-    <div class="tiles" id="tiles"></div>
-    <div class="grid2">
-      <div class="card"><h2>Ventas por mes</h2><p class="note">De las ventas cargadas en el tablero de inventario (facturas por artículo de Profit), en US$.</p><div class="chart" id="ch-ventas"></div></div>
-      <div class="card"><h2>Disponibilidades en el tiempo</h2><p class="note">Total de cada Excel de disponibilidades cargado.</p><div class="chart" id="ch-disp"></div></div>
+  <section class="vista" id="v-disp">
+    <div class="barra">
+      <label class="tasa"><span>Día</span><select class="in" id="d-dia" style="padding:.2rem .4rem"></select></label>
+      <div class="tasa"><span>Binance</span><b id="t-bin">—</b><span id="t-bin-s"></span></div>
+      <div class="tasa"><span>BCV</span><b id="t-bcv">—</b><span id="t-bcv-s"></span></div>
+      <div class="tasa"><span>Brecha</span><b id="t-bre">—</b></div>
+      <div class="tasa"><span>Bolívares a tasa</span><div class="sw" id="sw"><button data-t="BIN" class="on">Binance</button><button data-t="BCV">BCV</button></div></div>
+      <button class="btn rojo ir-cargar" data-rol="carga" style="margin-left:auto">📂 Cargar Excel del día</button>
     </div>
-    <div class="card"><h2>Disponibilidades más recientes <button class="btn rojo ir-cargar" data-rol="carga" style="float:right;font-size:.85rem">📂 Cargar Excel</button></h2><p class="note" id="r-disp-n"></p><div class="scroll" id="r-disp" style="max-height:28rem"></div></div>
-  </section>
-
-  <section class="vista" id="v-disp" hidden>
-    <div class="card"><h2>Disponibilidades</h2><p class="note">El Excel se muestra tal cual se cargó, con todas sus hojas.</p>
-      <div class="tools"><label>Fecha <select class="in" id="d-sel"></select></label><button class="btn rojo ir-cargar" data-rol="carga">📂 Cargar Excel</button><button class="btn lt" id="d-xls">⬇ Bajar este Excel</button><button class="btn lt" onclick="window.print()">🖨 Imprimir</button><span class="note" id="d-info"></span></div>
-      <div class="hojas" id="d-hojas"></div>
-      <div class="scroll" id="d-tabla" style="max-height:70vh"></div>
+    <div id="d-vacio"></div>
+    <div id="d-todo" hidden>
+      <div class="hero">
+        <div style="position:relative;z-index:1"><div class="k">Disponibilidad neta</div><div class="big" id="h-neto">—</div><div id="h-var"></div><div class="sub" id="h-sub"></div></div>
+        <div class="mini" id="h-mini"></div>
+      </div>
+      <div class="tiles" id="d-tiles"></div>
+      <div class="grid2">
+        <div class="card"><h2>¿Dónde está concentrado?</h2><p class="note">Bancos, wallets y efectivo antes de apartados.</p><div class="donut"><div id="ch-don"></div><div class="ll" id="ch-don-l"></div></div></div>
+        <div class="card"><h2>Por cuenta</h2><p class="note">Las cuentas con saldo, de mayor a menor.</p><div class="hb" id="ch-cta"></div></div>
+      </div>
+      <div class="card"><h2>Evolución diaria</h2><p class="note">Total en bancos y wallets, y disponibilidad neta (después de apartados), día a día.</p><div class="chart" id="ch-evo"></div></div>
+      <div class="grid2">
+        <div class="card"><h2>Detalle por cuenta</h2><p class="note" id="t-det-n"></p><div class="scroll" id="t-det" style="max-height:34rem"></div></div>
+        <div class="card"><h2>Apartados</h2><p class="note">Dinero comprometido que se descuenta de lo que hay en bancos.</p><div class="scroll" id="t-apa"></div></div>
+      </div>
     </div>
   </section>
 
   <section class="vista" id="v-ventas" hidden>
+    <div class="tiles" id="tiles"></div>
     <div class="card"><h2>Ventas mensuales</h2><p class="note">Totales por mes y categoría, sacados de las ventas del tablero de inventario. El mes en curso está incompleto.</p>
       <div class="tools"><label>Año <select class="in" id="v-anio"></select></label><button class="btn lt" id="v-xls">⬇ Bajar en Excel</button><span class="note" id="v-info"></span></div>
       <div class="chart" id="ch-ventas2" style="margin-bottom:.8rem"></div>
@@ -110,16 +139,19 @@ table.x td.n{text-align:right;white-space:nowrap}table.x td.b{font-weight:700}ta
     </div>
   </section>
 
+  <section class="vista" id="v-excel" hidden>
+    <div class="card"><h2>Excel cargado</h2><p class="note">El archivo tal cual se cargó, con todas sus hojas.</p>
+      <div class="tools"><label>Carga <select class="in" id="x-sel"></select></label><button class="btn lt" id="x-xls">⬇ Bajar este Excel</button><span class="note" id="x-info"></span></div>
+      <div class="hojas" id="x-hojas"></div>
+      <div class="scroll" id="x-tabla" style="max-height:70vh"></div>
+    </div>
+  </section>
+
   <section class="vista" id="v-cargar" hidden>
     <div class="card"><h2>Cargar Excel de disponibilidades</h2>
-      <p class="note">Suba el Excel tal como lo prepara administración. Se guarda completo (todas las hojas) y se muestra igual. Indique la fecha que corresponde y cuál fila es el total de disponibilidades para los indicadores.</p>
-      <div class="slots"><label class="slot" id="c-drop"><b>Disponibilidades</b><small>Excel de administración · todas las hojas</small><span class="st" id="c-arch">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" id="c-file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods,.csv" hidden></label></div>
-      <div class="tools"><label>Fecha <input type="date" class="in" id="c-fecha"></label><label>Moneda del total <select class="in" id="c-mon"><option>US$</option><option>Bs</option></select></label></div>
-      <div id="c-cand"></div>
-      <label class="note" style="display:block">Nota (opcional) <input class="in" id="c-nota" style="width:100%" maxlength="300"></label>
-      <div class="tools"><button class="btn rojo" id="c-guardar" disabled>Guardar disponibilidades</button></div>
+      <p class="note">Escoja el Excel del día y listo: se guarda solo y el resumen se actualiza. Los bolívares se toman como vienen en el Excel (ya convertidos a dólares con la tasa Binance de la hoja).</p>
+      <div class="slots"><label class="slot" id="c-drop"><b>Disponibilidades</b><small>Excel diario de administración</small><span class="st" id="c-arch">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" id="c-file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" hidden></label></div>
       <div id="c-msg"></div>
-      <div class="hojas" id="c-hojas"></div><div class="scroll" id="c-prev" style="max-height:60vh"></div>
     </div>
     <div class="card"><h2>Historial de cargas</h2><div class="scroll" id="c-hist"></div></div>
   </section>
@@ -147,12 +179,14 @@ const pct = (v) => (v == null || !isFinite(v) ? '—' : (v > 0 ? '+' : '') + (v 
 const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const mesTxt = (m) => { const [a, b] = m.split('-'); return MES[Number(b) - 1] + ' ' + a; };
 const fecTxt = (f) => (f ? String(f).slice(0, 10).split('-').reverse().join('-') : '—');
-const mon = (v, m, d = 0) => (m === 'Bs' ? (v == null ? '—' : 'Bs ' + num(v, d)) : usd(v, d));
+const fecLarga = (f) => { const d = new Date(f + 'T12:00:00'); return d.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); };
 function aviso(el, t, k) { el.replaceChildren(); if (t) el.appendChild(mk('div', 'msg ' + (k || 'ok'), t)); }
 const CATS = ['Repuestos de inventario', 'Repuestos fuera de inventario', 'Mano de obra', 'Servicios externos', 'Lavado'];
 const COL = { 'Repuestos de inventario': 'var(--c2)', 'Repuestos fuera de inventario': 'var(--c5)', 'Mano de obra': 'var(--c1)', 'Servicios externos': 'var(--c3)', 'Lavado': 'var(--c6)' };
+const GCOL = ['#e1001a', '#14202e', '#f2a541', '#5b7fa6', '#1f7a4d', '#9aa6b3', '#8e44ad', '#b00016'];
 
-let YO = null, ROL = null, VENTAS = [], CARGAS = [], TABLA_OK = true, ACT = null;
+let YO = null, ROL = null, VENTAS = [], CARGAS = [], TABLA_OK = true, TASAS = [], MODO = 'BIN', DIAS = [], DIA = null;
+try { MODO = localStorage.getItem('tt_disp_modo') || 'BIN'; } catch (e) {}
 
 // ---------------- entrada ----------------
 async function inicio() {
@@ -169,7 +203,7 @@ async function inicio() {
   document.querySelectorAll('[data-rol="carga"]').forEach((b) => { b.hidden = !(ROL === 'ADMIN' || ROL === 'CARGA'); });
   document.querySelectorAll('[data-rol="admin"]').forEach((b) => { b.hidden = ROL !== 'ADMIN'; });
   $('nav').hidden = false; $('main').hidden = false;
-  await Promise.all([cargarVentas(), cargarCargas()]);
+  await Promise.all([cargarVentas(), cargarCargas(), cargarTasas()]);
   pintarTodo();
 }
 $('f-login').addEventListener('submit', async (e) => {
@@ -179,16 +213,16 @@ $('f-login').addEventListener('submit', async (e) => {
 });
 $('salir').addEventListener('click', async (e) => { e.preventDefault(); await sb.auth.signOut(); location.reload(); });
 document.querySelectorAll('.nav button').forEach((b) => b.addEventListener('click', () => ver(b.dataset.v)));
+document.querySelectorAll('.ir-cargar').forEach((b) => b.addEventListener('click', () => { ver('cargar'); $('c-file').click(); }));
 function ver(v) {
   document.querySelectorAll('.nav button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.vista').forEach((s) => { s.hidden = s.id !== 'v-' + v; });
-  if (v === 'accesos') pintarAccesos(); if (v === 'cargar') pintarHist();
+  if (v === 'accesos') pintarAccesos(); if (v === 'cargar') pintarHist(); if (v === 'excel') pintarExcelSel();
 }
 
 // ---------------- datos ----------------
 async function cargarVentas() {
   try { VENTAS = ok(await sb.rpc('ventas_mensuales', { p_empresa: EMPRESA })).map((r) => ({ ...r, total: Number(r.total) || 0, costo: Number(r.costo) || 0, cantidad: Number(r.cantidad) || 0, facturas: Number(r.facturas) || 0 })); return; } catch (e) {}
-  // respaldo mientras no exista la función en el servidor: se resume aquí mismo
   const hoy = new Date(), meses = []; for (let d = new Date(hoy.getFullYear() - 2, 0, 1); d <= hoy; d.setMonth(d.getMonth() + 1)) meses.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
   const A = {};
   for (const m of meses) {
@@ -201,40 +235,164 @@ async function cargarVentas() {
   VENTAS = Object.values(A).map((o) => ({ mes: o.mes, categoria: o.categoria, total: o.total, costo: o.costo, cantidad: o.cantidad, facturas: o.fs.size }));
 }
 async function cargarCargas() {
-  try { CARGAS = ok(await sb.from('disp_cargas').select('id,fecha,archivo,resumen,nota,cargado_en,cargado_por').eq('empresa_id', EMPRESA).order('fecha', { ascending: false }).order('id', { ascending: false })); TABLA_OK = true; }
+  try { CARGAS = ok(await sb.from('disp_cargas').select('id,fecha,archivo,resumen,nota,cargado_en,cargado_por').eq('empresa_id', EMPRESA).order('fecha', { ascending: false }).order('id', { ascending: false })); TABLA_OK = true; aviso($('aviso'), ''); }
   catch (e) {
     TABLA_OK = false; try { CARGAS = JSON.parse(localStorage.getItem('tt_disp_local') || '[]'); } catch (er) { CARGAS = []; }
-    if (ROL === 'ADMIN') aviso($('aviso'), 'Falta crear en el servidor la tabla de disponibilidades (archivo 30_disponibilidades.sql). Mientras tanto lo que cargue se guarda solo en este navegador.', 'warn');
+    if (ROL === 'ADMIN') aviso($('aviso'), 'Falta crear en el servidor la tabla de disponibilidades (archivo 30_disponibilidades.sql en Supabase → SQL Editor). Mientras tanto lo que cargue se guarda solo en este navegador.', 'warn');
   }
+  armarDias();
 }
+async function cargarTasas() {
+  try { const r = []; for (let i = 0; i < 6000; i += 1000) { const x = ok(await sb.from('tasas').select('fuente,valor,fecha_valor,tomada_en').order('tomada_en', { ascending: false }).range(i, i + 999)); r.push(...x); if (x.length < 1000) break; } TASAS = r; } catch (e) { TASAS = []; }
+}
+const tasaDe = (fuente, fecha) => { const fin = fecha ? new Date(fecha + 'T23:59:59-04:00').getTime() : Infinity; const t = TASAS.find((x) => x.fuente === fuente && new Date(x.tomada_en).getTime() <= fin) || TASAS.find((x) => x.fuente === fuente); return t ? { v: Number(t.valor), en: t.tomada_en } : null; };
 async function hojasDe(c) { if (c.hojas) return c.hojas; const r = ok(await sb.from('disp_cargas').select('hojas').eq('id', c.id).single()); c.hojas = r.hojas; return c.hojas; }
 const porMes = () => { const M = {}; VENTAS.forEach((v) => { const o = M[v.mes] || (M[v.mes] = { mes: v.mes, total: 0, costo: 0, facturas: 0, cats: {} }); o.total += v.total; o.facturas += v.facturas; o.cats[v.categoria] = (o.cats[v.categoria] || 0) + v.total; if (v.categoria === 'Repuestos de inventario') o.costo += v.costo; }); return Object.values(M).sort((a, b) => a.mes.localeCompare(b.mes)); };
 
-// ---------------- resumen ----------------
-function pintarTodo() { pintarResumen(); pintarDispSel(); pintarVentas(); }
-function tile(k, v, s, cls, sub2) { const t = mk('div', 'tile ' + (cls || '')); t.append(mk('div', 'k', k), mk('div', 'v', v)); const x = mk('div', 's'); if (sub2) x.appendChild(sub2); else x.textContent = s || ''; t.appendChild(x); return t; }
-function pintarResumen() {
+// ---------------- lectura del Excel de disponibilidades ----------------
+// Formato «Resumen Disponibilidad»: fila de fechas (una columna por día), grupos (Bancos nacionales Bs, Custodio USD/EUR, USDT, Cuentas $, Caja),
+// empresas (con RIF), cuentas, SUBTOTAL BANCO, APARTADOS y TOTAL BANCO. Los bolívares vienen ya divididos entre la tasa Binance de la hoja.
+function leerDisp(wb) {
+  const nm = wb.SheetNames.find((n) => /resumen|disponib/i.test(n)) || wb.SheetNames[0], ws = wb.Sheets[nm];
+  const A = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' }), R = XLSX.utils.decode_range(ws['!ref']);
+  const cel = (r, c) => ws[XLSX.utils.encode_cell({ r: r + R.s.r, c: c + R.s.c })];
+  const txt = (v) => (typeof v === 'string' ? v.trim() : '');
+  let tasa = null; A.some((f) => { const i = f.findIndex((v) => /tasa\s*binance/i.test(txt(v))); if (i < 0) return false; tasa = f.slice(i + 1).find((v) => typeof v === 'number') || null; return true; });
+  const fr = A.findIndex((f) => f.some((v) => v instanceof Date) && f.some((v) => /movimiento|bancos/i.test(txt(v))));
+  if (fr < 0) throw new Error('no encuentro la fila de fechas de la hoja «' + nm + '»');
+  const fin = A[fr].findIndex((v) => /movimiento/i.test(txt(v))), cols = [];
+  A[fr].forEach((v, c) => { if (v instanceof Date && (fin < 0 || c < fin)) cols.push({ c, fecha: new Date(v.getTime() - v.getTimezoneOffset() * 60000).toISOString().slice(0, 10) }); });
+  const lab = (f) => txt(f[0]) || txt(f[1]);
+  const nums = (f) => cols.map((x) => (typeof f[x.c] === 'number' ? f[x.c] : null));
+  const mon = (g) => (/eur/i.test(g) ? 'EUR' : /usdt/i.test(g) ? 'USDT' : /bs\b|nacional|bol[ií]v/i.test(g) ? 'Bs' : 'USD');
+  const filas = []; let modo = 'bancos', grupo = null, empresa = null;
+  for (let r = fr + 1; r < A.length; r++) {
+    const f = A[r], l = lab(f); if (!l) continue; const v = nums(f), tiene = v.some((x) => x != null), c0 = cel(r, cols[0].c), esSum = c0 && /^SUM\(/i.test(c0.f || '');
+    if (/^subtotal/i.test(l)) { filas.push({ tipo: 'subtotal', label: l, v }); continue; }
+    if (/^total/i.test(l)) { filas.push({ tipo: 'total', label: l, v }); break; }
+    if (/^apartados/i.test(l)) { modo = 'apartados'; filas.push({ tipo: 'apartados', label: l, v }); continue; }
+    if (modo === 'apartados') { if (tiene) filas.push({ tipo: 'apartado', label: l, v }); continue; }
+    const rif = /\b[JGVEP]-?\d{6,}/i.test(l);
+    if (rif && grupo) { empresa = l; continue; }
+    if (txt(f[1]) === 'Cuenta' || esSum || (/caja|efectivo/i.test(l) && tiene)) { grupo = { nombre: l, moneda: mon(l), v, propio: /caja|efectivo/i.test(l) && !esSum }; empresa = null; filas.push({ tipo: 'grupo', ...grupo }); if (grupo.propio) filas.push({ tipo: 'cuenta', grupo: l, moneda: grupo.moneda, empresa: null, label: l, cuenta: '', v }); continue; }
+    if (!tiene) { empresa = l; continue; }
+    filas.push({ tipo: 'cuenta', grupo: grupo ? grupo.nombre : 'Otros', moneda: grupo ? grupo.moneda : 'USD', empresa, label: l, cuenta: String(f[1] || '').trim(), v });
+  }
+  filas.filter((y) => y.tipo === 'grupo').forEach((g) => { if (g.v.every((x) => x == null)) { const cs = filas.filter((y) => y.tipo === 'cuenta' && y.grupo === g.nombre); g.v = cols.map((_, j) => cs.reduce((s, y) => s + (y.v[j] || 0), 0)); } });
+  const dias = cols.map((x, j) => {
+    const g = filas.filter((y) => y.tipo === 'grupo').map((y) => ({ nombre: y.nombre, moneda: y.moneda, valor: y.v[j] || 0 }));
+    const ctas = filas.filter((y) => y.tipo === 'cuenta').map((y) => ({ grupo: y.grupo, moneda: y.moneda, empresa: y.empresa, banco: y.label, cuenta: y.cuenta, valor: y.v[j] || 0 }));
+    const ap = filas.filter((y) => y.tipo === 'apartado').map((y) => ({ nombre: y.label, valor: y.v[j] || 0 }));
+    const st = filas.find((y) => y.tipo === 'subtotal'), to = filas.find((y) => y.tipo === 'total');
+    const subtotal = st && st.v[j] != null ? st.v[j] : g.reduce((s, y) => s + y.valor, 0), apart = ap.reduce((s, y) => s + y.valor, 0), total = to && to.v[j] != null ? to.v[j] : subtotal + apart;
+    return { fecha: x.fecha, tasa, subtotal, apartados: apart, total, grupos: g, cuentas: ctas, aparts: ap, con: Math.abs(subtotal) > 0.004 || ctas.some((y) => Math.abs(y.valor) > 0.004) };
+  }).filter((d) => d.con);
+  if (!dias.length) throw new Error('la hoja «' + nm + '» no tiene saldos cargados en ninguna fecha');
+  return { hoja: nm, tasa, dias };
+}
+function armarDias() {
+  const M = {};   // por fecha, gana la carga más reciente
+  CARGAS.slice().sort((a, b) => String(a.cargado_en).localeCompare(String(b.cargado_en))).forEach((c) => { ((c.resumen && c.resumen.dias) || []).forEach((d) => { M[d.fecha] = d; }); });
+  DIAS = Object.values(M).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  if (!DIA || !M[DIA]) DIA = DIAS.length ? DIAS[DIAS.length - 1].fecha : null;
+}
+// valor mostrado: los bolívares vienen a tasa Binance; con BCV se reconvierte (monto × Binance ÷ BCV)
+function factorBs(d) { if (MODO !== 'BCV') return 1; const b = tasaDe('BCV', d.fecha); return d.tasa && b ? d.tasa / b.v : 1; }
+function vista(d) {
+  const f = factorBs(d), aj = (m, v) => (m === 'Bs' ? v * f : v);
+  const grupos = d.grupos.map((g) => ({ ...g, valor: aj(g.moneda, g.valor) })), cuentas = d.cuentas.map((c) => ({ ...c, valor: aj(c.moneda, c.valor) }));
+  const subtotal = d.subtotal + grupos.reduce((s, g, k) => s + g.valor - d.grupos[k].valor, 0), total = d.total + subtotal - d.subtotal;
+  return { ...d, grupos, cuentas, subtotal, total, bs: grupos.filter((g) => g.moneda === 'Bs').reduce((s, g) => s + g.valor, 0) };
+}
+
+// ---------------- vista Disponibilidades ----------------
+function pintarTodo() { pintarDisp(); pintarVentas(); pintarTiles(); }
+function pintarDisp() {
+  const sel = $('d-dia'); sel.replaceChildren(); DIAS.slice().reverse().forEach((d) => sel.appendChild(new Option(fecTxt(d.fecha), d.fecha))); if (DIA) sel.value = DIA;
+  sel.onchange = () => { DIA = sel.value; pintarDisp(); };
+  document.querySelectorAll('#sw button').forEach((b) => { b.classList.toggle('on', b.dataset.t === MODO); b.onclick = () => { MODO = b.dataset.t; try { localStorage.setItem('tt_disp_modo', MODO); } catch (e) {} pintarDisp(); }; });
+  const i = DIAS.findIndex((d) => d.fecha === DIA), D0 = DIAS[i];
+  const tb = tasaDe('BINANCE', DIA), tv = tasaDe('BCV', DIA);
+  $('t-bin').textContent = D0 && D0.tasa ? 'Bs ' + num(D0.tasa, 2) : tb ? 'Bs ' + num(tb.v, 2) : '—'; $('t-bin-s').textContent = D0 && D0.tasa ? '(del Excel)' : tb ? '(mercado)' : '';
+  $('t-bcv').textContent = tv ? 'Bs ' + num(tv.v, 2) : '—'; $('t-bcv-s').textContent = tv ? '(' + new Date(tv.en).toLocaleDateString('es-VE') + ')' : '';
+  const bin = D0 && D0.tasa ? D0.tasa : tb && tb.v; $('t-bre').textContent = bin && tv ? pct(bin / tv.v - 1) : '—';
+  if (!D0) { $('d-todo').hidden = true; aviso($('d-vacio'), ROL === 'LECTOR' ? 'Todavía no se ha cargado el Excel de disponibilidades.' : 'Todavía no se ha cargado el Excel de disponibilidades. Toque «📂 Cargar Excel del día».', 'warn'); return; }
+  aviso($('d-vacio'), ''); $('d-todo').hidden = false;
+  const V = vista(D0), P = i > 0 ? vista(DIAS[i - 1]) : null, mon = MODO === 'BCV' ? ' · bolívares a tasa BCV' : '';
+  const sem = DIAS.slice(0, i + 1).reverse().find((d) => d.fecha <= new Date(new Date(DIA + 'T12:00:00').getTime() - 7 * 864e5).toISOString().slice(0, 10)), ini = DIAS.find((d) => d.fecha.slice(0, 7) === DIA.slice(0, 7) && d.fecha < DIA);
+  $('h-neto').textContent = usd(V.total, 2);
+  const hv = $('h-var'); hv.replaceChildren(); if (P) { const dv = V.total - P.total; const s = mk('span', 'var ' + (dv >= 0 ? 'up' : 'dn'), (dv >= 0 ? '▲ ' : '▼ ') + usd(Math.abs(dv), 2) + (P.total ? ' (' + pct(dv / Math.abs(P.total)) + ')' : '') + ' vs ' + fecTxt(P.fecha)); hv.appendChild(s); }
+  $('h-sub').textContent = fecLarga(DIA) + mon + ' · = en bancos y wallets − apartados';
+  const mini = $('h-mini'); mini.replaceChildren();
+  const m = (k, v, s) => { const d = mk('div'); d.append(mk('span', '', k), mk('b', '', v)); if (s) d.appendChild(mk('small', '', s)); mini.appendChild(d); };
+  m('En bancos y wallets', usd(V.subtotal, 2), P ? pct(P.subtotal ? (V.subtotal - P.subtotal) / Math.abs(P.subtotal) : null) + ' vs día anterior' : '');
+  m('Apartados', usd(V.apartados, 2), Math.abs(V.subtotal) ? num(Math.abs(V.apartados) / Math.abs(V.subtotal) * 100, 0) + ' % de lo disponible' : '');
+  m('Variación 7 días', sem ? usd(V.total - vista(sem).total, 2) : '—', sem ? 'desde ' + fecTxt(sem.fecha) : 'sin datos de hace 7 días');
+  m('Variación del mes', ini ? usd(V.total - vista(ini).total, 2) : '—', ini ? 'desde ' + fecTxt(ini.fecha) : 'primer día cargado del mes');
+  // tarjetas por grupo
+  const T = $('d-tiles'); T.replaceChildren();
+  V.grupos.forEach((g, k) => { const p = P && P.grupos.find((x) => x.nombre === g.nombre), dv = p ? g.valor - p.valor : null; const t = mk('div', 'tile'); t.style.borderTopColor = GCOL[k % GCOL.length];
+    t.append(mk('div', 'k', g.nombre), mk('div', 'v', usd(g.valor, 2))); const s = mk('div', 's'); s.append(V.subtotal ? num(g.valor / V.subtotal * 100, 1) + ' % del total' : ''); if (dv != null && Math.abs(dv) > 0.004) { s.append(' · '); s.appendChild(mk('span', dv >= 0 ? 'up' : 'dn', (dv >= 0 ? '+' : '−') + usd(Math.abs(dv), 2).replace('US$ ', 'US$ '))); }
+    if (g.moneda === 'Bs' && D0.tasa) s.append(' · Bs ' + num(g.valor / (MODO === 'BCV' ? factorBs(D0) : 1) * D0.tasa, 2)); t.appendChild(s); T.appendChild(t); });
+  donut(V); porCuenta(V); evolucion(); detalle(V, P); apartados(V);
+}
+function donut(V) {
+  const el = $('ch-don'), L = $('ch-don-l'); el.replaceChildren(); L.replaceChildren();
+  const G = V.grupos.filter((g) => g.valor > 0.004), tot = G.reduce((s, g) => s + g.valor, 0); if (!tot) { el.appendChild(mk('p', 'note', 'Sin saldos positivos.')); return; }
+  const svg = sv('svg', { viewBox: '0 0 200 200', role: 'img', 'aria-label': 'Concentración de disponibilidades' }); let a0 = -Math.PI / 2;
+  G.forEach((g) => { const k = V.grupos.indexOf(g), a1 = a0 + 2 * Math.PI * g.valor / tot, big = a1 - a0 > Math.PI ? 1 : 0, R = 92, r = 58, p = (a, rr) => [100 + rr * Math.cos(a), 100 + rr * Math.sin(a)];
+    const d = G.length === 1 ? `M100 8 A92 92 0 1 1 99.99 8 L99.99 42 A58 58 0 1 0 100 42 Z` : `M${p(a0, R)} A${R} ${R} 0 ${big} 1 ${p(a1, R)} L${p(a1, r)} A${r} ${r} 0 ${big} 0 ${p(a0, r)} Z`;
+    const path = sv('path', { d, fill: GCOL[k % GCOL.length], stroke: 'var(--panel)', 'stroke-width': 2 }); path.addEventListener('mousemove', (e) => verTip(e, g.nombre + ': ' + usd(g.valor, 2) + ' · ' + num(g.valor / tot * 100, 1) + ' %')); path.addEventListener('mouseleave', ocultaTip); svg.append(path); a0 = a1; });
+  const t1 = sv('text', { x: 100, y: 96, 'text-anchor': 'middle', style: 'font:600 11px sans-serif;fill:var(--muted)' }); t1.textContent = 'Total'; const t2 = sv('text', { x: 100, y: 116, 'text-anchor': 'middle', style: 'font:700 15px sans-serif;fill:var(--fg)' }); t2.textContent = corto(tot); svg.append(t1, t2);
+  el.appendChild(svg);
+  G.slice().sort((a, b) => b.valor - a.valor).forEach((g) => { const k = V.grupos.indexOf(g), it = mk('div', 'it'), i = mk('i'); i.style.background = GCOL[k % GCOL.length]; it.append(i, mk('span', '', g.nombre + (g.moneda !== 'USD' ? ' (' + g.moneda + ')' : '')), mk('b', '', usd(g.valor, 2)), mk('em', '', num(g.valor / tot * 100, 1) + ' %')); L.appendChild(it); });
+}
+function porCuenta(V) {
+  const el = $('ch-cta'); el.replaceChildren(); const C = V.cuentas.filter((c) => c.valor > 0.004).sort((a, b) => b.valor - a.valor), max = C.length ? C[0].valor : 1;
+  if (!C.length) { el.appendChild(mk('p', 'note', 'Sin cuentas con saldo.')); return; }
+  C.slice(0, 12).forEach((c) => { const k = V.grupos.findIndex((g) => g.nombre === c.grupo), r = mk('div', 'r'), tr = mk('div', 'tr'), b = mk('div'); b.style.width = Math.max(1.5, c.valor / max * 100) + '%'; b.style.background = GCOL[(k < 0 ? 5 : k) % GCOL.length]; tr.appendChild(b);
+    const n = mk('span', '', c.banco + (c.cuenta ? ' ·' + String(c.cuenta).slice(-4) : '')); n.title = (c.empresa || '') + ' · ' + c.grupo; r.append(n, tr, mk('b', '', usd(c.valor, 2))); el.appendChild(r); });
+  if (C.length > 12) el.appendChild(mk('p', 'note', '… y ' + (C.length - 12) + ' cuentas más en el detalle.'));
+}
+function evolucion() {
+  const el = $('ch-evo'); el.replaceChildren(); const D = DIAS.map(vista); if (D.length < 2) { el.appendChild(mk('p', 'note', 'Aparece cuando haya al menos dos días cargados. Cargue el Excel cada día y aquí se ve cómo se mueve la disponibilidad.')); return; }
+  const W = 900, H = 260, P = { l: 64, r: 14, t: 14, b: 28 }, vs = D.flatMap((d) => [d.subtotal, d.total]), max = Math.max(...vs, 0) * 1.08 || 1, min = Math.min(...vs, 0), rng = max - min || 1, n = D.length;
+  const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Evolución diaria' });
+  const X = (i) => P.l + (W - P.l - P.r) * i / (n - 1), Y = (v) => P.t + (H - P.t - P.b) * (1 - (v - min) / rng);
+  for (let k = 0; k <= 4; k++) { const v = min + rng * k / 4, y = Y(v); svg.append(sv('line', { x1: P.l, x2: W - P.r, y1: y, y2: y, class: 'gl' })); const t = sv('text', { x: P.l - 6, y: y + 4, 'text-anchor': 'end', class: 'ax' }); t.textContent = corto(v); svg.append(t); }
+  if (min < 0) svg.append(sv('line', { x1: P.l, x2: W - P.r, y1: Y(0), y2: Y(0), stroke: 'var(--muted)', 'stroke-dasharray': '3 3' }));
+  [['subtotal', 'var(--navy2)', 'En bancos y wallets'], ['total', 'var(--rojo)', 'Disponibilidad neta']].forEach(([k, c]) => { svg.append(sv('polyline', { points: D.map((d, i) => X(i) + ',' + Y(d[k])).join(' '), fill: 'none', stroke: c, 'stroke-width': 2.5 }));
+    D.forEach((d, i) => { const p = sv('circle', { cx: X(i), cy: Y(d[k]), r: d.fecha === DIA ? 5 : 3, fill: c }); p.addEventListener('mousemove', (e) => verTip(e, fecTxt(d.fecha) + ' · en bancos ' + usd(d.subtotal, 2) + ' · neta ' + usd(d.total, 2))); p.addEventListener('mouseleave', ocultaTip); svg.append(p); }); });
+  D.forEach((d, i) => { if (n <= 14 || i % Math.ceil(n / 14) === 0 || i === n - 1) { const t = sv('text', { x: X(i), y: H - 10, 'text-anchor': 'middle', class: 'ax' }); t.textContent = fecTxt(d.fecha).slice(0, 5); svg.append(t); } });
+  el.appendChild(svg); const lg = mk('div', 'leg'); [['var(--navy2)', 'En bancos y wallets'], ['var(--rojo)', 'Disponibilidad neta']].forEach(([c, t]) => { const s = mk('span'), i = mk('i'); i.style.background = c; s.append(i, t); lg.appendChild(s); }); el.appendChild(lg);
+}
+function detalle(V, P) {
+  const tb = mk('table', 't'); tb.innerHTML = '<thead><tr><th>Cuenta</th><th class="n">' + fecTxt(V.fecha) + '</th><th class="n">' + (P ? fecTxt(P.fecha) : 'Anterior') + '</th><th class="n">Variación</th><th class="n">% del total</th></tr></thead>';
+  const body = mk('tbody'), fila = (cls, nom, v, pv, extra) => { const tr = mk('tr', cls); const td = mk('td', '', nom); if (extra) td.appendChild(mk('span', 'pill', extra)); tr.appendChild(td); tr.appendChild(mk('td', 'n', usd(v, 2))); tr.appendChild(mk('td', 'n', pv == null ? '—' : usd(pv, 2))); const dv = pv == null ? null : v - pv; tr.appendChild(mk('td', 'n ' + (dv == null || Math.abs(dv) < 0.005 ? '' : dv > 0 ? 'up' : 'dn'), dv == null || Math.abs(dv) < 0.005 ? '—' : (dv > 0 ? '+' : '−') + usd(Math.abs(dv), 2))); tr.appendChild(mk('td', 'n', V.subtotal ? num(v / V.subtotal * 100, 1) + ' %' : '')); body.appendChild(tr); };
+  V.grupos.forEach((g) => { const pg = P && P.grupos.find((x) => x.nombre === g.nombre); fila('g', g.nombre, g.valor, pg ? pg.valor : null, g.moneda !== 'USD' ? g.moneda : '');
+    let emp = undefined; V.cuentas.filter((c) => c.grupo === g.nombre && c.banco !== g.nombre).forEach((c) => { if (c.empresa !== emp) { emp = c.empresa; if (emp) { const tr = mk('tr', 'e'); const td = mk('td', '', emp); td.colSpan = 5; tr.appendChild(td); body.appendChild(tr); } }
+      const pc = P && P.cuentas.find((x) => x.grupo === c.grupo && x.banco === c.banco && x.cuenta === c.cuenta && x.empresa === c.empresa); fila('c', c.banco + (c.cuenta ? ' · ' + c.cuenta : ''), c.valor, pc ? pc.valor : null); }); });
+  const tr = mk('tr', 'tot'); tr.append(mk('td', '', 'Total en bancos y wallets'), mk('td', 'n', usd(V.subtotal, 2)), mk('td', 'n', P ? usd(P.subtotal, 2) : '—'), mk('td', 'n', P ? usd(V.subtotal - P.subtotal, 2) : '—'), mk('td', 'n', '100 %')); body.appendChild(tr);
+  tb.appendChild(body); $('t-det').replaceChildren(tb); $('t-det-n').textContent = 'Saldos en US$' + (MODO === 'BCV' ? ' (bolívares a tasa BCV)' : ' (bolívares a tasa Binance, como vienen en el Excel)') + '; comparado con el día anterior cargado.';
+}
+function apartados(V) {
+  const tb = mk('table', 't'); tb.innerHTML = '<thead><tr><th>Concepto</th><th class="n">Monto</th></tr></thead>'; const body = mk('tbody');
+  V.aparts.slice().sort((a, b) => a.valor - b.valor).forEach((a) => { const tr = mk('tr'); tr.append(mk('td', '', a.nombre), mk('td', 'n dn', usd(a.valor, 2))); body.appendChild(tr); });
+  [['Total apartados', V.apartados], ['En bancos y wallets', V.subtotal], ['Disponibilidad neta', V.total]].forEach(([k, v], i) => { const tr = mk('tr', i === 0 || i === 2 ? 'tot' : ''); tr.append(mk('td', '', k), mk('td', 'n ' + (v < 0 ? 'dn' : ''), usd(v, 2))); body.appendChild(tr); });
+  tb.appendChild(body); $('t-apa').replaceChildren(tb);
+}
+function pintarTiles() {
   const T = $('tiles'); T.replaceChildren(); const M = porMes(), hoyM = new Date().toISOString().slice(0, 7);
   const cerr = M.filter((m) => m.mes < hoyM), ult = cerr[cerr.length - 1], ant = cerr[cerr.length - 2], cur = M.find((m) => m.mes === hoyM);
   const prom3 = cerr.slice(-3).reduce((s, m) => s + m.total, 0) / Math.max(1, Math.min(3, cerr.length));
-  const c0 = CARGAS[0], c1 = CARGAS[1], tot = c0 && c0.resumen ? Number(c0.resumen.total) : null, mon0 = c0 && c0.resumen ? c0.resumen.moneda : 'US$';
-  const vari = c0 && c1 && c0.resumen && c1.resumen && c1.resumen.total ? (tot - Number(c1.resumen.total)) / Math.abs(Number(c1.resumen.total)) : null;
-  const sp = (t, c) => { const s = mk('span', c, t); return s; };
-  let sub = mk('span'); sub.append(c0 ? 'al ' + fecTxt(c0.fecha) : 'todavía no se ha cargado el Excel'); if (vari != null) { sub.append(' · '); sub.append(sp(pct(vari) + ' vs ' + fecTxt(c1.fecha), vari >= 0 ? 'up' : 'dn')); }
-  T.appendChild(tile('Total disponibilidades', tot == null ? '—' : mon(tot, mon0), '', 'r', sub));
-  const d = ult && ant ? (ult.total - ant.total) / ant.total : null; sub = mk('span'); sub.append(ult ? mesTxt(ult.mes) : 'sin ventas cargadas'); if (d != null) { sub.append(' · '); sub.append(sp(pct(d) + ' vs ' + mesTxt(ant.mes), d >= 0 ? 'up' : 'dn')); }
-  T.appendChild(tile('Ventas del último mes cerrado', ult ? usd(ult.total) : '—', '', '', sub));
-  T.appendChild(tile('Ventas promedio (3 meses)', cerr.length ? usd(prom3) : '—', cerr.length ? 'promedio de ' + cerr.slice(-3).map((m) => mesTxt(m.mes)).join(', ') : ''));
-  T.appendChild(tile('Ventas del mes en curso', cur ? usd(cur.total) : '—', cur ? mesTxt(cur.mes) + ' · hasta la última carga de ventas' : 'sin ventas este mes'));
-  if (tot != null && mon0 === 'US$' && prom3) T.appendChild(tile('Cobertura', num(tot / prom3, 1) + ' meses', 'disponibilidades ÷ ventas promedio mensuales'));
-  if (ult && ult.cats['Repuestos de inventario'] && ult.costo) { const vr = ult.cats['Repuestos de inventario']; T.appendChild(tile('Margen bruto repuestos', pct((vr - ult.costo) / vr).replace('+', ''), mesTxt(ult.mes) + ' · repuestos de inventario')); }
-  barras($('ch-ventas'), M.slice(-12));
-  linea($('ch-disp'), CARGAS.filter((c) => c.resumen && c.resumen.total != null).slice().reverse());
-  const rd = $('r-disp'); rd.replaceChildren();
-  if (c0) { $('r-disp-n').textContent = 'Excel del ' + fecTxt(c0.fecha) + (c0.archivo ? ' · ' + c0.archivo : '') + ' · cargado por ' + (c0.cargado_por || '—') + '. Se muestra la primera hoja; las demás en la pestaña Disponibilidades.'; hojasDe(c0).then((H) => { if (H && H[0]) rd.appendChild(tablaHoja(H[0])); }).catch(() => {}); }
-  else $('r-disp-n').textContent = ROL === 'LECTOR' ? 'Todavía no se ha cargado el Excel de disponibilidades.' : 'Todavía no se ha cargado. Vaya a «Cargar Excel».';
+  const tile = (k, v, s, cls) => { const t = mk('div', 'tile ' + (cls || '')); t.append(mk('div', 'k', k), mk('div', 'v', v), mk('div', 's', s || '')); T.appendChild(t); };
+  const d = ult && ant ? (ult.total - ant.total) / ant.total : null;
+  tile('Ventas del último mes cerrado', ult ? usd(ult.total) : '—', ult ? mesTxt(ult.mes) + (d != null ? ' · ' + pct(d) + ' vs ' + mesTxt(ant.mes) : '') : 'sin ventas cargadas', 'r');
+  tile('Ventas promedio (3 meses)', cerr.length ? usd(prom3) : '—', cerr.slice(-3).map((m) => mesTxt(m.mes)).join(', '));
+  tile('Ventas del mes en curso', cur ? usd(cur.total) : '—', cur ? mesTxt(cur.mes) + ' · hasta la última carga de ventas' : '');
+  const D0 = DIAS.length ? vista(DIAS[DIAS.length - 1]) : null; if (D0 && prom3) tile('Cobertura de la disponibilidad', D0.total / prom3 >= 1 ? num(D0.total / prom3, 1) + ' meses' : num(D0.total / prom3 * 30, 1) + ' días de venta', 'disponibilidad neta del ' + fecTxt(D0.fecha) + ' ÷ ventas promedio');
+  if (ult && ult.cats['Repuestos de inventario'] && ult.costo) { const vr = ult.cats['Repuestos de inventario']; tile('Margen bruto repuestos', pct((vr - ult.costo) / vr).replace('+', ''), mesTxt(ult.mes)); }
 }
-
 // ---------------- gráficos (SVG simple) ----------------
 const tip = $('tip'); function verTip(e, t) { tip.textContent = t; tip.style.display = 'block'; tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (e.clientY - 34) + 'px'; } function ocultaTip() { tip.style.display = 'none'; }
 const NS = 'http://www.w3.org/2000/svg', sv = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
@@ -288,13 +446,6 @@ function pintarHojas(H, cont, tabla, sel) {
   cont.replaceChildren(); let i0 = sel || 0; const ver = (i) => { [...cont.children].forEach((b, j) => b.classList.toggle('on', j === i)); tabla.replaceChildren(tablaHoja(H[i])); };
   H.forEach((h, i) => { const b = mk('button', '', h.nombre); b.type = 'button'; b.addEventListener('click', () => ver(i)); cont.appendChild(b); }); if (H.length) ver(i0); else tabla.replaceChildren(mk('p', 'note', 'Sin hojas.'));
 }
-function pintarDispSel() {
-  const s = $('d-sel'); s.replaceChildren(); if (!CARGAS.length) { s.appendChild(new Option('— sin cargas —', '')); $('d-tabla').replaceChildren(mk('p', 'note', 'Todavía no se ha cargado el Excel de disponibilidades.')); $('d-hojas').replaceChildren(); return; }
-  CARGAS.forEach((c, i) => s.appendChild(new Option(fecTxt(c.fecha) + (c.archivo ? ' · ' + c.archivo : ''), i))); s.onchange = verCarga; verCarga();
-}
-async function verCarga() { const c = CARGAS[Number($('d-sel').value) || 0]; ACT = c; $('d-info').textContent = 'Cargado ' + new Date(c.cargado_en).toLocaleString('es-VE') + ' por ' + (c.cargado_por || '—') + (c.resumen && c.resumen.total != null ? ' · total ' + mon(Number(c.resumen.total), c.resumen.moneda, 2) + ' (' + (c.resumen.etiqueta || '') + ')' : '') + (c.nota ? ' · ' + c.nota : ''); try { pintarHojas(await hojasDe(c), $('d-hojas'), $('d-tabla')); } catch (e) { aviso($('d-tabla'), '✖ ' + e.message, 'err'); } }
-$('d-xls').addEventListener('click', async () => { if (!ACT) return; XLSX.writeFile(libroDe(await hojasDe(ACT)), 'TOYOTENGO_Disponibilidades_' + ACT.fecha + '.xlsx'); });
-
 // ---------------- ventas ----------------
 function pintarVentas() {
   const M = porMes(), anios = [...new Set(M.map((m) => m.mes.slice(0, 4)))].sort().reverse(), s = $('v-anio'), cur = s.value;
@@ -315,54 +466,44 @@ function pintarVentas() {
   $('v-xls').onclick = () => { const rows = L.map((m) => { const o = { Mes: mesTxt(m.mes) }; cats.forEach((c) => { o[c] = Math.round((m.cats[c] || 0) * 100) / 100; }); o.Total = Math.round(m.total * 100) / 100; o.Facturas = m.facturas; return o; }); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Ventas mensuales'); XLSX.writeFile(wb, 'TOYOTENGO_Ventas_mensuales.xlsx'); };
 }
 
-// ---------------- cargar ----------------
-let NUEVO = null;
-function candidatos(H) {
-  const out = [];
-  H.forEach((h, hi) => h.filas.forEach((f, r) => { const lab = f.find((v) => typeof v === 'string' && v.trim()); if (!lab || !/total|disponib|saldo/i.test(f.filter((v) => typeof v === 'string').join(' '))) return; const ns = f.map((v, c) => ({ v, c })).filter((x) => typeof x.v === 'number'); if (!ns.length) return; const x = ns[ns.length - 1];
-    out.push({ hoja: h.nombre, hi, fila: r + 1, col: x.c, etiqueta: f.filter((v) => typeof v === 'string' && v.trim()).join(' · ').slice(0, 90), total: x.v, texto: h.texto[r][x.c] }); }));
-  const pref = out.find((c) => /total.*disponib|disponib.*total/i.test(c.etiqueta)) || out.filter((c) => /total/i.test(c.etiqueta) && c.hi === 0).pop() || out[out.length - 1];
-  return { out, pref };
-}
-document.querySelectorAll('.ir-cargar').forEach((b) => b.addEventListener('click', () => { ver('cargar'); $('c-file').click(); }));
-{ const d = $('c-drop'); ['dragenter', 'dragover'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.add('on'); }));
-  ['dragleave', 'drop'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.remove('on'); }));
-  d.addEventListener('drop', (e) => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (!f) return; const dt = new DataTransfer(); dt.items.add(f); $('c-file').files = dt.files; $('c-file').dispatchEvent(new Event('change')); }); }
-$('c-file').addEventListener('change', async () => {
-  const f = $('c-file').files[0]; $('c-arch').textContent = f ? '✔ ' + f.name : 'Sin archivo'; $('c-drop').classList.toggle('ok', !!f); NUEVO = null; $('c-guardar').disabled = true; aviso($('c-msg'), ''); if (!f) return;
-  try {
-    const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: 'array', cellDates: true }); const H = leerHojas(wb);
-    const m = f.name.match(/(20\d\d)[-_. ]?(\d\d)[-_. ]?(\d\d)/) || f.name.match(/(\d\d)[-_. ](\d\d)[-_. ](20\d\d)/);
-    $('c-fecha').value = m ? (m[1].length === 4 ? m[1] + '-' + m[2] + '-' + m[3] : m[3] + '-' + m[2] + '-' + m[1]) : new Date().toISOString().slice(0, 10);
-    const all = H.flatMap((h) => h.texto.flat()).join(' '); $('c-mon').value = /Bs\.?|bol[ií]var/i.test(all) && !/US\$|USD|\$/.test(all) ? 'Bs' : 'US$';
-    const { out, pref } = candidatos(H); NUEVO = { archivo: f.name, hojas: H, cand: out, elegido: pref || null };
-    const cc = $('c-cand'); cc.replaceChildren();
-    if (out.length) { cc.appendChild(mk('div', 'note', '¿Cuál es el total de disponibilidades? (se usa en los indicadores; el Excel se guarda completo igual)')); const box = mk('div', 'cand');
-      out.slice(0, 15).concat([{ ninguno: true }]).forEach((c, i) => { const l = mk('label'), r = mk('input'); r.type = 'radio'; r.name = 'cand'; r.checked = c === pref || (!pref && c.ninguno); r.addEventListener('change', () => { NUEVO.elegido = c.ninguno ? null : c; }); l.append(r, c.ninguno ? 'Ninguno (no mostrar total)' : c.hoja + ' · fila ' + c.fila + ' · ' + c.etiqueta); if (!c.ninguno) l.appendChild(mk('b', '', c.texto || num(c.total, 2))); box.appendChild(l); }); cc.appendChild(box); }
-    else cc.appendChild(mk('div', 'msg warn', 'No encontré una fila de «Total» con un monto. El Excel se guarda y se muestra igual; los indicadores no tendrán total.'));
-    pintarHojas(H, $('c-hojas'), $('c-prev')); $('c-guardar').disabled = !(ROL === 'ADMIN' || ROL === 'CARGA');
-    aviso($('c-msg'), 'Vista previa de «' + f.name + '»: ' + H.length + ' hoja(s). Revise y toque Guardar.', 'ok');
-  } catch (e) { aviso($('c-msg'), '✖ No pude leer el archivo: ' + e.message, 'err'); }
-});
-$('c-guardar').addEventListener('click', async () => {
-  if (!NUEVO) return; const b = $('c-guardar'); b.disabled = true;
-  const e = NUEVO.elegido, fila = { empresa_id: EMPRESA, fecha: $('c-fecha').value, archivo: NUEVO.archivo, hojas: NUEVO.hojas, resumen: e ? { total: e.total, etiqueta: e.etiqueta, hoja: e.hoja, fila: e.fila, moneda: $('c-mon').value } : { total: null, moneda: $('c-mon').value }, nota: $('c-nota').value.trim() || null, cargado_por: YO.nombre };
-  try {
-    if (!fila.fecha) throw new Error('Indique la fecha.');
-    if (TABLA_OK) { ok(await sb.from('disp_cargas').insert(fila)); sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MOD, p_accion: 'CARGÓ DISPONIBILIDADES', p_detalle: fila.fecha + ' · ' + fila.archivo }).then(() => {}, () => {}); }
-    else { const L = JSON.parse(localStorage.getItem('tt_disp_local') || '[]'); L.unshift({ ...fila, id: Date.now(), cargado_en: new Date().toISOString() }); L.sort((a, b) => b.fecha.localeCompare(a.fecha)); localStorage.setItem('tt_disp_local', JSON.stringify(L.slice(0, 30))); }
-    aviso($('c-msg'), '✔ Guardadas las disponibilidades del ' + fecTxt(fila.fecha) + (TABLA_OK ? '' : ' (solo en este navegador)') + '.', 'ok');
-    NUEVO = null; $('c-file').value = ''; $('c-arch').textContent = 'Sin archivo'; $('c-drop').classList.remove('ok'); $('c-cand').replaceChildren(); $('c-hojas').replaceChildren(); $('c-prev').replaceChildren(); $('c-nota').value = '';
-    await cargarCargas(); pintarTodo(); pintarHist();
-  } catch (er) { aviso($('c-msg'), '✖ ' + er.message, 'err'); b.disabled = false; }
-});
-function pintarHist() {
-  const tb = mk('table', 't'); tb.innerHTML = '<thead><tr><th>Fecha</th><th>Archivo</th><th class="n">Total</th><th>Cargado</th><th>Por</th><th></th></tr></thead>'; const body = mk('tbody');
-  CARGAS.forEach((c) => { const tr = mk('tr'); tr.append(mk('td', '', fecTxt(c.fecha)), mk('td', '', c.archivo || ''), mk('td', 'n', c.resumen && c.resumen.total != null ? mon(Number(c.resumen.total), c.resumen.moneda, 2) : '—'), mk('td', '', new Date(c.cargado_en).toLocaleString('es-VE')), mk('td', '', c.cargado_por || ''));
-    const td = mk('td'); if (ROL === 'ADMIN') { const x = mk('button', 'btn lt', 'Borrar'); x.addEventListener('click', async () => { if (!x.dataset.k) { x.dataset.k = 1; x.textContent = '¿Seguro? toque otra vez'; return; } try { if (TABLA_OK) ok(await sb.from('disp_cargas').delete().eq('id', c.id)); else { const L = JSON.parse(localStorage.getItem('tt_disp_local') || '[]').filter((y) => y.id !== c.id); localStorage.setItem('tt_disp_local', JSON.stringify(L)); } await cargarCargas(); pintarTodo(); pintarHist(); } catch (e) { alert(e.message); } }); td.appendChild(x); } tr.appendChild(td); body.appendChild(tr); });
-  tb.appendChild(body); $('c-hist').replaceChildren(CARGAS.length ? tb : mk('p', 'note', 'Sin cargas todavía.'));
+
+// ---------------- Excel cargado (tal cual) ----------------
+async function pintarExcelSel() {
+  const s = $('x-sel'), cur = s.value; s.replaceChildren(); CARGAS.forEach((c) => s.appendChild(new Option(fecTxt(c.fecha) + ' · ' + (c.archivo || ''), c.id))); if (cur && [...s.options].some((o) => o.value === cur)) s.value = cur;
+  if (!CARGAS.length) { $('x-hojas').replaceChildren(); $('x-tabla').replaceChildren(mk('p', 'note', 'Todavía no hay Excel cargado.')); $('x-info').textContent = ''; return; }
+  const c = CARGAS.find((x) => String(x.id) === s.value) || CARGAS[0];
+  $('x-tabla').replaceChildren(mk('p', 'note', 'Cargando…'));
+  try { const H = await hojasDe(c); pintarHojas(H, $('x-hojas'), $('x-tabla')); $('x-info').textContent = H.length + ' hoja(s) · cargado ' + new Date(c.cargado_en).toLocaleString('es-VE') + (c.cargado_por ? ' por ' + c.cargado_por : '');
+    $('x-xls').onclick = () => XLSX.writeFile(libroDe(H), c.archivo || 'Disponibilidades_' + c.fecha + '.xlsx'); }
+  catch (e) { $('x-tabla').replaceChildren(mk('div', 'msg err', '✖ ' + e.message)); }
+  s.onchange = pintarExcelSel;
 }
 
+// ---------------- cargar: solo escoger el archivo ----------------
+{ const d = $('c-drop'); ['dragenter', 'dragover'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.add('on'); }));
+  ['dragleave', 'drop'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.remove('on'); }));
+  d.addEventListener('drop', (e) => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) subir(f); }); }
+$('c-file').addEventListener('change', () => { const f = $('c-file').files[0]; if (f) subir(f); });
+async function subir(f) {
+  $('c-arch').textContent = '⏳ ' + f.name; $('c-drop').classList.remove('ok'); aviso($('c-msg'), 'Leyendo «' + f.name + '»…', 'warn');
+  try {
+    if (!(ROL === 'ADMIN' || ROL === 'CARGA')) throw new Error('su usuario solo puede ver, no cargar.');
+    const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: 'array', cellDates: true, cellFormula: true });
+    const R = leerDisp(wb), H = leerHojas(wb), ult = R.dias[R.dias.length - 1];
+    const fila = { empresa_id: EMPRESA, fecha: ult.fecha, archivo: f.name, hojas: H, resumen: R, cargado_por: YO.nombre };
+    if (TABLA_OK) { ok(await sb.from('disp_cargas').insert(fila)); sb.rpc('registrar_bitacora', { p_empresa: EMPRESA, p_modulo: MOD, p_accion: 'CARGÓ DISPONIBILIDADES', p_detalle: ult.fecha + ' · ' + f.name }).then(() => {}, () => {}); }
+    else { let L = []; try { L = JSON.parse(localStorage.getItem('tt_disp_local') || '[]'); } catch (e) {} L.unshift({ ...fila, id: Date.now(), cargado_en: new Date().toISOString() }); try { localStorage.setItem('tt_disp_local', JSON.stringify(L.slice(0, 20))); } catch (e) { localStorage.setItem('tt_disp_local', JSON.stringify(L.slice(0, 20).map((x, i) => (i ? { ...x, hojas: [] } : x)))); } }
+    $('c-arch').textContent = '✔ ' + f.name; $('c-drop').classList.add('ok'); $('c-file').value = '';
+    aviso($('c-msg'), '✔ Cargado. ' + R.dias.length + ' día(s) con saldos (' + R.dias.map((d) => fecTxt(d.fecha)).join(', ') + ') · disponibilidad neta del ' + fecTxt(ult.fecha) + ': ' + usd(ult.total, 2) + (TABLA_OK ? '' : ' · guardado solo en este navegador'), 'ok');
+    DIA = null; await cargarCargas(); pintarTodo(); pintarHist(); setTimeout(() => ver('disp'), 900);
+  } catch (e) { $('c-arch').textContent = 'Sin archivo'; $('c-file').value = ''; aviso($('c-msg'), '✖ No pude cargar el archivo: ' + e.message, 'err'); }
+}
+function pintarHist() {
+  const tb = mk('table', 't'); tb.innerHTML = '<thead><tr><th>Día</th><th>Archivo</th><th class="n">Disponibilidad neta</th><th>Cargado</th><th>Por</th><th></th></tr></thead>'; const body = mk('tbody');
+  CARGAS.forEach((c) => { const ds = (c.resumen && c.resumen.dias) || [], u = ds[ds.length - 1]; const tr = mk('tr'); tr.append(mk('td', '', fecTxt(c.fecha)), mk('td', '', c.archivo || ''), mk('td', 'n', u ? usd(u.total, 2) : '—'), mk('td', '', new Date(c.cargado_en).toLocaleString('es-VE')), mk('td', '', c.cargado_por || ''));
+    const td = mk('td'); if (ROL === 'ADMIN') { const x = mk('button', 'btn lt', 'Borrar'); x.addEventListener('click', async () => { if (!x.dataset.k) { x.dataset.k = 1; x.textContent = '¿Seguro? toque otra vez'; return; } try { if (TABLA_OK) ok(await sb.from('disp_cargas').delete().eq('id', c.id)); else { const L = JSON.parse(localStorage.getItem('tt_disp_local') || '[]').filter((y) => y.id !== c.id); localStorage.setItem('tt_disp_local', JSON.stringify(L)); } await cargarCargas(); pintarTodo(); pintarHist(); } catch (e) { aviso($('c-msg'), '✖ ' + e.message, 'err'); } }); td.appendChild(x); } tr.appendChild(td); body.appendChild(tr); });
+  tb.appendChild(body); $('c-hist').replaceChildren(CARGAS.length ? tb : mk('p', 'note', 'Sin cargas todavía.'));
+}
 // ---------------- accesos ----------------
 async function pintarAccesos() {
   const box = $('a-tabla'); box.replaceChildren(mk('p', 'note', 'Cargando…'));
