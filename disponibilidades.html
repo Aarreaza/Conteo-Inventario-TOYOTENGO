@@ -98,6 +98,7 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
 
 <nav class="nav" id="nav" hidden><div class="nav-in">
   <button data-v="disp" class="on">Disponibilidades</button>
+  <button data-v="cx">Por cobrar y por pagar</button>
   <button data-v="ventas">Ventas mensuales</button>
   <button data-v="excel">Excel cargado</button>
   <button data-v="cargar" data-rol="carga">Cargar Excel</button>
@@ -135,6 +136,28 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
     </div>
   </section>
 
+  <section class="vista" id="v-cx" hidden>
+    <div id="x-vacio"></div>
+    <div id="x-todo" hidden>
+      <div class="hero" id="x-hero"></div>
+      <div class="tiles" id="x-tiles"></div>
+      <div class="grid2">
+        <div class="card"><h2>Antigüedad de lo que nos deben</h2><p class="note">Saldo pendiente de clientes según la fecha del documento.</p><div class="hb" id="x-age"></div></div>
+        <div class="card"><h2>Vencimientos de lo que debemos</h2><p class="note">Saldo pendiente a proveedores según la fecha de vencimiento.</p><div class="hb" id="x-ven"></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h2>Quién nos debe más</h2><p class="note">Clientes y empleados, por saldo.</p><div class="hb" id="x-top-c"></div></div>
+        <div class="card"><h2>A quién le debemos más</h2><p class="note">Proveedores, por saldo.</p><div class="hb" id="x-top-p"></div></div>
+      </div>
+      <div class="card"><h2>Detalle</h2>
+        <div class="tools"><div class="sw" id="x-sw"><button data-t="CXC_CLI" class="on">Clientes</button><button data-t="CXC_EMP">Empleados</button><button data-t="CXP">Proveedores</button></div>
+          <input class="in" id="x-bus" type="search" placeholder="Buscar nombre, factura o descripción" style="flex:1;min-width:200px"><button class="btn lt" id="x-xls">⬇ Bajar Excel</button></div>
+        <p class="note" id="x-info"></p>
+        <div class="scroll" id="x-tabla" style="max-height:38rem"></div>
+      </div>
+    </div>
+  </section>
+
   <section class="vista" id="v-ventas" hidden>
     <div class="hero" id="v-hero"></div>
     <div class="tiles" id="tiles"></div>
@@ -158,6 +181,15 @@ table.t tr.g td{background:var(--soft);font-weight:700}table.t tr.e td:first-chi
       <p class="note">Escoja el Excel y listo: se guarda solo y el resumen se actualiza. Cada día se carga el Excel con los saldos al cierre del día anterior; la fecha se toma del propio Excel (la última columna con saldos). Los bolívares se toman como vienen en el Excel (ya convertidos a dólares con la tasa Binance de la hoja).</p>
       <div class="slots"><label class="slot" id="c-drop"><b>Disponibilidades</b><small>Excel diario de administración</small><span class="st" id="c-arch">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" id="c-file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" hidden></label></div>
       <div id="c-msg"></div>
+    </div>
+    <div class="card"><h2>Cargar cuentas por cobrar y por pagar</h2>
+      <p class="note">Escoja cada Excel en su casilla; se guarda solo con la fecha de hoy y se compara con la carga anterior.</p>
+      <div class="slots">
+        <label class="slot cxs" data-t="CXC_CLI"><b>Por cobrar · Clientes</b><small>CXC CLIENTE</small><span class="st">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" hidden></label>
+        <label class="slot cxs" data-t="CXC_EMP"><b>Por cobrar · Empleados</b><small>CXC EMPLEADO</small><span class="st">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" hidden></label>
+        <label class="slot cxs" data-t="CXP"><b>Por pagar · Proveedores</b><small>CXP</small><span class="st">Sin archivo</span><span class="elegir">📂 Elegir archivo</span><input type="file" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" hidden></label>
+      </div>
+      <div id="cx-msg"></div>
     </div>
     <div class="card"><h2>Historial de cargas</h2><div class="scroll" id="c-hist"></div></div>
   </section>
@@ -228,7 +260,7 @@ async function inicio() {
   document.querySelectorAll('[data-rol="carga"]').forEach((b) => { b.hidden = !(ROL === 'ADMIN' || ROL === 'CARGA'); });
   document.querySelectorAll('[data-rol="admin"]').forEach((b) => { b.hidden = ROL !== 'ADMIN'; });
   $('nav').hidden = false; $('main').hidden = false;
-  await Promise.all([cargarVentas(), cargarCargas(), cargarTasas()]);
+  await Promise.all([cargarVentas(), cargarCargas(), cargarTasas(), cargarCx()]);
   pintarTodo();
 }
 $('f-login').addEventListener('submit', async (e) => {
@@ -242,7 +274,7 @@ document.querySelectorAll('.ir-cargar').forEach((b) => b.addEventListener('click
 function ver(v) {
   document.querySelectorAll('.nav button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.vista').forEach((s) => { s.hidden = s.id !== 'v-' + v; });
-  if (v === 'accesos') pintarAccesos(); if (v === 'cargar') pintarHist(); if (v === 'excel') pintarExcelSel();
+  if (v === 'accesos') pintarAccesos(); if (v === 'cx') pintarCx(); if (v === 'cargar') pintarHist(); if (v === 'excel') pintarExcelSel();
 }
 
 // ---------------- datos ----------------
@@ -331,7 +363,7 @@ function vista(d) {
 }
 
 // ---------------- vista Disponibilidades ----------------
-function pintarTodo() { pintarDisp(); pintarVentas(); pintarTiles(); }
+function pintarTodo() { pintarDisp(); pintarVentas(); pintarTiles(); pintarCx(); }
 function pintarDisp() {
   const sel = $('d-dia'); sel.replaceChildren(); DIAS.slice().reverse().forEach((d) => sel.appendChild(new Option(fecTxt(d.fecha), d.fecha))); if (DIA) sel.value = DIA;
   sel.onchange = () => { DIA = sel.value; pintarDisp(); };
@@ -541,10 +573,157 @@ async function subir(f) {
   } catch (e) { $('c-arch').textContent = 'Sin archivo'; $('c-file').value = ''; aviso($('c-msg'), '✖ No pude cargar el archivo: ' + e.message, 'err'); }
 }
 function pintarHist() {
-  const tb = mk('table', 't'); tb.innerHTML = '<thead><tr><th>Día</th><th>Archivo</th><th class="n">Disponibilidad neta</th><th>Cargado</th><th>Por</th><th></th></tr></thead>'; const body = mk('tbody');
-  CARGAS.forEach((c) => { const ds = (c.resumen && c.resumen.dias) || [], u = ds[ds.length - 1]; const tr = mk('tr'); tr.append(mk('td', '', fecTxt(c.fecha)), mk('td', '', c.archivo || ''), mk('td', 'n', u ? usd(u.total, 2) : '—'), mk('td', '', new Date(c.cargado_en).toLocaleString('es-VE')), mk('td', '', c.cargado_por || ''));
-    const td = mk('td'); if (ROL === 'ADMIN') { const x = mk('button', 'btn lt', 'Borrar'); x.addEventListener('click', async () => { if (!x.dataset.k) { x.dataset.k = 1; x.textContent = '¿Seguro? toque otra vez'; return; } try { if (TABLA_OK) ok(await sb.from('disp_cargas').delete().eq('id', c.id)); else { const L = JSON.parse(localStorage.getItem('tt_disp_local') || '[]').filter((y) => y.id !== c.id); localStorage.setItem('tt_disp_local', JSON.stringify(L)); } await cargarCargas(); pintarTodo(); pintarHist(); } catch (e) { aviso($('c-msg'), '✖ ' + e.message, 'err'); } }); td.appendChild(x); } tr.appendChild(td); body.appendChild(tr); });
-  tb.appendChild(body); $('c-hist').replaceChildren(CARGAS.length ? tb : mk('p', 'note', 'Sin cargas todavía.'));
+  const L = [...CARGAS.map((c) => { const ds = (c.resumen && c.resumen.dias) || [], u = ds[ds.length - 1]; return { k: 'D' + c.id, que: 'Disponibilidades', c, tabla: 'disp_cargas', local: 'tt_disp_local', ok: TABLA_OK, v: u ? usd(u.total, 2) : '—' }; }),
+    ...CX.map((c) => ({ k: 'X' + c.id, que: CXT[c.tipo], c, tabla: 'cx_cargas', local: 'tt_cx_local', ok: CX_OK, v: usd(sal(c), 2) }))].sort((a, b) => String(b.c.cargado_en).localeCompare(String(a.c.cargado_en)));
+  const tb = mk('table', 't'); tb.innerHTML = '<thead><tr><th>Qué</th><th>Día</th><th>Archivo</th><th class="n">Total</th><th>Cargado</th><th>Por</th><th></th></tr></thead>'; const body = mk('tbody');
+  L.forEach((h) => { const c = h.c, tr = mk('tr'); tr.append(mk('td', '', h.que), mk('td', '', fecTxt(c.fecha)), mk('td', '', c.archivo || ''), mk('td', 'n', h.v), mk('td', '', new Date(c.cargado_en).toLocaleString('es-VE')), mk('td', '', c.cargado_por || ''));
+    const td = mk('td'); if (ROL === 'ADMIN') { const x = mk('button', 'btn lt', 'Borrar'); x.addEventListener('click', async () => { if (!x.dataset.k) { x.dataset.k = 1; x.textContent = '¿Seguro? toque otra vez'; return; }
+      try { if (h.ok) ok(await sb.from(h.tabla).delete().eq('id', c.id)); else { const Q = JSON.parse(localStorage.getItem(h.local) || '[]').filter((y) => y.id !== c.id); localStorage.setItem(h.local, JSON.stringify(Q)); }
+        await Promise.all([cargarCargas(), cargarCx()]); pintarTodo(); pintarHist(); } catch (e) { aviso($('c-msg'), '✖ ' + e.message, 'err'); } }); td.appendChild(x); }
+    tr.appendChild(td); body.appendChild(tr); });
+  tb.appendChild(body); $('c-hist').replaceChildren(L.length ? tb : mk('p', 'note', 'Sin cargas todavía.'));
+}
+
+// ---------------- cuentas por cobrar y por pagar ----------------
+const CXT = { CXC_CLI: 'Por cobrar · Clientes', CXC_EMP: 'Por cobrar · Empleados', CXP: 'Por pagar · Proveedores' };
+let CX = [], CX_OK = true, CXV = 'CXC_CLI', CXA = {};
+const hoyISO = () => { const d = new Date(Date.now() - 4 * 3600e3); return d.toISOString().slice(0, 10); };
+const diasEntre = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5);
+async function cargarCx() {
+  try { CX = ok(await sb.from('cx_cargas').select('id,tipo,fecha,archivo,filas,totales,cargado_en,cargado_por').eq('empresa_id', EMPRESA).order('fecha', { ascending: false }).order('id', { ascending: false }).limit(90)); CX_OK = true; }
+  catch (e) { CX_OK = false; try { CX = JSON.parse(localStorage.getItem('tt_cx_local') || '[]'); } catch (er) { CX = []; } }
+}
+// la carga vigente de cada tipo y la anterior (de un día distinto) para comparar
+function cxDe(t) { const L = CX.filter((c) => c.tipo === t); const u = L[0] || null; return { u, a: u ? L.find((c) => c.fecha < u.fecha) || null : null }; }
+function leerCx(wb, tipo, nombreArch) {
+  let ws = null, nm = '', A = null, hr = -1;
+  for (const n of wb.SheetNames) { const a = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: '' }); const r = a.findIndex((f) => f.some((v) => /^saldo$/i.test(String(v).trim())) && f.some((v) => /cliente|proveedor/i.test(String(v)))); if (r >= 0) { ws = wb.Sheets[n]; nm = n; A = a; hr = r; break; } }
+  if (!ws) throw new Error('no encuentro la tabla (columnas Cliente/Proveedor y Saldo)');
+  const H = A[hr].map((v) => String(v).trim().toUpperCase()), col = (re) => H.findIndex((h) => re.test(h));
+  const c = { fecha: col(/^FECHA/), venc: col(/VENC/), sis: col(/SISTEMA/), doc: col(/FACT|^NE|DOCUMENTO/), nom: col(/CLIENTE|PROVEEDOR/), desc: col(/DESCRIP|COLUMNA|NOTA|OBSERV/), monto: col(/BASE|MONTO|IMPORTE/), abono: col(/ABONO/), saldo: col(/^SALDO/) };
+  const esProv = /PROVEEDOR/.test(H[c.nom] || ''), pista = (nm + ' ' + nombreArch).toUpperCase();
+  if (tipo === 'CXP' && !esProv) throw new Error('este archivo es de cuentas por cobrar, no de cuentas por pagar');
+  if (tipo !== 'CXP' && esProv) throw new Error('este archivo es de cuentas por pagar (tiene Proveedor)');
+  if (tipo === 'CXC_CLI' && /EMPLEAD/.test(pista)) throw new Error('parece el de empleados («' + nm + '»); use la casilla de Empleados');
+  if (tipo === 'CXC_EMP' && /CLIENTE/.test(pista) && !/EMPLEAD/.test(pista)) throw new Error('parece el de clientes («' + nm + '»); use la casilla de Clientes');
+  const iso = (v) => (v instanceof Date ? new Date(v.getTime() - v.getTimezoneOffset() * 6e4).toISOString().slice(0, 10) : null);
+  const nu = (v) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' && !isNaN(Number(v.replace(',', '.'))) ? Number(v.replace(',', '.')) : 0);
+  const tx = (i, f) => (i < 0 ? '' : f[i] instanceof Date ? iso(f[i]) : String(f[i] ?? '').trim());
+  const filas = [];
+  for (let r = hr + 1; r < A.length; r++) {
+    const f = A[r]; if (f.slice(0, 3).some((v) => /^total/i.test(String(v).trim()))) break;
+    const nom = tx(c.nom, f).toUpperCase().replace(/\s+/g, ' '), m = nu(f[c.monto]), ab = c.abono < 0 ? 0 : nu(f[c.abono]);
+    if (!nom && !m && !ab) continue;
+    const sal = c.saldo >= 0 && typeof f[c.saldo] === 'number' ? f[c.saldo] : m - ab;
+    filas.push({ fecha: iso(f[c.fecha]), venc: c.venc >= 0 ? iso(f[c.venc]) : null, sis: tx(c.sis, f), doc: tx(c.doc, f), nombre: nom || '(sin nombre)', desc: tx(c.desc, f), monto: m, abono: ab, saldo: Math.round(sal * 100) / 100 });
+  }
+  if (!filas.length) throw new Error('la tabla no tiene documentos');
+  const t = filas.reduce((s, x) => ({ monto: s.monto + x.monto, abono: s.abono + x.abono, saldo: s.saldo + x.saldo }), { monto: 0, abono: 0, saldo: 0 });
+  t.docs = filas.length; t.nombres = new Set(filas.map((x) => x.nombre)).size;
+  return { hoja: nm, filas, totales: t };
+}
+document.querySelectorAll('.cxs').forEach((sl) => {
+  const inp = sl.querySelector('input'), st = sl.querySelector('.st');
+  const go = async (f) => {
+    const t = sl.dataset.t; st.textContent = '⏳ ' + f.name; sl.classList.remove('ok'); aviso($('cx-msg'), 'Leyendo «' + f.name + '»…', 'warn');
+    try {
+      if (!(ROL === 'ADMIN' || ROL === 'CARGA')) throw new Error('su usuario solo puede ver, no cargar.');
+      const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: 'array', cellDates: true });
+      const R = leerCx(wb, t, f.name), fila = { empresa_id: EMPRESA, tipo: t, fecha: hoyISO(), archivo: f.name, filas: R.filas, totales: R.totales, hojas: leerHojas(wb), cargado_por: YO.nombre };
+      if (CX_OK) ok(await sb.from('cx_cargas').insert(fila));
+      else { let L = []; try { L = JSON.parse(localStorage.getItem('tt_cx_local') || '[]'); } catch (e) {} L.unshift({ ...fila, hojas: null, id: Date.now(), cargado_en: new Date().toISOString() }); try { localStorage.setItem('tt_cx_local', JSON.stringify(L.slice(0, 30))); } catch (e) {} }
+      st.textContent = '✔ ' + f.name; sl.classList.add('ok'); inp.value = '';
+      aviso($('cx-msg'), '✔ ' + CXT[t] + ': ' + R.totales.docs + ' documentos de ' + R.totales.nombres + (t === 'CXP' ? ' proveedores' : ' personas') + ' · saldo ' + usd(R.totales.saldo, 2), 'ok');
+      await cargarCx(); pintarCx(); pintarHist();
+    } catch (e) { st.textContent = 'Sin archivo'; inp.value = ''; aviso($('cx-msg'), '✖ ' + CXT[t] + ': ' + e.message, 'err'); }
+  };
+  inp.addEventListener('change', () => { if (inp.files[0]) go(inp.files[0]); });
+  ['dragenter', 'dragover'].forEach((ev) => sl.addEventListener(ev, (e) => { e.preventDefault(); sl.classList.add('on'); }));
+  ['dragleave', 'drop'].forEach((ev) => sl.addEventListener(ev, (e) => { e.preventDefault(); sl.classList.remove('on'); }));
+  sl.addEventListener('drop', (e) => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) go(f); });
+});
+const sal = (c) => (c ? Number(c.totales && c.totales.saldo) || 0 : 0);
+function porNombre(filas) {
+  const M = {}; filas.forEach((x) => { const o = M[x.nombre] || (M[x.nombre] = { nombre: x.nombre, docs: 0, monto: 0, abono: 0, saldo: 0, viejo: null, venc: null, filas: [] }); o.docs++; o.monto += x.monto; o.abono += x.abono; o.saldo += x.saldo; o.filas.push(x);
+    if (x.saldo > 0 && x.fecha && (!o.viejo || x.fecha < o.viejo)) o.viejo = x.fecha; if (x.saldo > 0 && x.venc && (!o.venc || x.venc < o.venc)) o.venc = x.venc; });
+  return Object.values(M).sort((a, b) => b.saldo - a.saldo);
+}
+function barrasH(el, L, color) {
+  el.replaceChildren(); const P = L.filter((x) => x.v > 0.004); if (!P.length) { el.appendChild(mk('p', 'note', 'Sin saldos pendientes.')); return; }
+  const max = Math.max(...P.map((x) => x.v));
+  L.forEach((x) => { const r = mk('div', 'r'), tr = mk('div', 'tr'), b = mk('div'); b.style.width = (x.v > 0 ? Math.max(1.5, x.v / max * 100) : 0) + '%'; b.style.background = x.c || color; tr.appendChild(b); const n = mk('span', '', x.k); if (x.t) n.title = x.t; const v = mk('b', '', usd(x.v, 2)); if (x.s) { v.title = x.s; } r.append(n, tr, v); el.appendChild(r); });
+}
+function pintarCx() {
+  const C = cxDe('CXC_CLI'), E = cxDe('CXC_EMP'), P = cxDe('CXP');
+  if (!C.u && !E.u && !P.u) { $('x-todo').hidden = true; aviso($('x-vacio'), ROL === 'LECTOR' ? 'Todavía no se han cargado las cuentas por cobrar y por pagar.' : 'Todavía no se han cargado las cuentas por cobrar y por pagar. Cárguelas en «Cargar Excel».', 'warn'); return; }
+  aviso($('x-vacio'), ''); $('x-todo').hidden = false;
+  const cob = sal(C.u) + sal(E.u), pag = sal(P.u), cobA = (C.a || C.u ? sal(C.a || C.u) : 0) + (E.a || E.u ? sal(E.a || E.u) : 0), pagA = sal(P.a || P.u), hay = C.a || E.a || P.a;
+  const D0 = DIAS.length ? vista(DIAS[DIAS.length - 1]) : null, hoy = hoyISO();
+  const pend = P.u ? P.u.filas.filter((x) => x.saldo > 0) : [], venc = pend.filter((x) => x.venc && x.venc < hoy).reduce((s, x) => s + x.saldo, 0), v7 = pend.filter((x) => x.venc && x.venc >= hoy && diasEntre(hoy, x.venc) <= 7).reduce((s, x) => s + x.saldo, 0);
+  // hero
+  const hv = $('x-hero'); hv.replaceChildren(); const iz = mk('div'); iz.style.position = 'relative'; iz.style.zIndex = 1;
+  const neto = cob - pag; iz.append(mk('div', 'k', 'Por cobrar − por pagar'), mk('div', 'big', usd(neto, 2)));
+  if (hay) { const dv = neto - (cobA - pagA); iz.appendChild(mk('span', 'var ' + (dv >= 0 ? 'up' : 'dn'), (dv >= 0 ? '▲ ' : '▼ ') + usd(Math.abs(dv), 2) + ' vs carga anterior')); }
+  const ult = [C.u, E.u, P.u].filter(Boolean).sort((a, b) => String(b.cargado_en).localeCompare(String(a.cargado_en)))[0];
+  iz.appendChild(mk('div', 'sub', 'Al ' + fecLarga(ult.fecha) + ' · cargado ' + new Date(ult.cargado_en).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + (ult.cargado_por ? ' por ' + ult.cargado_por : '')));
+  const mi = mk('div', 'mini'), m2 = (k, v, sb) => { const d = mk('div'); d.append(mk('span', '', k), mk('b', '', v)); if (sb) d.appendChild(mk('small', '', sb)); mi.appendChild(d); };
+  const vr = (a, b) => (b == null ? '' : (a - b >= 0 ? '+' : '−') + usd(Math.abs(a - b), 2) + ' vs anterior');
+  m2('Nos deben', usd(cob, 2), hay ? vr(cob, cobA) : 'clientes y empleados');
+  m2('Debemos', usd(pag, 2), P.a ? vr(pag, pagA) : 'proveedores');
+  if (D0) { m2('En bancos y wallets', usd(D0.subtotal, 2), 'cierre del ' + fecTxt(D0.fecha)); m2('Bancos + por cobrar − por pagar', usd(D0.subtotal + cob - pag, 2), D0.subtotal + cob - pag >= 0 ? 'alcanza para cubrir lo que se debe' : 'no alcanza para cubrir lo que se debe'); }
+  hv.append(iz, mi);
+  // tarjetas
+  const T = $('x-tiles'); T.replaceChildren();
+  const tile = (k, cur, ant, s, color, ir) => { const t = mk('div', 'tile'); t.style.borderTopColor = color; t.append(mk('div', 'k', k), mk('div', 'v', cur == null ? '—' : usd(cur, 2))); const q = mk('div', 's'); q.append(s || ''); if (ant != null && cur != null && Math.abs(cur - ant) > 0.004) { q.append(' · '); q.appendChild(mk('span', cur - ant >= 0 ? 'up' : 'dn', (cur - ant >= 0 ? '+' : '−') + usd(Math.abs(cur - ant), 2))); } t.appendChild(q); if (ir) { t.style.cursor = 'pointer'; t.addEventListener('click', () => { CXV = ir; pintarDet(); $('x-tabla').scrollIntoView({ behavior: 'smooth', block: 'start' }); }); } T.appendChild(t); };
+  tile('Por cobrar · Clientes', C.u ? sal(C.u) : null, C.a ? sal(C.a) : null, C.u ? C.u.totales.nombres + ' clientes · ' + C.u.totales.docs + ' documentos' : 'sin cargar', 'var(--navy2)', 'CXC_CLI');
+  tile('Por cobrar · Empleados', E.u ? sal(E.u) : null, E.a ? sal(E.a) : null, E.u ? E.u.totales.nombres + ' personas' : 'sin cargar', '#5b7fa6', 'CXC_EMP');
+  tile('Por pagar · Proveedores', P.u ? pag : null, P.a ? pagA : null, P.u ? P.u.totales.nombres + ' proveedores · ' + P.u.totales.docs + ' documentos' : 'sin cargar', 'var(--rojo)', 'CXP');
+  if (P.u) { tile('Por pagar vencido', venc, null, pag ? num(venc / pag * 100, 1) + ' % de lo que se debe' : '', '#b00016', 'CXP'); tile('Vence en 7 días', v7, null, 'hasta el ' + fecTxt(new Date(new Date(hoy + 'T12:00:00').getTime() + 7 * 864e5).toISOString().slice(0, 10)), '#f2a541', 'CXP'); }
+  // antigüedad clientes
+  const ag = [['0 a 30 días', 0, 30], ['31 a 60 días', 31, 60], ['61 a 90 días', 61, 90], ['91 a 180 días', 91, 180], ['Más de 180 días', 181, 1e9]].map(([k, a, b], i) => ({ k, v: 0, c: ['#1f7a4d', '#5b7fa6', '#f2a541', '#e1001a', '#b00016'][i], a, b }));
+  let sinF = 0; if (C.u) C.u.filas.filter((x) => x.saldo > 0).forEach((x) => { if (!x.fecha) { sinF += x.saldo; return; } const d = diasEntre(x.fecha, hoy); const g = ag.find((y) => d >= y.a && d <= y.b) || ag[0]; g.v += x.saldo; });
+  if (sinF) ag.push({ k: 'Sin fecha', v: sinF, c: '#9aa6b3' });
+  if (C.u) barrasH($('x-age'), ag); else $('x-age').replaceChildren(mk('p', 'note', 'Falta cargar las cuentas por cobrar de clientes.'));
+  // vencimientos proveedores
+  const vb = [{ k: 'Vencido', v: 0, c: '#b00016' }, { k: 'Vence en 7 días', v: 0, c: '#e1001a' }, { k: '8 a 30 días', v: 0, c: '#f2a541' }, { k: 'Más de 30 días', v: 0, c: '#1f7a4d' }, { k: 'Sin fecha de vencimiento', v: 0, c: '#9aa6b3' }];
+  pend.forEach((x) => { const i = !x.venc ? 4 : x.venc < hoy ? 0 : diasEntre(hoy, x.venc) <= 7 ? 1 : diasEntre(hoy, x.venc) <= 30 ? 2 : 3; vb[i].v += x.saldo; });
+  if (P.u) barrasH($('x-ven'), vb); else $('x-ven').replaceChildren(mk('p', 'note', 'Falta cargar las cuentas por pagar.'));
+  // mayores
+  const dc = porNombre([...(C.u ? C.u.filas.map((x) => ({ ...x, _t: 'Cliente' })) : []), ...(E.u ? E.u.filas.map((x) => ({ ...x, _t: 'Empleado' })) : [])]).filter((x) => x.saldo > 0.004);
+  barrasH($('x-top-c'), dc.slice(0, 10).map((x) => ({ k: x.nombre, v: x.saldo, c: x.filas[0]._t === 'Empleado' ? '#5b7fa6' : 'var(--navy2)', t: x.filas[0]._t + ' · ' + x.docs + ' documentos' })));
+  const dp = porNombre(P.u ? P.u.filas : []).filter((x) => x.saldo > 0.004);
+  barrasH($('x-top-p'), dp.slice(0, 10).map((x) => ({ k: x.nombre, v: x.saldo, c: 'var(--rojo)', t: x.docs + ' documentos' })));
+  pintarDet();
+}
+document.querySelectorAll('#x-sw button').forEach((b) => b.addEventListener('click', () => { CXV = b.dataset.t; pintarDet(); }));
+$('x-bus').addEventListener('input', () => pintarDet());
+function pintarDet() {
+  document.querySelectorAll('#x-sw button').forEach((b) => b.classList.toggle('on', b.dataset.t === CXV));
+  const { u, a } = cxDe(CXV), box = $('x-tabla');
+  if (!u) { box.replaceChildren(mk('p', 'note', 'Falta cargar «' + CXT[CXV] + '».')); $('x-info').textContent = ''; $('x-xls').onclick = null; return; }
+  const q = $('x-bus').value.trim().toUpperCase(), hoy = hoyISO(), prov = CXV === 'CXP';
+  const ant = a ? Object.fromEntries(porNombre(a.filas).map((x) => [x.nombre, x.saldo])) : null;
+  const G = porNombre(u.filas).filter((g) => !q || g.nombre.includes(q) || g.filas.some((x) => (x.doc + ' ' + x.sis + ' ' + x.desc).toUpperCase().includes(q)));
+  $('x-info').textContent = CXT[CXV] + ' · cargado el ' + fecTxt(u.fecha) + ' (' + (u.archivo || '') + ')' + (a ? ' · comparado con la carga del ' + fecTxt(a.fecha) : '') + ' · toque un nombre para ver sus documentos.';
+  const tb = mk('table', 't'); tb.innerHTML = '<thead><tr><th>' + (prov ? 'Proveedor' : CXV === 'CXC_EMP' ? 'Empleado' : 'Cliente') + '</th><th class="n">Docs</th><th class="n">Monto</th><th class="n">Abonos</th><th class="n">Saldo</th>' + (ant ? '<th class="n">Variación</th>' : '') + '<th>' + (prov ? 'Próximo vencimiento' : 'Más antiguo') + '</th></tr></thead>';
+  const body = mk('tbody'), ncol = ant ? 7 : 6;
+  G.forEach((g) => {
+    const tr = mk('tr'); tr.style.cursor = 'pointer'; const t0 = mk('td'); t0.append(mk('span', '', (CXA[g.nombre] ? '▾ ' : '▸ ') + g.nombre)); tr.appendChild(t0);
+    tr.append(mk('td', 'n', g.docs), mk('td', 'n', usd(g.monto, 2)), mk('td', 'n', usd(g.abono, 2)), mk('td', 'n' + (g.saldo < 0 ? ' up' : ''), usd(g.saldo, 2)));
+    if (ant) { const d = g.saldo - (ant[g.nombre] || 0); tr.appendChild(mk('td', 'n ' + (Math.abs(d) < 0.005 ? '' : (d > 0) === prov ? 'dn' : 'up'), Math.abs(d) < 0.005 ? '—' : (ant[g.nombre] == null ? 'nuevo ' : '') + (d > 0 ? '+' : '−') + usd(Math.abs(d), 2))); }
+    let ref = prov ? g.venc : g.viejo, rt = '—'; if (ref) { const d = diasEntre(prov ? hoy : ref, prov ? ref : hoy); rt = fecTxt(ref) + (prov ? (d < 0 ? ' · vencido hace ' + -d + ' d' : ' · en ' + d + ' d') : ' · ' + d + ' días'); }
+    const tR = mk('td', prov && ref && ref < hoy ? 'dn' : '', rt); tr.appendChild(tR);
+    tr.addEventListener('click', () => { CXA[g.nombre] = !CXA[g.nombre]; pintarDet(); }); body.appendChild(tr);
+    if (CXA[g.nombre]) g.filas.forEach((x) => { const r = mk('tr', 'c'); const d0 = mk('td', '', (x.fecha ? fecTxt(x.fecha) : 'sin fecha') + ' · ' + (x.doc || x.sis || '—') + (x.desc ? ' · ' + x.desc : '') + (x.venc ? ' · vence ' + fecTxt(x.venc) : '')); d0.style.paddingLeft = '1.6rem'; d0.style.color = 'var(--muted)'; d0.style.whiteSpace = 'normal';
+      r.append(d0, mk('td', 'n', ''), mk('td', 'n', x.monto ? usd(x.monto, 2) : ''), mk('td', 'n', x.abono ? usd(x.abono, 2) : ''), mk('td', 'n', usd(x.saldo, 2))); if (ant) r.appendChild(mk('td')); r.appendChild(mk('td')); body.appendChild(r); });
+  });
+  const tt = G.reduce((s, g) => ({ d: s.d + g.docs, m: s.m + g.monto, a: s.a + g.abono, s: s.s + g.saldo }), { d: 0, m: 0, a: 0, s: 0 });
+  const tr = mk('tr', 'tot'); tr.append(mk('td', '', 'Total' + (q ? ' (filtrado)' : '') + ' · ' + G.length), mk('td', 'n', tt.d), mk('td', 'n', usd(tt.m, 2)), mk('td', 'n', usd(tt.a, 2)), mk('td', 'n', usd(tt.s, 2))); if (ant) tr.appendChild(mk('td', 'n', q ? '' : (tt.s - sal(a) >= 0 ? '+' : '−') + usd(Math.abs(tt.s - sal(a)), 2))); tr.appendChild(mk('td')); body.appendChild(tr);
+  tb.appendChild(body); box.replaceChildren(G.length ? tb : mk('p', 'note', 'Sin resultados.'));
+  $('x-xls').onclick = async () => { try { let H = u.hojas; if (!H && CX_OK) { H = ok(await sb.from('cx_cargas').select('hojas').eq('id', u.id).single()).hojas; u.hojas = H; }
+      if (H && H.length) XLSX.writeFile(libroDe(H), u.archivo || CXV + '_' + u.fecha + '.xlsx');
+      else { const ws = XLSX.utils.json_to_sheet(u.filas.map((x) => ({ Fecha: x.fecha, Vencimiento: x.venc, Sistema: x.sis, Documento: x.doc, Nombre: x.nombre, Descripcion: x.desc, Monto: x.monto, Abono: x.abono, Saldo: x.saldo }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, CXV); XLSX.writeFile(wb, CXV + '_' + u.fecha + '.xlsx'); } }
+    catch (e) { aviso($('x-vacio'), '✖ ' + e.message, 'err'); } };
 }
 
 // ---------------- usuarios ----------------
